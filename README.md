@@ -4,7 +4,7 @@ Lessons Claude writes for me after we work through something together: what we d
 
 Each folder is one lesson.
 
-- [`HP-CP1215/`](HP-CP1215/): bringing an HP Color LaserJet CP1215 back to life on macOS (CUPS, foomatic, Ghostscript).
+- [HP Color LaserJet CP1215 on macOS](HP-CP1215/): CUPS, foomatic, Ghostscript.
 
 ## Building
 
