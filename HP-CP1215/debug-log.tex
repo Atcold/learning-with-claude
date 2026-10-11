@@ -124,7 +124,7 @@
     minimum height=1.25cm, text width=2.05cm, align=center, font=\footnotesize},
   faded/.style={draw=black!25, fill=black!4, thick, rounded corners=3pt, text=black!40,
     minimum height=1.25cm, text width=2.05cm, align=center, font=\footnotesize},
-  flow/.style={-{Stealth[length=2.6mm]}, very thick, black!60},
+  flow/.style={->, very thick, black!60},
 }
 
 \title{\emo{printer}\ HP Color LaserJet CP1215 on macOS\\[0.3em]
@@ -189,7 +189,7 @@ Every term below is used later without further explanation, so this list comes f
 
 Most office printers are \emph{smart}: they contain a small computer and software that can read PDF or PostScript, so the printer itself does the rendering and you just send it the page. The \textbf{HP Color LaserJet CP1215} is not like that. It is a \emph{host-based} printer (also called a ``software'' or ``GDI'' printer): HP left the small computer out to make it cheaper, so \emph{the computer you print from}, the ``host'', has to do the rendering and send the finished bitmap in HP's own compressed binary format, \textbf{ZjStream} (ZjStream files start with the four letters \texttt{JZJZ}). HP shipped Windows software that does this; it never shipped a macOS driver. Everything below exists to turn a PDF into ZjStream on a Mac.
 
-\subsection{The cast}
+\subsection{The cast}\label{sec:cast}
 
 \begin{flowtext}
 \piece{cApple!45}{CUPS}{Apple, open source} \emph{Common Unix Printing System}, the printing system of macOS (defined above). Every print job, from ⌘P or from the terminal, goes into a CUPS queue; CUPS runs its chain of filters on the job, then the backend delivers the bytes (here, USB).
@@ -205,6 +205,23 @@ Most office printers are \emph{smart}: they contain a small computer and softwar
 \piece{cYou!80}{print.py}{you} Your front end, built with Tkinter. It skips CUPS's filters (section~\ref{sec:script}).
 \piece{grey!60}{Homebrew}{community} The package manager. It keeps each program in its own folder under \texttt{/usr/local/Cellar} and \emph{links} it into \texttt{/usr/local/bin}, the folder where the shell looks for them, so that a command like \texttt{gs} works.
 \end{flowtext}
+
+\begin{insight}{Two things called foo2hp}
+\begin{itemize}[nosep]
+  \item The \textbf{program} \texttt{foo2hp}, last in the wrapper's chain: a bitmap in, ZjStream out.
+  \item The \textbf{Foomatic driver} ``foo2hp'', as in the PPD's name \texttt{Foomatic/foo2hp}. To Foomatic, the driver is the command the PPD says to run, here the wrapper, \texttt{foo2zjs-pstops | gs | foo2hp}: \textbf{PostScript in}, ZjStream out.
+\end{itemize}
+So when foomatic-rip's log says ``driver'', it means the wrapper, not the program.
+\end{insight}
+
+\begin{insight}{Three programs that turn PDF into PostScript}
+The wrapper's chain is built for PostScript: its first step, \texttt{foo2zjs-pstops}, edits PostScript before Ghostscript renders it. (Handed a PDF directly, as by your script, the wrapper copes on its own; it calls \texttt{gs} on it, but how exactly is not in the recorded output.) Ghostscript itself could read the PDF; the PostScript requirement is the pipeline's, a legacy of when PostScript was the language of printing. Who makes the PostScript:
+\begin{itemize}[nosep]
+  \item \texttt{pdftops} (\texttt{/usr/local/bin}): foomatic-rip's first choice. Failed inside CUPS; why is a gap.
+  \item Ghostscript with \texttt{-sDEVICE=pswrite}: foomatic-rip's fallback. Fails, because \texttt{pswrite} no longer exists.
+  \item \texttt{cgpdftops} (Apple): run by CUPS itself when the PPD routes PDFs through PostScript. The fix makes CUPS use this one, so foomatic-rip receives PostScript and needs neither of the other two.
+\end{itemize}
+\end{insight}
 
 Source for foo2zjs: Rick Richardson's site, now offline; snapshot at \url{https://web.archive.org/web/20210129024712/https://foo2zjs.rkkda.com/}. A maintained copy lives at \url{https://github.com/OpenPrinting/foo2zjs}.
 
@@ -1137,7 +1154,7 @@ Its 29 lines, in four parts.
 |!] cgpdftopdf - NO filtering is needed; passing data through.!|
 \end{cmdout}
 
-\textbf{foomatic-rip cannot read PDF, tries to convert it, and fails.} It sees a PDF, says it does not understand PDF and must turn it into PostScript first, and starts its own conversion step, \texttt{pdf-to-ps}. That step cannot make sense of its input: \textbf{``Unknown filetype''}. With nothing to print, foomatic-rip gives up with status 2. (The \texttt{cgpdftopdf} line in the middle is the other filter finishing at the same moment.)
+\textbf{foomatic-rip cannot read PDF, tries to convert it, and fails.} It sees a PDF, says the driver (meaning the wrapper, section~\ref{sec:cast}) does not understand PDF, so it must turn it into PostScript first, and starts its own conversion step, \texttt{pdf-to-ps}. That step cannot make sense of its input: \textbf{``Unknown filetype''}. With nothing to print, foomatic-rip gives up with status 2. (The \texttt{cgpdftopdf} line in the middle is the other filter finishing at the same moment.)
 
 \begin{cmdout}
 ] Filetype: PDF
@@ -1271,7 +1288,7 @@ echo; gs -q -sDEVICE=pswrite -o /dev/null -c quit 2>&1 | head -2
 |!Unknown device: pswrite!|
 \end{cmdout}
 
-\begin{culprit}{foomatic-rip 4.0.6 converts PDF with a Ghostscript device that no longer exists}
+\begin{culprit}{foomatic-rip 4.0.6 converts PDF to PostScript with a Ghostscript device that no longer exists}
 foomatic-rip's hard-coded PDF$\to$PostScript command is
 \begin{center}\texttt{pdftops -level2 \dots\ \textbf{||} gs \dots\ -sDEVICE=\textbf{pswrite} \dots\ 2>/dev/null}\end{center}
 \begin{itemize}[nosep]
@@ -1435,7 +1452,7 @@ sudo killall cupsd; sleep 2; lpstat -p HP_Color_LaserJet_CP1215
 printer HP_Color_LaserJet_CP1215 is idle.  enabled since Sun 11 Oct 02:11:18 2026
 \end{cmdout}
 
-\subsection{Second print}
+\subsection{Second print}\label{sec:second}
 
 \begin{pane}
 lp -d HP_Color_LaserJet_CP1215 /tmp/t.pdf
@@ -1505,15 +1522,70 @@ The chain is now \texttt{cgpdftops} $\to$ \texttt{pstops} $\to$ \texttt{foomatic
 \end{tikzpicture}
 \end{center}
 
+\newpage
 %=====================================================================
 \section{Summary}
 %=====================================================================
 
-\begin{flowtext}
-\par\noindent\bugemo\ \textbf{Bug 1: Ghostscript.} \textbf{Broke:} both routes on AlfMAC3. \textbf{Symptom:} an empty \texttt{.prn}, so 0 bytes printed. \textbf{Cause:} \texttt{/usr/local/bin/gs} was a 2019 Ghostscript 9.27 without its support files. \textbf{Evidence:} ``Can't find initialization file gs\_init.ps''. \textbf{Fix:} remove the root-owned 9.27 docs, then \texttt{brew link --overwrite ghostscript}. \textbf{Proof:} job 155, printed.
+Two bugs, shown on the two chains from the start (sections~\ref{sec:chain} and~\ref{sec:script}). Red dashed boxes are the broken links.
 
-\par\noindent\bugemo\ \textbf{Bug 2: foomatic's PDF step.} \textbf{Broke:} ⌘P on AlfMAC3; most likely also why it stopped on AlfMAC. \textbf{Symptom:} the job ``completes'' but 0 bytes are sent. \textbf{Cause:} foomatic-rip 4.0.6 converts PDF with \texttt{pswrite}, which Ghostscript removed in 2013. \textbf{Evidence:} ``Unknown filetype'' and ``Unknown device: pswrite''. \textbf{Fix:} comment out the PDF \texttt{*cupsFilter} line in the PPD, and set the A4 defaults. \textbf{Proof:} job 157, 3088 bytes.
-\end{flowtext}
+\subsection*{\bugemo\ Bug 1: Ghostscript}
+
+It broke \textbf{both routes} on AlfMAC3. Here it is on your script's route, which has no other bug; on ⌘P's route it sits in the same place (next diagram).
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.45cm]
+  \node[stage=cYou] (py) {\textbf{print.py}};
+  \node[faded, right=of py] (cg) {cgpdftopdf\\ \scriptsize skipped};
+  \node[faded, right=of cg] (fr) {foomatic-rip\\ \scriptsize skipped};
+  \node[stage=cRick, right=of fr] (wr) {\textbf{wrapper}};
+  \node[dead, below=1.1cm of wr] (gs) {\textbf{gs 9.27}\\ \scriptsize \bugemo\ Bug 1};
+  \node[stage=cRick, left=of gs] (f2) {\textbf{foo2hp}};
+  \node[stage=cPharos, left=of f2] (pa) {\textbf{paagent}};
+  \node[stage=cApple, left=of pa] (usb) {\textbf{usb}\\ \scriptsize \texttt{lp -o raw}};
+  \draw[flow] (py) to[bend left=25] (wr);
+  \draw[flow] (wr) -- (gs); \draw[flow] (gs) -- (f2); \draw[flow] (f2) -- (pa); \draw[flow] (pa) -- (usb);
+\end{tikzpicture}
+\end{center}
+
+\begin{description}[nosep, font=\normalfont\bfseries]
+  \item[Symptom] an empty \texttt{.prn}, so 0 bytes printed.
+  \item[Cause] \texttt{/usr/local/bin/gs} was a 2019 Ghostscript 9.27 without its support files.
+  \item[Evidence] ``Can't find initialization file gs\_init.ps'' (section~\ref{sec:break1}).
+  \item[Fix] remove the root-owned 9.27 docs, then \texttt{brew link --overwrite ghostscript}.
+  \item[Proof] job 155, printed.
+\end{description}
+
+\subsection*{\bugemo\ Bug 2: foomatic-rip's PDF step}
+
+It broke \textbf{⌘P} on AlfMAC3, and most likely is why ⌘P stopped on AlfMAC. On ⌘P's route it comes on top of Bug 1:
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.45cm]
+  \node[stage=cApple] (app) {\textbf{app}\\ \scriptsize sends PDF};
+  \node[stage=cApple, right=of app] (cg) {\textbf{cgpdftopdf}\\ \scriptsize PDF $\to$ PDF};
+  \node[dead, right=of cg] (fr) {\textbf{foomatic-rip}\\ \scriptsize \bugemo\ Bug 2};
+  \node[stage=cRick, right=of fr] (wr) {\textbf{wrapper}\\ \scriptsize shell script};
+  \node[dead, below=1.1cm of wr] (gs) {\textbf{gs 9.27}\\ \scriptsize \bugemo\ Bug 1};
+  \node[stage=cRick, left=of gs] (f2) {\textbf{foo2hp}\\ \scriptsize bitmap $\to$ ZjStream};
+  \node[stage=cPharos, left=of f2] (pa) {\textbf{paagent}\\ \scriptsize pass-through};
+  \node[stage=cApple, left=of pa] (usb) {\textbf{usb}\\ \scriptsize to the printer};
+  \draw[flow] (app) -- (cg); \draw[flow] (cg) -- (fr); \draw[flow] (fr) -- (wr);
+  \draw[flow] (wr) -- (gs); \draw[flow] (gs) -- (f2); \draw[flow] (f2) -- (pa); \draw[flow] (pa) -- (usb);
+\end{tikzpicture}
+\end{center}
+
+\begin{description}[nosep, font=\normalfont\bfseries]
+  \item[Symptom] the job ``completes'' but 0 bytes are sent.
+  \item[Cause] foomatic-rip 4.0.6 converts PDF to PostScript with \texttt{pswrite}, which Ghostscript removed in 2013.
+  \item[Evidence] ``Unknown filetype'' and ``Unknown device: pswrite'' (section~\ref{sec:decisive} onwards).
+  \item[Fix] comment out the PDF \texttt{*cupsFilter} line in the PPD, and set the A4 defaults.
+  \item[Proof] job 157, 3088 bytes.
+\end{description}
+
+\subsection*{After both fixes}
+
+⌘P runs the chain drawn at the end of section~\ref{sec:second}, ``Second print'': \texttt{cgpdftops} turns the PDF into PostScript first, so foomatic-rip never needs \texttt{pswrite}.
 
 \subsection*{Gaps}
 \begin{itemize}[nosep]
@@ -1524,10 +1596,9 @@ The chain is now \texttt{cgpdftops} $\to$ \texttt{pstops} $\to$ \texttt{foomatic
 
 \subsection*{Still open on AlfMAC3}\label{sec:open}
 \begin{itemize}[nosep]
+  \item Why \texttt{pdftops} fails inside CUPS. First by hand, as you: \texttt{pdftops -level2 -origpagesizes /tmp/t.pdf /tmp/t.ps}. Then as CUPS's user, \texttt{sudo -u \_lp pdftops \dots}, reading the error foomatic-rip throws away. Not needed for printing, since the fix bypasses it; worth knowing.
   \item Job 132's leftover record. Not tried: CUPS keeps each job's record in \nolinkurl{/private/var/spool/cups} as a file named \texttt{c} plus the job number, here \texttt{c00132}. Deleting it with \texttt{sudo rm}, then stopping CUPS with \texttt{sudo killall cupsd}, should end the complaint.
   \item Apply the same PPD edit to \nolinkurl{/Library/Printers/PPDs/Contents/Resources/HP-Color_LaserJet_CP1215.ppd.gz}, or re-plugging the printer may recreate the broken queue.
-  \item Cancel job 156; turn debug logging off: \texttt{sudo cupsctl --no-debug-logging}.
-  \item Tailscale key expiry; SSH password login; the \texttt{pmset} question.
-\end{itemize}
+  \item Cancel job 156; turn debug logging off: \texttt{sudo cupsctl --no-debug-logging}.\end{itemize}
 
 \end{document}
