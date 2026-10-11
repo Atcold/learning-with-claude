@@ -11,7 +11,6 @@
 \usepackage{listings}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,shapes.misc}
-\usepackage{pgfornament}  % Vectorian ornaments; see `texdoc vectorian` for the numbered list
 \usepackage{twemojis}
 \usepackage{booktabs}
 \usepackage{tabularx}
@@ -55,15 +54,6 @@
 \newcommand{\cmd}[1]{\par\noindent#1\enspace---\enspace}
 \newcommand{\piece}[3]{\par\noindent\swatch{#1}{#2}\ \textit{(#3)}\enspace---\enspace}
 \newcommand{\subpiece}[3]{\par\noindent\hspace*{1.5em}\swatch{#1}{#2}\ \textit{(#3)}\enspace---\enspace}
-
-% Review arrows: a numbered hand in the left margin, level with the line it sits on.
-% \reviewfalse hides them all.
-\newif\ifreview
-\reviewfalse
-\newcounter{here}
-\newcommand{\here}{\ifreview\refstepcounter{here}\label{here:\thehere}\tikz[remember picture,overlay,baseline]
-  \node[anchor=east, inner sep=0pt, font=\small\bfseries\color{red!85!black}]
-  at ([xshift=1.95cm]current page.west |- 0,0.3em) {\thehere\,\pgfornament[height=0.9em]{152}};\fi}
 
 % Inline colour swatch, padded little enough not to push the lines apart
 \newcommand{\swatch}[2]{{\setlength{\fboxsep}{1pt}\colorbox{#1}{\hspace{2pt}#2\hspace{2pt}}}}
@@ -204,7 +194,7 @@ Most office printers are \emph{smart}: they contain a small computer and softwar
 \begin{flowtext}
 \piece{cApple!45}{CUPS}{Apple, open source} \emph{Common Unix Printing System}, the printing system of macOS (defined above). Every print job, from ⌘P or from the terminal, goes into a CUPS queue; CUPS runs its chain of filters on the job, then the backend delivers the bytes (here, USB).
 \piece{cApple!45}{PPD}{generated per printer} \emph{PostScript Printer Description}: a plain-text file per queue that describes the printer (paper sizes, colour, duplex) and tells CUPS \emph{which filter program} to use for which input format. Ours is \texttt{/etc/cups/ppd/HP\_Color\_LaserJet\_CP1215.ppd} (shown in section~\ref{sec:ppd}).
-\piece{cApple!45}{cgpdftopdf}{Apple} A CUPS filter that takes a PDF and hands on a PDF. \here It exists to apply the print dialog's choices to the document itself (which pages, how many per sheet, rotation) before the next filter sees it. For our jobs there was nothing to apply: its log line says ``NO filtering is needed; passing data through''.
+\piece{cApple!45}{cgpdftopdf}{Apple} A CUPS filter that takes a PDF and hands on a PDF. It exists to apply the print dialog's choices to the document itself (which pages, how many per sheet, rotation) before the next filter sees it. For our jobs there was nothing to apply: its log line says ``NO filtering is needed; passing data through''.
 \piece{cApple!45}{cgpdftops}{Apple} A CUPS filter that turns PDF into PostScript.
 \piece{cOP!60}{foomatic-rip}{OpenPrinting, 2011, v4.0.6} A generic adapter filter (``Foomatic'' is OpenPrinting's collection of printer-driver descriptions; ``rip'' stands for \emph{raster image processor}, the old name for a program that renders pages). It reads the PPD, finds the command line written there for this printer, and runs it. In our PPD that is the line \texttt{*FoomaticRIPCommandLine: "foo2hp2600-wrapper \%A"} (section~\ref{sec:ppd}), so it runs \texttt{foo2hp2600-wrapper}.
 \piece{cRick!60}{foo2zjs, the package}{Rick Richardson} A collection of open-source drivers for host-based printers, named after its first driver, which spoke ZjStream (``zjs''). It contains, among others:
@@ -298,7 +288,7 @@ This difference is the key to the whole story: \textbf{the two paths share the w
 
 What we know, from you:
 \begin{itemize}[nosep]
-  \item \here On \textbf{AlfMAC} (MacBook Pro 15'', macOS Big Sur, i.e.\ macOS 11), ⌘P had worked ``a long time ago'', then stopped, which is why you wrote the script. \texttt{print.py} worked there. Pharos was not installed there.
+  \item On \textbf{AlfMAC} (MacBook Pro 15'', macOS Big Sur, i.e.\ macOS 11), ⌘P had worked ``a long time ago'', then stopped, which is why you wrote the script. \texttt{print.py} worked there. Pharos was not installed there.
   \item On \textbf{AlfMAC3} (MacBook Pro 15'', macOS 13.7.8 Ventura, Intel), you were never able to print, by either route.
   \item AlfMAC now boot-loops with the fan at full speed, so it could not be inspected.
 \end{itemize}
@@ -312,7 +302,7 @@ What we do not know: what deleted AlfMAC3's Ghostscript support files (section~\
 By this point AlfMAC3 was on the tailnet, reachable as \texttt{alfmac3} with your SSH key, and the printer was plugged in. \texttt{print.py} and its pieces had been found on AlfMAC3, and Python 3.13.1 with Tk 9.0 was confirmed. I had just said \texttt{print.py} ``should'' work. You corrected me:
 
 \begin{alf}
-\here I don't think I was ever able to print from AlfMAC3, from AlfMAC yes. You are supposed to help me debug this.
+I don't think I was ever able to print from AlfMAC3, from AlfMAC yes. You are supposed to help me debug this.
 \end{alf}
 
 \subsection{First look: test everything that does not print}
@@ -330,7 +320,7 @@ GPL Ghostscript 9.27: Can't find initialization file gs_init.ps.
 \end{cmdout}
 
 \begin{insight}{How that line draws a test page}
-\here Ghostscript reads \emph{PostScript}, a programming language for drawing pages, and \texttt{-c} hands it a few words of it directly instead of a file. PostScript works like a stack calculator: values first, then the operation that uses them.
+Ghostscript reads \emph{PostScript}, a programming language for drawing pages, and \texttt{-c} hands it a few words of it directly instead of a file. PostScript works like a stack calculator: values first, then the operation that uses them.
 \begin{itemize}[nosep]
   \item \texttt{/Helvetica findfont 40 scalefont setfont}: pick the Helvetica font, at 40 points.
   \item \texttt{100 400 moveto}: move the pen to 100 points from the left, 400 from the bottom.
@@ -340,7 +330,7 @@ GPL Ghostscript 9.27: Can't find initialization file gs_init.ps.
 The rest is Ghostscript's own: \texttt{-sDEVICE=pdfwrite} chooses PDF as the output, \texttt{-sPAPERSIZE=a4} the page size, \texttt{-o /tmp/t.pdf} the output file, \texttt{-q} quiet. \texttt{2>\&1 | tail -3} keeps the last three lines of anything it prints, errors included.
 \end{insight}
 
-Here Ghostscript cannot even start: \texttt{gs\_init.ps} is the file it loads before doing anything. So there is no test PDF. Next, the wrapper on that PDF (its options are explained in section~\ref{sec:script}), then the size and the first bytes of what it wrote. \here\texttt{ls -la} lists in long form (\texttt{-l}: permissions, owner, size in bytes, date), including hidden files (\texttt{-a}); \texttt{head -c 64} keeps the first 64 \emph{bytes} (\texttt{-c}), not lines; \texttt{xxd} shows them in hexadecimal.
+Here Ghostscript cannot even start: \texttt{gs\_init.ps} is the file it loads before doing anything. So there is no test PDF. Next, the wrapper on that PDF (its options are explained in section~\ref{sec:script}), then the size and the first bytes of what it wrote. \texttt{ls -la} lists in long form (\texttt{-l}: permissions, owner, size in bytes, date), including hidden files (\texttt{-a}); \texttt{head -c 64} keeps the first 64 \emph{bytes} (\texttt{-c}), not lines; \texttt{xxd} shows them in hexadecimal.
 
 \begin{mine}
 ~/Work/Scratch/Printer/foo2zjs/foo2hp2600-wrapper -p9 -z1 -c -d1 /tmp/t.pdf > /tmp/t.prn; echo "exit=$?"
@@ -358,7 +348,7 @@ The wrapper fails (\texttt{exit=1}) and its output file \texttt{t.prn} is \textb
 \texttt{GPL Ghostscript 9.27: Can't find initialization file gs\_init.ps.} The wrapper pipes Ghostscript into \texttt{foo2hp}, so with a dead Ghostscript every conversion produces an \textbf{empty} \texttt{.prn}, and \texttt{lp -o raw} then faithfully delivers nothing. This alone breaks your script.
 \end{culprit}
 
-\here Now the queue. Its name, \texttt{HP\_Color\_LaserJet\_CP1215}, is the printer's name with underscores for spaces, given when the queue was created. Its state: \texttt{lpstat -p} asks about a printer's queue, \texttt{-l} in long form.
+Now the queue. Its name, \texttt{HP\_Color\_LaserJet\_CP1215}, is the printer's name with underscores for spaces, given when the queue was created. Its state: \texttt{lpstat -p} asks about a printer's queue, \texttt{-l} in long form.
 
 \begin{mine}
 lpstat -l -p HP_Color_LaserJet_CP1215
@@ -405,7 +395,7 @@ ls -la /etc/cups/ppd/ | grep -i hp
 -rw-r--r--   1 root  _lp  43363 11 Oct 01:24 HP_Color_LaserJet_CP1215.ppd
 \end{cmdout}
 
-It was written at 01:24, when the queue was created, \here by CUPS itself: the file belongs to \texttt{root} and to \texttt{\_lp}, the group macOS's printing system runs as. Most likely macOS created the queue on its own when the printer was plugged in, copying the PPD from its driver library (the original is found in section~\ref{sec:driverfile}). Which devices CUPS can see: \texttt{lpinfo -v} lists them. \here Then \texttt{grep} drops two kinds of line: the network printer types, always listed and irrelevant for USB, and Pharos's \texttt{direct paagent} entries, which only mirror the USB ones. Each \texttt{-e} adds a pattern, \texttt{-v} keeps the lines that do \emph{not} match, and \texttt{-i} ignores case.
+It was written at 01:24, when the queue was created, by CUPS itself: the file belongs to \texttt{root} and to \texttt{\_lp}, the group macOS's printing system runs as. Most likely macOS created the queue on its own when the printer was plugged in, copying the PPD from its driver library (the original is found in section~\ref{sec:driverfile}). Which devices CUPS can see: \texttt{lpinfo -v} lists them. Then \texttt{grep} drops two kinds of line: the network printer types, always listed and irrelevant for USB, and Pharos's \texttt{direct paagent} entries, which only mirror the USB ones. Each \texttt{-e} adds a pattern, \texttt{-v} keeps the lines that do \emph{not} match, and \texttt{-i} ignores case.
 
 \begin{mine}
 lpinfo -v 2>&1 | grep -iv -e network -e "^direct pa"
@@ -420,10 +410,10 @@ direct hpFaxbackend
 The printer is on USB: the real address behind \texttt{paagent}.
 
 \begin{insight}{Device addresses}
-\here CUPS names every place it can send a job with an address shaped like a web URL, a \emph{device URI}. The part before \texttt{://} is the backend that will deliver the job: \texttt{usb}, \texttt{ipp} (over the network), or \texttt{paagent} (Pharos). Then come the maker and model, with \texttt{\%20} standing for a space. The \texttt{serial=} at the end is the printer's own serial number, which it reports over USB: it lets CUPS tell apart two identical printers plugged into the same Mac. Pharos's address reuses the USB one, because \texttt{paagent} hands the job on to the \texttt{usb} backend.
+CUPS names every place it can send a job with an address shaped like a web URL, a \emph{device URI}. The part before \texttt{://} is the backend that will deliver the job: \texttt{usb}, \texttt{ipp} (over the network), or \texttt{paagent} (Pharos). Then come the maker and model, with \texttt{\%20} standing for a space. The \texttt{serial=} at the end is the printer's own serial number, which it reports over USB: it lets CUPS tell apart two identical printers plugged into the same Mac. Pharos's address reuses the USB one, because \texttt{paagent} hands the job on to the \texttt{usb} backend.
 \end{insight}
 
-\here Then the jobs: \texttt{lpstat -o} lists the ones waiting, and \texttt{-W completed} asks for finished ones instead.
+Then the jobs: \texttt{lpstat -o} lists the ones waiting, and \texttt{-W completed} asks for finished ones instead.
 
 \begin{mine}
 lpstat -o; lpstat -W completed -o | tail -5
@@ -436,7 +426,7 @@ CPR01-135               atcold         4021248   Thu  7 Jul 20:33:14 2022
 CPR01-134               atcold         2488320   Thu  7 Jul 20:30:10 2022
 \end{cmdout}
 
-\texttt{lpstat -o} printed nothing: \textbf{no job is waiting} in any queue. The completed jobs are old ones from 2022, \here on CPR01, one of your office printers. Last, the end of CUPS's log:
+\texttt{lpstat -o} printed nothing: \textbf{no job is waiting} in any queue. The completed jobs are old ones from 2022, on CPR01, one of your office printers. Last, the end of CUPS's log:
 
 \begin{mine}
 tail -30 /var/log/cups/error_log 2>&1
@@ -480,7 +470,7 @@ CUPS keeps a running diary of what it does in \texttt{/var/log/cups/error\_log}.
 It reads: a letter for the severity (\texttt{E} error, \texttt{D} debugging detail, \texttt{I} information), the date and time, the job, then the message. Later you will also see \texttt{PID}: the number macOS gives to each running program.
 \end{insight}
 
-Nothing in this log is about our printer. The first four lines are old jobs for NYU printers (Feb 2025). The rest is one complaint repeated: \textbf{job 132}, an earlier job, ``Files have gone away''. It is not waiting to print (\texttt{lpstat -o} above was empty), yet it logged again at 00:15 today. The likely reason, not checked: CUPS kept a record of job 132 whose document file was deleted, and complains each time it starts up and reloads its records; macOS starts CUPS only when something needs it, hence the irregular times. \here How to get rid of it is in the open items at the end (section~\ref{sec:open}).
+Nothing in this log is about our printer. The first four lines are old jobs for NYU printers (Feb 2025). The rest is one complaint repeated: \textbf{job 132}, an earlier job, ``Files have gone away''. It is not waiting to print (\texttt{lpstat -o} above was empty), yet it logged again at 00:15 today. The likely reason, not checked: CUPS kept a record of job 132 whose document file was deleted, and complains each time it starts up and reloads its records; macOS starts CUPS only when something needs it, hence the irregular times. How to get rid of it is in the open items at the end (section~\ref{sec:open}).
 
 \subsection{Where did that Ghostscript come from?}
 
@@ -493,7 +483,7 @@ ls -la /usr/local/bin/gs
 lrwxr-xr-x  1 root  admin  23  3 Aug  2019 /usr/local/bin/gs -> /usr/local/bin/gs-noX11
 \end{cmdout}
 
-A link from 2019, owned by root, pointing at a program called \texttt{gs-noX11}. Does Homebrew have its own Ghostscript? \here(\texttt{brew list --versions} names an installed package and its version; \texttt{/usr/local/Cellar} is where Homebrew keeps them.)
+A link from 2019, owned by root, pointing at a program called \texttt{gs-noX11}. Does Homebrew have its own Ghostscript? (\texttt{brew list --versions} names an installed package and its version; \texttt{/usr/local/Cellar} is where Homebrew keeps them.)
 
 \begin{mine}
 brew list --versions ghostscript 2>&1
@@ -504,7 +494,7 @@ ghostscript 10.04.0
 ghostscript
 \end{cmdout}
 
-Yes: version 10.04.0, installed in Homebrew's folder (one line from each command). \here Where are the old one's support files (\texttt{ls -d} lists the folders themselves, not their contents), and where is any \texttt{gs\_init.ps} (\texttt{mdfind -name} asks Spotlight, the Mac's search index, for a file name)?
+Yes: version 10.04.0, installed in Homebrew's folder (one line from each command). Where are the old one's support files (\texttt{ls -d} lists the folders themselves, not their contents), and where is any \texttt{gs\_init.ps} (\texttt{mdfind -name} asks Spotlight, the Mac's search index, for a file name)?
 
 \begin{mine}
 ls -d /usr/local/share/ghostscript/* 2>&1
@@ -519,7 +509,7 @@ mdfind -name gs_init.ps 2>/dev/null | head
 /usr/local/Cellar/ghostscript/10.04.0/share/ghostscript/10.04.0/Resource/Init/gs_init.ps
 \end{cmdout}
 
-The old support folder is gone; the only \texttt{gs\_init.ps} on the disk is Homebrew's. Last, how the wrapper finds Ghostscript \here(\texttt{grep -n} prints each matching line with its line number):
+The old support folder is gone; the only \texttt{gs\_init.ps} on the disk is Homebrew's. Last, how the wrapper finds Ghostscript (\texttt{grep -n} prints each matching line with its line number):
 
 \begin{mine}
 grep -n "gs \|GS=\|PATH=" ~/Work/Scratch/Printer/foo2zjs/foo2hp2600-wrapper | head
@@ -540,7 +530,7 @@ It calls Ghostscript through \texttt{\$GSBIN} and adds two folders to the end of
 
 \subsection{What would linking replace?}
 
-\here A dry run first (\texttt{--dry-run}): what Homebrew \emph{would} do, without doing it. \texttt{--overwrite} lets it replace files that are in its way.
+A dry run first (\texttt{--dry-run}): what Homebrew \emph{would} do, without doing it. \texttt{--overwrite} lets it replace files that are in its way.
 
 \begin{mine}
 brew link --overwrite --dry-run ghostscript 2>&1 | head -20
@@ -577,7 +567,7 @@ ls -la /usr/local/bin/gs-noX11
 -rwxrwxr-x  1 root  wheel  17948672  3 May  2019 /usr/local/bin/gs-noX11
 \end{cmdout}
 
-A standalone Ghostscript of about 18 MB from May 2019, installed as root. And how the wrapper calls it, lines 775--790 \here(\texttt{sed -n "775,790p"} prints just those lines):
+A standalone Ghostscript of about 18 MB from May 2019, installed as root. And how the wrapper calls it, lines 775--790 (\texttt{sed -n "775,790p"} prints just those lines):
 
 \begin{mine}
 sed -n "775,790p" ~/Work/Scratch/Printer/foo2zjs/foo2hp2600-wrapper
@@ -620,7 +610,7 @@ Linking /usr/local/Cellar/ghostscript/10.04.0... Error: Could not symlink share/
 
 \end{cmdout}
 
-Homebrew removed the old 2019 files, then hit a folder it may not write to, and stopped. \here Homebrew runs as you, and that folder belongs to \textbf{root}, as the next checks show: only root may change it. What is left of \texttt{gs}? \here\texttt{hash -r} first: the shell remembers where it last found each command, and \texttt{-r} makes it forget, so the next lookup sees the links as they are now.
+Homebrew removed the old 2019 files, then hit a folder it may not write to, and stopped. Homebrew runs as you, and that folder belongs to \textbf{root}, as the next checks show: only root may change it. What is left of \texttt{gs}? \texttt{hash -r} first: the shell remembers where it last found each command, and \texttt{-r} makes it forget, so the next lookup sees the links as they are now.
 
 \begin{mine}
 hash -r; ls -la /usr/local/bin/gs
@@ -666,7 +656,7 @@ exit=1
 -rw-r--r--  1 atcold  wheel  0 11 Oct 01:53 /tmp/t.prn
 \end{cmdout}
 
-Again 0 bytes, this time because \texttt{gs} is missing rather than broken. The rest of Rick's tools are in place \here(\texttt{which} prints where the shell finds a command):
+Again 0 bytes, this time because \texttt{gs} is missing rather than broken. The rest of Rick's tools are in place (\texttt{which} prints where the shell finds a command):
 
 \begin{mine}
 which foo2hp foo2zjs-pstops
@@ -676,7 +666,7 @@ which foo2hp foo2zjs-pstops
 /usr/local/bin/foo2zjs-pstops
 \end{cmdout}
 
-The folder that stopped Homebrew (\texttt{-d}: the folder itself, not what is inside), its contents, and how much it holds: \here\texttt{find} with only a folder name lists everything under it, every file and subfolder at every depth, and \texttt{wc -l} counts the lines.
+The folder that stopped Homebrew (\texttt{-d}: the folder itself, not what is inside), its contents, and how much it holds: \texttt{find} with only a folder name lists everything under it, every file and subfolder at every depth, and \texttt{wc -l} counts the lines.
 
 \begin{mine}
 ls -lad /usr/local/share/doc/ghostscript
@@ -700,7 +690,7 @@ find /usr/local/share/doc/ghostscript | wc -l
       45
 \end{cmdout}
 
-Owned by \textbf{root} (\texttt{drwxr-xr-x}: only the owner may write), from the same 2019 install, and holding only the dead 9.27 documentation: \here 45 entries, the folder itself included. Removing it needs \texttt{sudo}, so you typed it yourself.
+Owned by \textbf{root} (\texttt{drwxr-xr-x}: only the owner may write), from the same 2019 install, and holding only the dead 9.27 documentation: 45 entries, the folder itself included. Removing it needs \texttt{sudo}, so you typed it yourself.
 
 \subsection{Moving to a shared pane}
 
@@ -708,7 +698,7 @@ Owned by \textbf{root} (\texttt{drwxr-xr-x}: only the owner may write), from the
 Shall we work on an ssh instance, here, next to this pane, so I can see what's going on?
 \end{alf}
 
-\here I opened a pane next to yours, running SSH to AlfMAC3:
+I opened a pane next to yours, running SSH to AlfMAC3:
 
 \begin{local}
 tmux split-window -h -d -t Tmux:2.1 'ssh alfmac3' && sleep 3 && tmux list-panes -t Tmux:2 -F '#P #{pane_current_command} #{pane_width}x#{pane_height}'
@@ -719,7 +709,7 @@ tmux split-window -h -d -t Tmux:2.1 'ssh alfmac3' && sleep 3 && tmux list-panes 
 Last login: Sun Oct 11 01:14:01 2026 from [tailnet IP]
 \end{cmdout}
 
-The same state, now where you could see it. \here\texttt{type} is the shell's own way of saying what a name is: a program (and where), a built-in command, or nothing.
+The same state, now where you could see it. \texttt{type} is the shell's own way of saying what a name is: a program (and where), a built-in command, or nothing.
 
 \begin{pane}
 type gs
@@ -738,7 +728,7 @@ drwxr-xr-x 3 root wheel 96 May  3  2019 /usr/local/share/doc/ghostscript
 Next?
 \end{alf}
 
-You typed this as one line, each step running only if the one before succeeded (\texttt{\&\&}). Removing the old folder \here(\texttt{-r}: with everything inside it; \texttt{-f}: without asking about each file):
+You typed this as one line, each step running only if the one before succeeded (\texttt{\&\&}). Removing the old folder (\texttt{-r}: with everything inside it; \texttt{-f}: without asking about each file):
 
 \begin{yours}
 sudo rm -rf /usr/local/share/doc/ghostscript
@@ -770,7 +760,7 @@ Removing the root-owned 9.27 docs let Homebrew finish: \textbf{70 symlinks}, and
 
 Still without printing: create the PDF, read its size the way \texttt{print.py} does, convert it, inspect the result.
 
-\here One line in the pane. The PDF, drawn by the same PostScript as in section~\ref{sec:break1}, then its size (\texttt{identify -format '\%w \%h'} prints width and height; \texttt{[0]} means page 1):
+One line in the pane. The PDF, drawn by the same PostScript as in section~\ref{sec:break1}, then its size (\texttt{identify -format '\%w \%h'} prints width and height; \texttt{[0]} means page 1):
 
 \begin{pane}
 cd /tmp && gs -q -sDEVICE=pdfwrite -sPAPERSIZE=a4 -o t.pdf -c '/Helvetica findfont 40 scalefont setfont 100 400 moveto (Test) show showpage' && identify -format '%w %h\n' 't.pdf[0]'
@@ -793,7 +783,7 @@ ls -la t.prn
 \begin{cmdout}
 -rw-r--r-- 1 atcold wheel 3264 Oct 11 01:54 t.prn
 \end{cmdout}
-\here 3264 bytes this time. Then the first 48 bytes, keeping only the readable text in them (\texttt{strings}):
+3264 bytes this time. Then the first 48 bytes, keeping only the readable text in them (\texttt{strings}):
 
 \begin{pane}
 head -c 48 t.prn | strings
@@ -819,7 +809,7 @@ lp -d HP_Color_LaserJet_CP1215 -o raw /tmp/t.prn
 request id is HP_Color_LaserJet_CP1215-155 (1 file(s))
 \end{cmdout}
 
-\here\texttt{-d} names the queue (the name from section~\ref{sec:break1}); \texttt{-o raw} tells CUPS to run no filters and deliver the file as it is. \here That is how printing works without any HP driver: the driver that matters, Rick's foo2zjs, already ran inside the wrapper and turned the PDF into ZjStream, the printer's own language. CUPS only has to carry the bytes to USB. It accepted them as \textbf{job 155}. Eight seconds later (\texttt{sleep 8}), \here the jobs still waiting (\texttt{-o}) and the printer's state (\texttt{-p}):
+\texttt{-d} names the queue (the name from section~\ref{sec:break1}); \texttt{-o raw} tells CUPS to run no filters and deliver the file as it is. That is how printing works without any HP driver: the driver that matters, Rick's foo2zjs, already ran inside the wrapper and turned the PDF into ZjStream, the printer's own language. CUPS only has to carry the bytes to USB. It accepted them as \textbf{job 155}. Eight seconds later (\texttt{sleep 8}), the jobs still waiting (\texttt{-o}) and the printer's state (\texttt{-p}):
 
 \begin{pane}
 lpstat -o HP_Color_LaserJet_CP1215
@@ -874,7 +864,7 @@ One thing, now, for mom. She cannot really print from the terminal with my utili
 
 \subsection{The driver is already there}\label{sec:ppd}
 
-The queue's PPD says ``Foomatic/foo2hp'', so a real CUPS driver was installed at some point. One SSH call. First, the PPD's key lines \here(\texttt{grep -E} takes a pattern with alternatives, \texttt{a|b}; \texttt{\^{}\textbackslash*} means lines starting with \texttt{*}; \texttt{cut -c1-200} keeps the first 200 characters of each):
+The queue's PPD says ``Foomatic/foo2hp'', so a real CUPS driver was installed at some point. One SSH call. First, the PPD's key lines (\texttt{grep -E} takes a pattern with alternatives, \texttt{a|b}; \texttt{\^{}\textbackslash*} means lines starting with \texttt{*}; \texttt{cut -c1-200} keeps the first 200 characters of each):
 
 \begin{mine}
 grep -E "^\*(cupsFilter|FoomaticRIPCommandLine|DefaultPageSize|NickName)" /etc/cups/ppd/HP_Color_LaserJet_CP1215.ppd | cut -c1-200
@@ -901,7 +891,7 @@ ls: /usr/local/libexec/cups/filter/foomatic-rip: No such file or directory
 lrwxr-xr-x  1 root  wheel  27  7 Jan  2019 /usr/libexec/cups/filter/foomatic-rip -> /usr/local/bin/foomatic-rip
 \end{cmdout}
 
-In CUPS's filter folder, as a 2019 link to \texttt{/usr/local/bin/foomatic-rip}. Then \here\texttt{cupsfilter}, which runs a queue's filter chain into a file without printing, on the test PDF: \texttt{-p} names the PPD, \texttt{-m printer/foo} asks for the final, printer-ready format; the output goes to \texttt{cf.out} (\texttt{>}) and the messages to \texttt{cf.err} (\texttt{2>}).
+In CUPS's filter folder, as a 2019 link to \texttt{/usr/local/bin/foomatic-rip}. Then \texttt{cupsfilter}, which runs a queue's filter chain into a file without printing, on the test PDF: \texttt{-p} names the PPD, \texttt{-m printer/foo} asks for the final, printer-ready format; the output goes to \texttt{cf.out} (\texttt{>}) and the messages to \texttt{cf.err} (\texttt{2>}).
 
 \begin{mine}
 cupsfilter -p /etc/cups/ppd/HP_Color_LaserJet_CP1215.ppd -m printer/foo /tmp/t.pdf > /tmp/cf.out 2>/tmp/cf.err; echo exit=$?
@@ -949,7 +939,7 @@ DEBUG: envp[11]="PRINTER=cupsfilter"
 DEBUG: %%Creator: (cgpdftops CUPS filter)
 \end{cmdout}
 
-No mention of foomatic-rip in \texttt{cupsfilter}'s messages, confirming it never ran. \here Which wrapper the shell would find (\texttt{-a}: every match, not just the first):
+No mention of foomatic-rip in \texttt{cupsfilter}'s messages, confirming it never ran. Which wrapper the shell would find (\texttt{-a}: every match, not just the first):
 
 \begin{mine}
 which -a foo2hp2600-wrapper
@@ -958,7 +948,7 @@ which -a foo2hp2600-wrapper
 /usr/local/bin/foo2hp2600-wrapper
 \end{cmdout}
 
-The wrapper the PPD names is in \texttt{/usr/local/bin}, from Jan 2025; foomatic-rip is from 2011. In a second SSH call, what kind of program foomatic-rip is \here(\texttt{file} names a file's type from its contents):
+The wrapper the PPD names is in \texttt{/usr/local/bin}, from Jan 2025; foomatic-rip is from 2011. In a second SSH call, what kind of program foomatic-rip is (\texttt{file} names a file's type from its contents):
 
 \begin{mine}
 file /usr/local/bin/foomatic-rip
@@ -972,7 +962,7 @@ file /usr/local/bin/foomatic-rip
 /usr/local/bin/foomatic-rip (for architecture ppc7400):	Mach-O executable ppc_7400
 \end{cmdout}
 
-A Mac program built for three generations of processors, back to PowerPC; it still runs on this Intel Mac. Then foomatic-rip run by hand, the way CUPS would run it, on \texttt{cupsfilter}'s PostScript. \here CUPS starts every filter with the same six arguments: job number, user, job title, copies, options and the input file; here \texttt{1 atcold t 1 "" /tmp/cf.out}. \texttt{PPD=} and \texttt{PATH=} before the command set what it sees: which PPD to read, and where to look for programs.
+A Mac program built for three generations of processors, back to PowerPC; it still runs on this Intel Mac. Then foomatic-rip run by hand, the way CUPS would run it, on \texttt{cupsfilter}'s PostScript. CUPS starts every filter with the same six arguments: job number, user, job title, copies, options and the input file; here \texttt{1 atcold t 1 "" /tmp/cf.out}. \texttt{PPD=} and \texttt{PATH=} before the command set what it sees: which PPD to read, and where to look for programs.
 
 \begin{mine}
 cd /tmp; PPD=/etc/cups/ppd/HP_Color_LaserJet_CP1215.ppd PATH=/usr/libexec/cups/filter:/usr/bin:/usr/sbin:/bin /usr/libexec/cups/filter/foomatic-rip 1 atcold t 1 "" /tmp/cf.out > /tmp/fr.out 2>/tmp/fr.err; echo exit=$?
@@ -1003,7 +993,7 @@ kid3 exited with status 0
 Closing foomatic-rip.
 \end{cmdout}
 
-Fed \emph{PostScript} by hand, foomatic-rip produced \textbf{3088 bytes of \texttt{JZJZ}}. \here Remember this: it is the clue.
+Fed \emph{PostScript} by hand, foomatic-rip produced \textbf{3088 bytes of \texttt{JZJZ}}. Remember this: it is the clue.
 
 \subsection{Measure before fixing}
 
@@ -1011,10 +1001,10 @@ Fed \emph{PostScript} by hand, foomatic-rip produced \textbf{3088 bytes of \text
 This *used* to work, a long time ago, then it stopped working, and the terminal was the only way I could send stuff to the printer. How would you go around getting the native interface to be able to print again?
 \end{alf}
 
-\here Whatever broke must sit in the part only ⌘P uses: foomatic-rip's PDF entrance, Pharos's \texttt{paagent} in front of the queue, or the Letter default. Rather than guess, I proposed gathering evidence first: turn on CUPS debug logging, send one normal job, read its log.
+Whatever broke must sit in the part only ⌘P uses: foomatic-rip's PDF entrance, Pharos's \texttt{paagent} in front of the queue, or the Letter default. Rather than guess, I proposed gathering evidence first: turn on CUPS debug logging, send one normal job, read its log.
 
 \begin{alf}
-\here Even AlfMAC wasn't able to print from the dialogue, and there was no Pharos.
+Even AlfMAC wasn't able to print from the dialogue, and there was no Pharos.
 \end{alf}
 
 That ruled Pharos out.
@@ -1025,7 +1015,7 @@ Just type in the panel, I'll add what you don't have.
 
 \subsection{Turning on debug logging}\label{sec:debug}
 
-\here\texttt{cupsctl} changes CUPS's own settings; \texttt{--debug-logging} makes its log record every step of every job.
+\texttt{cupsctl} changes CUPS's own settings; \texttt{--debug-logging} makes its log record every step of every job.
 
 \begin{pane}
 sudo cupsctl --debug-logging
@@ -1037,7 +1027,7 @@ Password:
 There
 \end{alf}
 
-Then a check that the setting took \here(\texttt{cupsctl} alone prints the settings; \texttt{grep -i} ignores case):
+Then a check that the setting took (\texttt{cupsctl} alone prints the settings; \texttt{grep -i} ignores case):
 
 \begin{pane}
 cupsctl | grep -i log
@@ -1086,7 +1076,7 @@ printer HP_Color_LaserJet_CP1215 is idle.  enabled since Sun 11 Oct 02:11:18 202
 
 Only 155 among the completed jobs. The printer says ``idle'' and ``sending data'' at once.
 
-\here Now job 156's own log. The first \texttt{grep} keeps that job's lines, the second only those about filters, programs and bytes (\texttt{-i} ignoring case, \texttt{-E} allowing \texttt{a|b}); \texttt{cut} trims each line to 220 characters, \texttt{tail -30} keeps the last 30.
+Now job 156's own log. The first \texttt{grep} keeps that job's lines, the second only those about filters, programs and bytes (\texttt{-i} ignoring case, \texttt{-E} allowing \texttt{a|b}); \texttt{cut} trims each line to 220 characters, \texttt{tail -30} keeps the last 30.
 
 \begin{mine}
 grep "\[Job 156\]" /var/log/cups/error_log | grep -iE "foomatic|foo2|gs |exited|PID|sandbox|denied|error|bytes|backend|Started|completed|paagent" | cut -c1-220 | tail -30
@@ -1100,7 +1090,7 @@ Its 16 lines, in three parts. Red marks the line to read.
 D [11/Oct/2026:02:11:04 +0200] [Job 156] envp[25]="DEVICE_URI=paagent://Hewlett-Packard/HP%20Color%20LaserJet%20CP1215?serial=[serial]"
 \end{cmdout}
 
-\textbf{The chain it started.} \here The three \texttt{Started} lines are the chain drawn in section~\ref{sec:chain}: \texttt{cgpdftopdf}, \texttt{foomatic-rip}, then the \texttt{paagent} backend. Then foomatic-rip introduces itself.
+\textbf{The chain it started.} The three \texttt{Started} lines are the chain drawn in section~\ref{sec:chain}: \texttt{cgpdftopdf}, \texttt{foomatic-rip}, then the \texttt{paagent} backend. Then foomatic-rip introduces itself.
 
 \begin{cmdout}
 |!I [11/Oct/2026:02:11:04 +0200] [Job 156] Started filter /usr/libexec/cups/filter/cgpdftopdf (PID 14774)!|
@@ -1124,7 +1114,7 @@ D [11/Oct/2026:02:11:18 +0200] [Job 156] PID 14776 (/usr/libexec/cups/backend/pa
 D [11/Oct/2026:02:11:18 +0200] [Job 156] After mapping finishings PageSize=Letter
 \end{cmdout}
 
-Reproduced: ⌘P's failure, from the terminal. \emph{Why} foomatic-rip stopped is in the lines this filter left out. \here So a second look: only the seconds 02:11:05 to 02:11:11, minus the noisiest debugging lines (\texttt{-v} keeps the lines that do \emph{not} match), with the first 39 characters, the date, cut off. Each line now starts with \texttt{]}.
+Reproduced: ⌘P's failure, from the terminal. \emph{Why} foomatic-rip stopped is in the lines this filter left out. So a second look: only the seconds 02:11:05 to 02:11:11, minus the noisiest debugging lines (\texttt{-v} keeps the lines that do \emph{not} match), with the first 39 characters, the date, cut off. Each line now starts with \texttt{]}.
 
 \begin{mine}
 grep "\[Job 156\]" /var/log/cups/error_log | grep -E "02:11:(0[5-9]|1[01])" | grep -viE "^D.*(envp|argv|PPD|Option|\[0-9]+ bytes|Page)" | cut -c40-260 | tail -40
@@ -1182,7 +1172,7 @@ Its 29 lines, in four parts.
 
 So the failure is foomatic-rip's own PDF-to-PostScript step. What command is \texttt{pdf-to-ps}?
 
-One SSH call. The text inside the foomatic-rip program \here(\texttt{strings} pulls the readable text out of a program file) that mentions PostScript conversion; \texttt{head} keeps the first 10 lines:
+One SSH call. The text inside the foomatic-rip program (\texttt{strings} pulls the readable text out of a program file) that mentions PostScript conversion; \texttt{head} keeps the first 10 lines:
 
 \begin{mine}
 strings /usr/local/bin/foomatic-rip | grep -iE "pswrite|ps2write|pdftops|-sDEVICE" | head
@@ -1206,7 +1196,7 @@ Two parts. \textbf{The command behind \texttt{pdf-to-ps}}, the first line: try \
 |~%s -dQUIET -dPARANOIDSAFER -dNOPAUSE -dBATCH -dNOMEDIAATTRS -sDEVICE=pswrite -sstdout=%%stderr -sOutputFile=/dev/null -c '(hello~|
 \end{cmdout}
 
-\here A Ghostscript \emph{device} is an output module: what Ghostscript turns its input into. \texttt{pdfwrite} writes PDF (our test page), \texttt{ps2write} and the older \texttt{pswrite} write PostScript. Foomatic's settings:
+A Ghostscript \emph{device} is an output module: what Ghostscript turns its input into. \texttt{pdfwrite} writes PDF (our test page), \texttt{ps2write} and the older \texttt{pswrite} write PostScript. Foomatic's settings:
 
 \begin{mine}
 ls /usr/local/etc/foomatic/ /etc/foomatic/ 2>&1
@@ -1218,7 +1208,7 @@ direct
 filter.conf
 filter.conf.sample
 \end{cmdout}
-\here The settings file, without its comments (\texttt{grep -v "\^{}\#"} drops lines starting with \texttt{\#}) and empty lines (\texttt{grep .} keeps lines with at least one character):
+The settings file, without its comments (\texttt{grep -v "\^{}\#"} drops lines starting with \texttt{\#}) and empty lines (\texttt{grep .} keeps lines with at least one character):
 
 \begin{mine}
 cat /usr/local/etc/foomatic/filter.conf 2>/dev/null | grep -v "^#" | grep .
@@ -1249,7 +1239,7 @@ type -a pdftops 2>&1
 pdftops is /usr/local/bin/pdftops
 \end{cmdout}
 
-Yes. Ghostscript's list of PostScript-like devices: \here\texttt{tr " " "\textbackslash n"} turns spaces into line breaks, one name per line, and \texttt{grep -E "\^{}(ps|eps)"} keeps the names starting with \texttt{ps} or \texttt{eps}.
+Yes. Ghostscript's list of PostScript-like devices: \texttt{tr " " "\textbackslash n"} turns spaces into line breaks, one name per line, and \texttt{grep -E "\^{}(ps|eps)"} keeps the names starting with \texttt{ps} or \texttt{eps}.
 
 \begin{mine}
 gs -h | tr " " "\n" | grep -E "^(ps|eps)"
@@ -1271,7 +1261,7 @@ psdrgb16
 psdrgbtags
 \end{cmdout}
 
-\texttt{ps2write} is there; \texttt{pswrite} is not. \here Asking for it directly: Ghostscript with that device, output thrown away (\texttt{-o /dev/null}), running just the PostScript word \texttt{quit}. (\texttt{echo} only prints an empty line first.)
+\texttt{ps2write} is there; \texttt{pswrite} is not. Asking for it directly: Ghostscript with that device, output thrown away (\texttt{-o /dev/null}), running just the PostScript word \texttt{quit}. (\texttt{echo} only prints an empty line first.)
 
 \begin{mine}
 echo; gs -q -sDEVICE=pswrite -o /dev/null -c quit 2>&1 | head -2
@@ -1288,7 +1278,7 @@ foomatic-rip's hard-coded PDF$\to$PostScript command is
   \item \texttt{pdftops} exists but fails under CUPS (its errors go to \texttt{/dev/null}, so we cannot see why).
   \item The fallback, Ghostscript's \textbf{\texttt{pswrite}} device, was \textbf{removed in Ghostscript 9.10 (2013)} and replaced by \texttt{ps2write}. Ghostscript 10.04 answers \textbf{``Unknown device: pswrite''}.
 \end{itemize}
-So with any Ghostscript newer than 2013, \textbf{every PDF sent via ⌘P becomes nothing}. \here That most likely explains why ⌘P ``used to work, then stopped'' on AlfMAC. Your script never hit it, because it never sends PDF through foomatic-rip.
+So with any Ghostscript newer than 2013, \textbf{every PDF sent via ⌘P becomes nothing}. That most likely explains why ⌘P ``used to work, then stopped'' on AlfMAC. Your script never hit it, because it never sends PDF through foomatic-rip.
 \end{culprit}
 
 The same clue was in the manual run earlier: fed \emph{PostScript}, foomatic-rip worked; the breakage is only on its \emph{PDF} entrance.
@@ -1299,7 +1289,7 @@ The same clue was in the manual run earlier: fed \emph{PostScript}, foomatic-rip
 Why am I not seeing all of these?
 \end{alf}
 
-\here The investigation above ran over my own SSH connection (the lavender boxes). I replayed the key evidence in the shared pane, three pieces you have already seen. First, job 156's failure: the red lines from section~\ref{sec:decisive}, together.
+The investigation above ran over my own SSH connection (the lavender boxes). I replayed the key evidence in the shared pane, three pieces you have already seen. First, job 156's failure: the red lines from section~\ref{sec:decisive}, together.
 
 \begin{pane}
 grep '\[Job 156\]' /var/log/cups/error_log | grep -E 'not understand PDF|Unknown filetype|dying|stopped with|Sent 0'
@@ -1350,13 +1340,13 @@ ls -la /etc/cups/ppd/HP_Color_LaserJet_CP1215.ppd
 \begin{cmdout}
 -rw-r--r-- 1 root _lp 43363 Oct 11 01:24 /etc/cups/ppd/HP_Color_LaserJet_CP1215.ppd
 \end{cmdout}
-\here Then every file in the usual driver folders that mentions the printer (\texttt{-r}: through every subfolder; \texttt{-l}: print only the file names):
+Then every file in the usual driver folders that mentions the printer (\texttt{-r}: through every subfolder; \texttt{-l}: print only the file names):
 
 \begin{pane}
 grep -rl 'CP1215' /Library/Printers/PPDs /usr/share/cups/model /usr/local/share/ppd /usr/local/share/foomatic /usr/local/share/cups 2>/dev/null
 \end{pane}
 
-No output: no uncompressed file in those folders mentions the CP1215. Searching by file name instead \here(\texttt{-iname}: names matching the pattern, ignoring case; \texttt{*} stands for anything):
+No output: no uncompressed file in those folders mentions the CP1215. Searching by file name instead (\texttt{-iname}: names matching the pattern, ignoring case; \texttt{*} stands for anything):
 
 \begin{pane}
 find /Library/Printers /usr/share/cups /usr/local/share -iname '*CP1215*' 2>/dev/null
@@ -1394,7 +1384,7 @@ ls -la /etc/cups/ppd/
 -rw-r--r--  1 root _lp 29890 Aug  8  2022 mf_5fifth.ppd
 \end{cmdout}
 
-The listing as recorded shows only other queues' PPDs. Then the edited lines in ours, numbered (\texttt{-n}); \here the last three patterns check that no stray keystrokes of mine, sent while you were still in vim, ended up in the file:
+The listing as recorded shows only other queues' PPDs. Then the edited lines in ours, numbered (\texttt{-n}); the last three patterns check that no stray keystrokes of mine, sent while you were still in vim, ended up in the file:
 
 \begin{pane}
 grep -nE 'cupsFilter|Default(PageSize|PageRegion|ImageableArea|PaperDimension)|grep|clear|Aear' /etc/cups/ppd/HP_Color_LaserJet_CP1215.ppd
@@ -1427,7 +1417,7 @@ Line 37 commented out with \texttt{*\%}, the PPD comment marker; line 36, the Po
 
 \subsection{Restarting CUPS}
 
-\here CUPS reads the PPD when it starts, so it has to restart. \texttt{launchctl} controls macOS's background services; \texttt{kickstart -k} restarts one, stopping it first.
+CUPS reads the PPD when it starts, so it has to restart. \texttt{launchctl} controls macOS's background services; \texttt{kickstart -k} restarts one, stopping it first.
 
 \begin{pane}
 sudo launchctl kickstart -k system/org.cups.cupsd && sleep 2 && lpstat -p HP_Color_LaserJet_CP1215
@@ -1436,7 +1426,7 @@ sudo launchctl kickstart -k system/org.cups.cupsd && sleep 2 && lpstat -p HP_Col
 Could not kickstart service "org.cups.cupsd": 1: Operation not permitted
 \end{cmdout}
 
-System Integrity Protection (SIP, a macOS safeguard that stops even administrators from changing parts of the system) forbids restarting a built-in service that way. Stopping it works \here(\texttt{killall} stops a program by name); macOS relaunches it on the next request:
+System Integrity Protection (SIP, a macOS safeguard that stops even administrators from changing parts of the system) forbids restarting a built-in service that way. Stopping it works (\texttt{killall} stops a program by name); macOS relaunches it on the next request:
 
 \begin{pane}
 sudo killall cupsd; sleep 2; lpstat -p HP_Color_LaserJet_CP1215
@@ -1454,7 +1444,7 @@ lp -d HP_Color_LaserJet_CP1215 /tmp/t.pdf
 request id is HP_Color_LaserJet_CP1215-157 (1 file(s))
 \end{cmdout}
 
-\here Job 157. The queue first:
+Job 157. The queue first:
 
 \begin{pane}
 lpstat -o HP_Color_LaserJet_CP1215
@@ -1463,7 +1453,7 @@ lpstat -o HP_Color_LaserJet_CP1215
 HP_Color_LaserJet_CP1215-156 atcold            3072   Sun 11 Oct 02:11:04 2026
 \end{cmdout}
 
-Only the stuck job 156 is waiting; 157 has already left the queue. \here Its log, the lines about filters and bytes, with the first 34 characters cut off (\texttt{cut -c35-}):
+Only the stuck job 156 is waiting; 157 has already left the queue. Its log, the lines about filters and bytes, with the first 34 characters cut off (\texttt{cut -c35-}):
 
 \begin{pane}
 grep '\[Job 157\]' /var/log/cups/error_log | grep -E 'Started filter|not understand|Unknown filetype|stopped with|exited with|Sent [0-9]+ bytes|filter errors' | cut -c35-
@@ -1522,7 +1512,7 @@ The chain is now \texttt{cgpdftops} $\to$ \texttt{pstops} $\to$ \texttt{foomatic
 \begin{flowtext}
 \par\noindent\bugemo\ \textbf{Bug 1: Ghostscript.} \textbf{Broke:} both routes on AlfMAC3. \textbf{Symptom:} an empty \texttt{.prn}, so 0 bytes printed. \textbf{Cause:} \texttt{/usr/local/bin/gs} was a 2019 Ghostscript 9.27 without its support files. \textbf{Evidence:} ``Can't find initialization file gs\_init.ps''. \textbf{Fix:} remove the root-owned 9.27 docs, then \texttt{brew link --overwrite ghostscript}. \textbf{Proof:} job 155, printed.
 
-\par\noindent\bugemo\ \textbf{Bug 2: foomatic's PDF step.} \textbf{Broke:} \here ⌘P on AlfMAC3; most likely also why it stopped on AlfMAC. \textbf{Symptom:} the job ``completes'' but 0 bytes are sent. \textbf{Cause:} foomatic-rip 4.0.6 converts PDF with \texttt{pswrite}, which Ghostscript removed in 2013. \textbf{Evidence:} ``Unknown filetype'' and ``Unknown device: pswrite''. \textbf{Fix:} comment out the PDF \texttt{*cupsFilter} line in the PPD, and set the A4 defaults. \textbf{Proof:} job 157, 3088 bytes.
+\par\noindent\bugemo\ \textbf{Bug 2: foomatic's PDF step.} \textbf{Broke:} ⌘P on AlfMAC3; most likely also why it stopped on AlfMAC. \textbf{Symptom:} the job ``completes'' but 0 bytes are sent. \textbf{Cause:} foomatic-rip 4.0.6 converts PDF with \texttt{pswrite}, which Ghostscript removed in 2013. \textbf{Evidence:} ``Unknown filetype'' and ``Unknown device: pswrite''. \textbf{Fix:} comment out the PDF \texttt{*cupsFilter} line in the PPD, and set the A4 defaults. \textbf{Proof:} job 157, 3088 bytes.
 \end{flowtext}
 
 \subsection*{Gaps}
@@ -1534,7 +1524,7 @@ The chain is now \texttt{cgpdftops} $\to$ \texttt{pstops} $\to$ \texttt{foomatic
 
 \subsection*{Still open on AlfMAC3}\label{sec:open}
 \begin{itemize}[nosep]
-  \item \here Job 132's leftover record. Not tried: CUPS keeps each job's record in \nolinkurl{/private/var/spool/cups} as a file named \texttt{c} plus the job number, here \texttt{c00132}. Deleting it with \texttt{sudo rm}, then stopping CUPS with \texttt{sudo killall cupsd}, should end the complaint.
+  \item Job 132's leftover record. Not tried: CUPS keeps each job's record in \nolinkurl{/private/var/spool/cups} as a file named \texttt{c} plus the job number, here \texttt{c00132}. Deleting it with \texttt{sudo rm}, then stopping CUPS with \texttt{sudo killall cupsd}, should end the complaint.
   \item Apply the same PPD edit to \nolinkurl{/Library/Printers/PPDs/Contents/Resources/HP-Color_LaserJet_CP1215.ppd.gz}, or re-plugging the printer may recreate the broken queue.
   \item Cancel job 156; turn debug logging off: \texttt{sudo cupsctl --no-debug-logging}.
   \item Tailscale key expiry; SSH password login; the \texttt{pmset} question.
