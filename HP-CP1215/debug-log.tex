@@ -15,7 +15,9 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{enumitem}
-\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage[style=alphabetic,backref=true]{biblatex}
+\addbibresource{references.bib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black]{hyperref}
 \usepackage{newunicodechar}
 \newfontfamily\symfont{Apple Symbols}
 \newunicodechar{⌘}{{\symfont ⌘}}
@@ -47,6 +49,9 @@
 
 \newcommand{\emo}[1]{\texttwemoji{#1}}
 \newcommand{\bugemo}{\texttwemoji{lady beetle}}
+
+% Further reading in TLCL; the References list the pages that cite it (backref).
+\newcommand{\tlcl}[2]{\cite[ch.~#1, p.~#2]{shotts}}
 
 % Flowing glossary-style entries (no tables): a bold run-in name, then the text.
 \newenvironment{flowtext}{\begingroup\setlength{\parskip}{0.35em}}{\endgroup\par}
@@ -142,6 +147,7 @@
   \item Commands often went out several at a time, on one line or in one SSH call (lavender boxes show only what ran on AlfMAC3, without the \texttt{ssh alfmac3 '\dots'} around it). Here they are split one per box, each followed by its own output and then by what it means. The output is untouched, only cut where one command's output ends and the next begins.
   \item \bugemo\ \textcolor{red!85!black}{\textbf{Red}}: a culprit. \emo{wrench}\ \textcolor{green!45!black}{\textbf{Green}}: a fix. \emo{light bulb}\ \textcolor{blue!60!black}{\textbf{Blue}}: an insight.
   \item Passwords never appear; where one was typed, the output shows only \texttt{Password:}.
+  \item \cite{shotts} marks further reading in William Shotts's \textit{The Linux Command Line}, free online, with chapter and page. The References at the end list every page that cites it.
 \end{itemize}
 \end{insight}
 
@@ -166,7 +172,7 @@ Every term below is used later without further explanation, so this list comes f
 \term{Filter} A small converter program in CUPS's chain. It takes the job in one format and outputs it in another, for example PDF in, PostScript out. CUPS runs several filters one after another.
 \term{Backend} The last link of the chain: the program that delivers the finished bytes to the printer, here over the USB cable.
 \term{PPD} \emph{PostScript Printer Description}: a plain-text file that describes one printer to CUPS: which paper sizes it takes, whether it prints colour, and which filter to use for which kind of input. Every queue has its own copy.
-\term{Wrapper} A shell script whose job is to run other programs in the right order with the right settings.
+\term{Wrapper} A shell script whose job is to run other programs in the right order with the right settings \tlcl{24}{382}.
 \end{flowtext}
 
 \subsection{Commands and symbols you will see}
@@ -174,16 +180,16 @@ Every term below is used later without further explanation, so this list comes f
 \begin{flowtext}
 \cmd{\texttt{gs}} is Ghostscript.
 \cmd{\texttt{lp}} sends a file to a print queue. \texttt{-d} names the queue; \texttt{-o raw} means ``send as is, run no filters''.
-\cmd{\texttt{lpstat}} shows the state of printers and jobs.
+\cmd{\texttt{lpstat}} shows the state of printers and jobs \tlcl{22}{355}.
 \cmd{\texttt{cupsctl}, \texttt{cupsfilter}} \texttt{cupsctl} changes CUPS settings (here: debug logging); \texttt{cupsfilter} runs a queue's filter chain into a file without printing.
 \cmd{\texttt{identify}} is ImageMagick's command that reports an image's size. ImageMagick is a toolkit for handling images.
 \cmd{\texttt{strings}, \texttt{xxd}} show the readable text inside a file; show its raw bytes in hexadecimal.
-\cmd{\texttt{killall}} stops a running program by name.
+\cmd{\texttt{killall}} stops a running program by name \tlcl{10}{113}.
 \par\medskip\noindent\textit{Symbols that glue commands together:}
 \cmd{\texttt{>}, \texttt{>>}} write a command's output into a file, replacing it or adding to it.
-\cmd{\texttt{2>\&1}, \texttt{2>/dev/null}} Error messages travel on their own channel (``stderr''). \texttt{2>\&1} merges them into the normal output; \texttt{/dev/null} is the computer's black hole: anything sent there is thrown away.
+\cmd{\texttt{2>\&1}, \texttt{2>/dev/null}} Error messages travel on their own channel (``stderr''). \texttt{2>\&1} merges them into the normal output; \texttt{/dev/null} is the computer's black hole: anything sent there is thrown away \tlcl{6}{56}.
 \cmd{\texttt{\&\&}, \texttt{;}} run the next command only if the previous one succeeded (\texttt{\&\&}), or in any case (\texttt{;}).
-\cmd{\texttt{echo "exit=\$?"}} prints the previous command's \emph{exit code}: a number every program leaves behind when it ends, \texttt{0} meaning success and anything else failure.\end{flowtext}
+\cmd{\texttt{echo "exit=\$?"}} prints the previous command's \emph{exit code}: a number every program leaves behind when it ends, \texttt{0} meaning success and anything else failure \tlcl{27}{412}.\end{flowtext}
 
 \subsection{The printer and its language}
 
@@ -203,7 +209,7 @@ Most office printers are \emph{smart}: they contain a small computer and softwar
 \piece{cGS!60}{Ghostscript, \texttt{gs}}{Artifex} Renders PostScript or PDF into bitmaps. The wrapper calls it.
 \piece{cPharos!80}{paagent}{Pharos, installed for NYU printers} Print-management software that NYU installs to track and bill campus printing. Its \texttt{paagent} is a backend that sits in front of every queue on AlfMAC3; for this printer it only passes the bytes through to USB.
 \piece{cYou!80}{print.py}{you} Your front end, built with Tkinter. It skips CUPS's filters (section~\ref{sec:script}).
-\piece{grey!60}{Homebrew}{community} The package manager. It keeps each program in its own folder under \texttt{/usr/local/Cellar} and \emph{links} it into \texttt{/usr/local/bin}, the folder where the shell looks for them, so that a command like \texttt{gs} works.
+\piece{grey!60}{Homebrew}{community} The package manager. It keeps each program in its own folder under \texttt{/usr/local/Cellar} and \emph{links} it into \texttt{/usr/local/bin}, the folder where the shell looks for them, so that a command like \texttt{gs} works \tlcl{14}{182}.
 \end{flowtext}
 
 \begin{insight}{Two things called foo2hp}
@@ -324,7 +330,7 @@ I don't think I was ever able to print from AlfMAC3, from AlfMAC yes. You are su
 
 \subsection{First look: test everything that does not print}
 
-I proposed testing every link of the chain up to the printer without printing (it was past 1:50 in Italy). The links are the ones in section~\ref{sec:chain}, and each can be checked on its own: make a PDF, run the wrapper on it and look at what comes out; ask CUPS about the queue, its settings and the device it sends to; and read CUPS's log. These commands all went out in one SSH call.
+I proposed testing every link of the chain up to the printer without printing (it was past 1:50 in Italy). The links are the ones in section~\ref{sec:chain}, and each can be checked on its own: make a PDF, run the wrapper on it and look at what comes out; ask CUPS about the queue, its settings and the device it sends to; and read CUPS's log. These commands all went out in one SSH call \tlcl{16}{216}.
 
 First, a one-page test PDF made with Ghostscript:
 
@@ -347,7 +353,7 @@ Ghostscript reads \emph{PostScript}, a programming language for drawing pages, a
 The rest is Ghostscript's own: \texttt{-sDEVICE=pdfwrite} chooses PDF as the output, \texttt{-sPAPERSIZE=a4} the page size, \texttt{-o /tmp/t.pdf} the output file, \texttt{-q} quiet. \texttt{2>\&1 | tail -3} keeps the last three lines of anything it prints, errors included.
 \end{insight}
 
-Here Ghostscript cannot even start: \texttt{gs\_init.ps} is the file it loads before doing anything. So there is no test PDF. Next, the wrapper on that PDF (its options are explained in section~\ref{sec:script}), then the size and the first bytes of what it wrote. \texttt{ls -la} lists in long form (\texttt{-l}: permissions, owner, size in bytes, date), including hidden files (\texttt{-a}); \texttt{head -c 64} keeps the first 64 \emph{bytes} (\texttt{-c}), not lines; \texttt{xxd} shows them in hexadecimal.
+Here Ghostscript cannot even start: \texttt{gs\_init.ps} is the file it loads before doing anything. So there is no test PDF. Next, the wrapper on that PDF (its options are explained in section~\ref{sec:script}), then the size and the first bytes of what it wrote. \texttt{ls -la} lists in long form (\texttt{-l}: permissions, owner, size in bytes, date), including hidden files (\texttt{-a}); \texttt{head -c 64} keeps the first 64 \emph{bytes} (\texttt{-c}), not lines; \texttt{xxd} shows them in hexadecimal \tlcl{3}{13}.
 
 \begin{mine}
 ~/Work/Scratch/Printer/foo2zjs/foo2hp2600-wrapper -p9 -z1 -c -d1 /tmp/t.pdf > /tmp/t.prn; echo "exit=$?"
@@ -412,7 +418,7 @@ ls -la /etc/cups/ppd/ | grep -i hp
 -rw-r--r--   1 root  _lp  43363 11 Oct 01:24 HP_Color_LaserJet_CP1215.ppd
 \end{cmdout}
 
-It was written at 01:24, when the queue was created, by CUPS itself: the file belongs to \texttt{root} and to \texttt{\_lp}, the group macOS's printing system runs as. Most likely macOS created the queue on its own when the printer was plugged in, copying the PPD from its driver library (the original is found in section~\ref{sec:driverfile}). Which devices CUPS can see: \texttt{lpinfo -v} lists them. Then \texttt{grep} drops two kinds of line: the network printer types, always listed and irrelevant for USB, and Pharos's \texttt{direct paagent} entries, which only mirror the USB ones. Each \texttt{-e} adds a pattern, \texttt{-v} keeps the lines that do \emph{not} match, and \texttt{-i} ignores case.
+It was written at 01:24, when the queue was created, by CUPS itself: the file belongs to \texttt{root} and to \texttt{\_lp}, the group macOS's printing system runs as. Most likely macOS created the queue on its own when the printer was plugged in, copying the PPD from its driver library (the original is found in section~\ref{sec:driverfile}). Which devices CUPS can see: \texttt{lpinfo -v} lists them. Then \texttt{grep} drops two kinds of line: the network printer types, always listed and irrelevant for USB, and Pharos's \texttt{direct paagent} entries, which only mirror the USB ones. Each \texttt{-e} adds a pattern, \texttt{-v} keeps the lines that do \emph{not} match, and \texttt{-i} ignores case \tlcl{19}{267}.
 
 \begin{mine}
 lpinfo -v 2>&1 | grep -iv -e network -e "^direct pa"
@@ -500,7 +506,7 @@ ls -la /usr/local/bin/gs
 lrwxr-xr-x  1 root  admin  23  3 Aug  2019 /usr/local/bin/gs -> /usr/local/bin/gs-noX11
 \end{cmdout}
 
-A link from 2019, owned by root, pointing at a program called \texttt{gs-noX11}. Does Homebrew have its own Ghostscript? (\texttt{brew list --versions} names an installed package and its version; \texttt{/usr/local/Cellar} is where Homebrew keeps them.)
+A link from 2019, owned by root, pointing at a program called \texttt{gs-noX11} \tlcl{4}{26}. Does Homebrew have its own Ghostscript? (\texttt{brew list --versions} names an installed package and its version; \texttt{/usr/local/Cellar} is where Homebrew keeps them.)
 
 \begin{mine}
 brew list --versions ghostscript 2>&1
@@ -536,7 +542,7 @@ grep -n "gs \|GS=\|PATH=" ~/Work/Scratch/Printer/foo2zjs/foo2hp2600-wrapper | he
 784:GS="$GSBIN -q -dBATCH -dSAFER -dQUIET -dNOPAUSE"
 \end{cmdout}
 
-It calls Ghostscript through \texttt{\$GSBIN} and adds two folders to the end of \texttt{PATH}. Its own error later, \texttt{line 230: gs: command not found} (section~\ref{sec:halfway}), shows it runs plain \texttt{gs}, the first one the shell finds: here, the 2019 link.
+It calls Ghostscript through \texttt{\$GSBIN} and adds two folders to the end of \texttt{PATH} \tlcl{11}{134}. Its own error later, \texttt{line 230: gs: command not found} (section~\ref{sec:halfway}), shows it runs plain \texttt{gs}, the first one the shell finds: here, the 2019 link.
 
 \begin{insight}{Two Ghostscripts}
 \begin{itemize}[nosep]
@@ -584,7 +590,7 @@ ls -la /usr/local/bin/gs-noX11
 -rwxrwxr-x  1 root  wheel  17948672  3 May  2019 /usr/local/bin/gs-noX11
 \end{cmdout}
 
-A standalone Ghostscript of about 18 MB from May 2019, installed as root. And how the wrapper calls it, lines 775--790 (\texttt{sed -n "775,790p"} prints just those lines):
+A standalone Ghostscript of about 18 MB from May 2019, installed as root. And how the wrapper calls it, lines 775--790 (\texttt{sed -n "775,790p"} prints just those lines) \tlcl{20}{289}:
 
 \begin{mine}
 sed -n "775,790p" ~/Work/Scratch/Printer/foo2zjs/foo2hp2600-wrapper
@@ -683,7 +689,7 @@ which foo2hp foo2zjs-pstops
 /usr/local/bin/foo2zjs-pstops
 \end{cmdout}
 
-The folder that stopped Homebrew (\texttt{-d}: the folder itself, not what is inside), its contents, and how much it holds: \texttt{find} with only a folder name lists everything under it, every file and subfolder at every depth, and \texttt{wc -l} counts the lines.
+The folder that stopped Homebrew (\texttt{-d}: the folder itself, not what is inside), its contents, and how much it holds: \texttt{find} with only a folder name lists everything under it, every file and subfolder at every depth, and \texttt{wc -l} counts the lines \tlcl{17}{232}.
 
 \begin{mine}
 ls -lad /usr/local/share/doc/ghostscript
@@ -707,7 +713,7 @@ find /usr/local/share/doc/ghostscript | wc -l
       45
 \end{cmdout}
 
-Owned by \textbf{root} (\texttt{drwxr-xr-x}: only the owner may write), from the same 2019 install, and holding only the dead 9.27 documentation: 45 entries, the folder itself included. Removing it needs \texttt{sudo}, so you typed it yourself.
+Owned by \textbf{root} (\texttt{drwxr-xr-x}: only the owner may write), from the same 2019 install, and holding only the dead 9.27 documentation: 45 entries, the folder itself included. Removing it needs \texttt{sudo}, so you typed it yourself \tlcl{9}{93}.
 
 \subsection{Moving to a shared pane}
 
@@ -956,7 +962,7 @@ DEBUG: envp[11]="PRINTER=cupsfilter"
 DEBUG: %%Creator: (cgpdftops CUPS filter)
 \end{cmdout}
 
-No mention of foomatic-rip in \texttt{cupsfilter}'s messages, confirming it never ran. Which wrapper the shell would find (\texttt{-a}: every match, not just the first):
+No mention of foomatic-rip in \texttt{cupsfilter}'s messages, confirming it never ran. Which wrapper the shell would find (\texttt{-a}: every match, not just the first) \tlcl{5}{44}:
 
 \begin{mine}
 which -a foo2hp2600-wrapper
@@ -1600,5 +1606,7 @@ It broke \textbf{⌘P} on AlfMAC3, and most likely is why ⌘P stopped on AlfMAC
   \item Job 132's leftover record. Not tried: CUPS keeps each job's record in \nolinkurl{/private/var/spool/cups} as a file named \texttt{c} plus the job number, here \texttt{c00132}. Deleting it with \texttt{sudo rm}, then stopping CUPS with \texttt{sudo killall cupsd}, should end the complaint.
   \item Apply the same PPD edit to \nolinkurl{/Library/Printers/PPDs/Contents/Resources/HP-Color_LaserJet_CP1215.ppd.gz}, or re-plugging the printer may recreate the broken queue.
   \item Cancel job 156; turn debug logging off: \texttt{sudo cupsctl --no-debug-logging}.\end{itemize}
+
+\printbibliography
 
 \end{document}
