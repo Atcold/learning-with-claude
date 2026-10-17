@@ -136,7 +136,7 @@ uploaded
 \subsection*{Step 3: ask for it, as a browser would}
 
 \begin{pane}
-$ curl -si https://cims.nyu.edu/~atcold/probe.cgi | head -15
+$ curl --silent --include https://cims.nyu.edu/~atcold/probe.cgi | head -n 15
 \end{pane}
 \begin{cmdout}
 |!HTTP/2 200!|
@@ -149,7 +149,7 @@ $ curl -si https://cims.nyu.edu/~atcold/probe.cgi | head -15
 |!hello!|
 \end{cmdout}
 
-\name{curl} fetches an address from the terminal: \texttt{-s} keeps it silent about progress, \texttt{-i} also shows the response headers, the lines before the content. \texttt{head -15} keeps only the first 15 lines.
+\here[long flags] \name{curl} fetches an address from the terminal: \texttt{--silent} keeps it quiet about progress, \texttt{--include} also shows the response headers, the lines before the content. \texttt{head -n 15} keeps only the first 15 lines.
 
 \begin{result}{\name{cims} runs my programs}
 The answer is \texttt{hello}, and the content type is the \texttt{text/plain} the script printed. So \name{Apache} \emph{ran} the script and sent back its output. Had it only served files, the answer would have been the script's own text, the four \name{Python} lines, or an error page. \texttt{200} is HTTP for ‘OK’.
@@ -159,7 +159,7 @@ The answer is \texttt{hello}, and the content type is the \texttt{text/plain} th
 
 \begin{pane}
 $ ssh cims 'rm public_html/probe.cgi' &&         # delete it on cims
-  curl -s -o /dev/null --write-out '%{http_code}\n' \
+  curl --silent --output /dev/null --write-out '%{http_code}\n' \
     https://cims.nyu.edu/~atcold/probe.cgi &&    # ask again, keep only the status
   rm probe.cgi                                   # delete the local copy
 \end{pane}
@@ -167,7 +167,7 @@ $ ssh cims 'rm public_html/probe.cgi' &&         # delete it on cims
 |!403!|
 \end{cmdout}
 
-\here[prose trimmed; \texttt{--write-out}, not \texttt{-w}] \texttt{-o /dev/null} throws the content away. \texttt{--write-out} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
+\here[prose trimmed; long flags] \texttt{--output /dev/null} throws the content away. \texttt{--write-out} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
 
 \section{What this unlocks}
 
