@@ -7,6 +7,17 @@
 \RequirePackage[most]{tcolorbox}
 \RequirePackage{listings}
 \RequirePackage{twemojis}
+\RequirePackage{tikz}
+\RequirePackage{pgfornament}  % Vectorian ornaments; see `texdoc vectorian` for the numbered list
+
+% Review arrows: a numbered hand in the left margin, level with the line it sits on.
+% \reviewfalse hides them all.
+\newif\ifreview
+\reviewtrue
+\newcounter{here}
+\newcommand{\here}{\ifreview\refstepcounter{here}\label{here:\thehere}\tikz[remember picture,overlay,baseline]
+  \node[anchor=east, inner sep=0pt, font=\small\bfseries\color{red!85!black}]
+  at ([xshift=1.95cm]current page.west |- 0,0.3em) {\thehere\,\pgfornament[height=0.9em]{152}};\fi}
 
 % ColorBrewer Set3, in order
 \definecolor{aqua}{HTML}{8DD3C7}

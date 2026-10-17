@@ -58,11 +58,11 @@
 
 \section*{Why we asked}
 
-I am building a Chinese practice app: a web page where I match characters, sounds and meanings by drawing lines between them. It will run in the phone's browser, served from \name{cims}. When I mismatch two words, say \yuanyi\ \textit{\toneD{yuàn}\toneD{yì}} ‘willing’ with \yuanyin\ \textit{\toneB{yuán}\toneA{yīn}} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether \name{cims} can do that on its own.
+\here I am building a Chinese practice app: a web page where I match characters, sounds and meanings by drawing lines between them. It will run in the phone's browser, served from \name{cims}. When I mismatch two words, say \yuanyi\ \textit{\toneD{yuàn}\toneD{yì}} ‘willing’ with \yuanyin\ \textit{\toneB{yuán}\toneA{yīn}} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether \name{cims} can do that on its own.
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite{flanagan, lutz-http}. The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite{flanagan, lutz-http}. The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -94,7 +94,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
 \end{center}
 
 \begin{insight}{CGI}
-The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite{lutz-cgi}. The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
+The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite{lutz-cgi}.\here The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
 \end{insight}
 
 Whether \name{Apache} on \name{cims} is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.
@@ -118,7 +118,7 @@ The first line tells the system which interpreter runs the file (\name{Python}~3
 cd ~/Work/Scratch && clear && cat probe.cgi
 \end{pane}
 
-The \name{clear} was a mistake: it wiped the pane, including the \texttt{cd} and the prompt, so the pane no longer showed where we were running from or what had run. Only the script, printed after it, stayed on screen. A shared pane should never be cleared.
+\here The \name{clear} was a mistake: it wiped the pane, including the \texttt{cd} and the prompt, so the pane no longer showed where we were running from or what had run. Only the script, printed after it, stayed on screen. A shared pane should never be cleared.
 
 \subsection*{Step 2: upload it and make it executable}
 
@@ -132,7 +132,7 @@ probe.cgi                                       100%   80     6.8KB/s   00:00
 uploaded
 \end{cmdout}
 
-\name{scp} copies the file into \name{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked. A \texttt{\textbackslash} at the end of a line continues the command on the next one; the long commands here are split that way for reading, though each ran as one line.
+\name{scp} copies the file into \name{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked. \here A \texttt{\textbackslash} at the end of a line continues the command on the next one; the long commands here are split that way for reading, though each ran as one line.
 
 \subsection*{Step 3: ask for it, as a browser would}
 
@@ -167,7 +167,7 @@ ssh cims 'rm public_html/probe.cgi' \
 |!403!|
 \end{cmdout}
 
-This deletes the script on \name{cims}, asks for its address again, and deletes the local copy. This time \name{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code. \texttt{-w} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
+This deletes the script on \name{cims}, asks for its address again, and deletes the local copy. This time \name{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code. \here \texttt{-w} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
 
 \section{What this unlocks}
 
@@ -176,13 +176,13 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 \name{log.cgi} answers anyone who finds its address, so it has to tell my mistakes from anyone else's:
 
 \begin{itemize}[leftmargin=1.2em]
-  \item Nothing secret can live in the practice app: every browser that opens it downloads its code, and anyone can read it. So the app asks me who I am the first time it sends a mistake, keeps the answer on the phone, and sends it with every \texttt{POST}. I can change the answer there if I mistype it.
+  \item Nothing secret can live in the \here practice app: every browser that opens it downloads its code, and anyone can read it. So the app asks me who I am the first time it sends a mistake, keeps the answer on the phone, and sends it with every \texttt{POST}. \here I can change the answer there if I mistype it.
   \item \name{log.cgi} appends only my mistakes and refuses the rest; the app shows a notice when a \texttt{POST} is refused. Its code is never sent out, and holds nothing personal anyway: it reads a small config file on \name{cims}, outside \name{public\_html}, with a hash of my user (a fingerprint that can be checked but not turned back into the user) and the place of the mistakes file. \name{deploy.py} writes that file from my own config.
   \item The mistakes file also lives outside \name{public\_html}, so the web can write to it only through \name{log.cgi}, and never read it back.
 \end{itemize}
 
 \begin{thebibliography}{9}
-  \bibitem{flanagan} David Flanagan, \textit{JavaScript: The Definitive Guide}, 7th ed., O'Reilly, 2020. §15.11 ‘Networking’, p.~518.
+  \bibitem{flanagan}\here David Flanagan, \textit{JavaScript: The Definitive Guide}, 7th ed., O'Reilly, 2020. §15.11 ‘Networking’, p.~518.
   \bibitem{lutz-http} Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. ‘HTTP: Accessing Websites’, p.~994.
   \bibitem{lutz-cgi} Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. ‘What's a Server-Side CGI Script?’, p.~1126.
   \bibitem{curl} \name{curl} manual page, \texttt{man curl}, option \texttt{-w, --write-out}.
