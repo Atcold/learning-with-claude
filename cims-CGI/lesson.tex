@@ -39,6 +39,7 @@
 \definecolor{violet}{HTML}{BC80BD}
 
 \newcommand{\emo}[1]{\texttwemoji{#1}}
+\newcommand{\name}[1]{\textsf{#1}}   % names of systems and programs, as in the TeX companions
 
 % Tone colours, as in the dictionary: 1 warm, 2 green, 3 blue, 4 purple
 \definecolor{tone1}{HTML}{D1503F}
@@ -78,7 +79,7 @@
 
 \newtcblisting{pane}{listing engine=listings, listing only, enhanced, breakable,
   colback=blue!12, colframe=blue!70!black, boxrule=0.6pt, arc=2pt,
-  colbacktitle=blue!60, coltitle=black, title={\emo{desktop computer}\ Shared pane 2.2 on AlfMAC5 (visible to you)}, fonttitle=\small\bfseries,
+  colbacktitle=blue!60, coltitle=black, title={\emo{desktop computer}\ Shared pane 2.2 on \name{AlfMAC5} (visible to you)}, fonttitle=\small\bfseries,
   listing options={style=shell}}
 \newtcblisting{cmdout}{listing engine=listings, listing only, enhanced, breakable,
   colback=white, colframe=black!25, boxrule=0.4pt, arc=1pt, left=4pt,
@@ -98,7 +99,7 @@
   lbl/.style={font=\scriptsize, black!70, above, midway},
 }
 
-\title{\emo{globe with meridians}\ Can cims run a program?\\[0.3em]
+\title{\emo{globe with meridians}\ Can \name{cims} run a program?\\[0.3em]
   \large From a file server to one that takes a POST}
 \author{Lesson for Alfredo Canziani, written by Claude}
 \date{Sat 17 Oct 2026}
@@ -108,16 +109,16 @@
 
 \section*{Why we asked}
 
-The Chinese practice app will run in the phone's browser, served from cims. When I mismatch two words, say \yuanyi\ \textit{\toneD{yuàn}\toneD{yì}} ‘willing’ with \yuanyin\ \textit{\toneB{yuán}\toneA{yīn}} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether cims can do that on its own.
+The Chinese practice app will run in the phone's browser, served from \name{cims}. When I mismatch two words, say \yuanyi\ \textit{\toneD{yuàn}\toneD{yì}} ‘willing’ with \yuanyin\ \textit{\toneB{yuán}\toneA{yīn}} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether \name{cims} can do that on its own.
 
 \section{The starting point: a file server}
 
-My web space on cims is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (Apache) hands out to anyone who asks for its address. That is how the dictionary is published: \texttt{deploy.py} copies the files there with \texttt{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. That is how the dictionary is published: \texttt{deploy.py} copies the files there with \texttt{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
   \node[box=aqua] (phone) {phone\\browser};
-  \node[box=blue, right=1.6cm of phone] (apache) {Apache\\on cims};
+  \node[box=blue, right=1.6cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=orange, right=1.6cm of apache] (file) {\texttt{chinese.html}\\in \texttt{public\_html}};
   \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, yshift=2ex]{GET: give me the page} ([yshift=4pt]apache.west);
   \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
@@ -125,16 +126,16 @@ My web space on cims is the folder \texttt{public\_html} in my home directory th
 \end{tikzpicture}
 \end{center}
 
-This road is one-way. The web can only \emph{read} files. Only someone logged in to cims, me or Claude over \texttt{ssh}, can change them.
+This road is one-way. The web can only \emph{read} files. Only someone logged in to \name{cims}, me or Claude over \texttt{ssh}, can change them.
 
 \section{What a mistake log needs: a POST, and something to catch it}
 
-To save a mistake, data has to travel the other way, from the phone to cims. Browsers can send data: that request is called a \textbf{POST}. But a plain file cannot receive anything. Something on cims has to take the POST and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
+To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \textbf{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the POST and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
   \node[box=aqua] (phone) {phone\\browser};
-  \node[box=blue, right=1.4cm of phone] (apache) {Apache\\on cims};
+  \node[box=blue, right=1.4cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\texttt{log.cgi})};
   \node[box=orange, right=1.4cm of prog] (file) {mistakes file};
   \draw[flow] (phone) -- node[lbl, yshift=2ex]{POST: \yuanyi\ ✗ \yuanyin} (apache);
@@ -144,10 +145,10 @@ To save a mistake, data has to travel the other way, from the phone to cims. Bro
 \end{center}
 
 \begin{insight}{CGI}
-The old, simple way for Apache to run a program is \textbf{CGI} (Common Gateway Interface). The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
+The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface). The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
 \end{insight}
 
-Whether Apache on cims is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.
+Whether \name{Apache} on \name{cims} is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.
 
 \section{The test}
 
@@ -160,7 +161,7 @@ print()
 print("hello")
 \end{script}
 
-The first line tells the system which interpreter runs the file (Python 3). \texttt{text/plain} says the content is plain text. The bare \texttt{print()} is the empty line that ends the headers.
+The first line tells the system which interpreter runs the file (\name{Python}~3). \texttt{text/plain} says the content is plain text. The bare \texttt{print()} is the empty line that ends the headers.
 
 \subsection*{Step 1: look at the script}
 
@@ -180,7 +181,7 @@ probe.cgi                                       100%   80     6.8KB/s   00:00
 uploaded
 \end{cmdout}
 
-\texttt{scp} copies the file into \texttt{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, Apache would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked.
+\texttt{scp} copies the file into \texttt{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked.
 
 \subsection*{Step 3: ask for it, as a browser would}
 
@@ -200,8 +201,8 @@ curl -si https://cims.nyu.edu/~atcold/probe.cgi | head -15
 
 \texttt{curl} fetches an address from the terminal: \texttt{-s} keeps it silent about progress, \texttt{-i} also shows the response headers, the lines before the content. \texttt{head -15} keeps only the first 15 lines.
 
-\begin{result}{cims runs my programs}
-The answer is \texttt{hello}, and the content type is the \texttt{text/plain} the script printed. So Apache \emph{ran} the script and sent back its output. Had it only served files, the answer would have been the script's own text, the four Python lines, or an error page. \texttt{200} is HTTP for ‘OK’.
+\begin{result}{\name{cims} runs my programs}
+The answer is \texttt{hello}, and the content type is the \texttt{text/plain} the script printed. So \name{Apache} \emph{ran} the script and sent back its output. Had it only served files, the answer would have been the script's own text, the four \name{Python} lines, or an error page. \texttt{200} is HTTP for ‘OK’.
 \end{result}
 
 \subsection*{Step 4: remove the probe}
@@ -213,11 +214,11 @@ ssh cims 'rm public_html/probe.cgi' && curl -s -o /dev/null -w '%{http_code}\n' 
 |!403!|
 \end{cmdout}
 
-This deletes the script on cims, asks for its address again, and deletes the local copy. This time \texttt{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code (\texttt{-w}). \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why cims answers 403 here rather than 404 (‘not found’).
+This deletes the script on \name{cims}, asks for its address again, and deletes the local copy. This time \texttt{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code (\texttt{-w}). \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
 
 \section{What this unlocks}
 
-The phone can now POST each mistake to a small program on cims, which appends it to a file. Claude then copies the new lines into the vault over \texttt{ssh}. Two precautions come with it:
+The phone can now POST each mistake to a small program on \name{cims}, which appends it to a file. Claude then copies the new lines into the vault over \texttt{ssh}. Two precautions come with it:
 
 \begin{itemize}[leftmargin=1.2em]
   \item The program answers anyone who finds its address, so the app sends a secret word with every POST, and the program ignores any request without it.
