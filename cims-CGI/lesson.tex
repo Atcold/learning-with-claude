@@ -67,7 +67,7 @@ My web space on \name{cims} is the folder \name{public\_html} in my home directo
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
   \node[box=aqua] (phone) {phone\\browser};
-  \node[box=blue, right=1.6cm of phone] (apache) {\name{Apache}\\on \name{cims}};
+  \node[box=blue, right=2.2cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=orange, right=1.6cm of apache] (file) {\name{chinese.html}\\in \name{public\_html}};
   \draw[flow] ([yshift=4pt]phone.east) -- node[lbl]{\texttt{GET}} ([yshift=4pt]apache.west);
   \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
