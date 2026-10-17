@@ -185,12 +185,12 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
   \node[box=orange, right=1.7cm of cgi] (file) {mistakes file};
   \node[box=grey, above=1.0cm of cgi] (conf) {config:\\hash of my user};
   \node[box=green, below=1.0cm of file] (vault) {vault};
-  \draw[flow] (phone) -- node[lbl, align=center]{1\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
-  \draw[flow] (apache) -- node[lbl]{2 runs} node[lbl, below]{3 stdin} (cgi);
+  \draw[flow] (phone) -- node[lbl, align=center]{1.\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
+  \draw[flow] (apache) -- node[lbl]{2. runs} node[lbl, below]{3. stdin} (cgi);
   \draw[flow] (conf) -- node[lbl, right]{reads} (cgi);
-  \draw[flow] (cgi) -- node[lbl]{4 appends} (file);
+  \draw[flow] (cgi) -- node[lbl]{4. appends} (file);
   \draw[flow] (file) -- node[lbl, left]{Claude, over \name{ssh}} (vault);
-  \draw[flow] ([xshift=-3mm]cgi.south) -- ++(0,-0.7) -| node[lbl, pos=0.25, below]{5 prints: saved / refused} (phone.south);
+  \draw[flow] ([xshift=-3mm]cgi.south) -- ++(0,-0.7) -| node[lbl, pos=0.25, below]{5. prints: saved / refused} (phone.south);
 \end{tikzpicture}
 \end{center}
 
