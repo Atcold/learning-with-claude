@@ -62,7 +62,7 @@
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[p.~792]{apue}, \cite[pp.~994, 997]{lutz}.\here{} The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[p.~792]{apue}, \cite[pp.~994, 997]{lutz}.\here The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -94,7 +94,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
 \end{center}
 
 \begin{insight}{CGI}
-The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[p.~1126]{lutz}.\here{} The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
+The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[p.~1126]{lutz}.\here The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
 \end{insight}
 
 Whether \name{Apache} on \name{cims} is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.

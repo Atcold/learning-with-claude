@@ -8,6 +8,7 @@
 \RequirePackage{listings}
 \RequirePackage{twemojis}
 \RequirePackage{tikz}
+\RequirePackage{xspace}
 \RequirePackage{pgfornament}  % Vectorian ornaments; see `texdoc vectorian` for the numbered list
 
 % Review arrows: a numbered hand in the left margin, level with the line it sits on.
@@ -15,9 +16,15 @@
 \newif\ifreview
 \reviewtrue
 \newcounter{here}
-\newcommand{\here}{\ifreview\refstepcounter{here}\label{here:\thehere}\tikz[remember picture,overlay,baseline]
+\newcommand{\here@hand}{\ifreview\refstepcounter{here}\label{here:\thehere}\tikz[remember picture,overlay,baseline]
   \node[anchor=east, inner sep=0pt, font=\small\bfseries\color{red!85!black}]
   at ([xshift=1.95cm]current page.west |- 0,0.3em) {\thehere\,\pgfornament[height=0.9em]{152}};\fi}
+% Keeps the space a control word would swallow (".\here The"), but adds none at a
+% paragraph start or after a space ("the \here word").
+\newcommand{\here}{%
+  \ifvmode\leavevmode\let\here@next\relax
+  \else\ifdim\lastskip>\z@\let\here@next\relax\else\let\here@next\xspace\fi\fi
+  \here@hand\here@next}
 
 % ColorBrewer Set3, in order
 \definecolor{aqua}{HTML}{8DD3C7}
