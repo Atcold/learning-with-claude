@@ -119,8 +119,6 @@ cd ~/Work/Scratch    # where probe.cgi was written
 cat probe.cgi        # print it, to see what goes up
 \end{pane}
 
-\here[no clear: cd, then cat] \name{cat} prints the file, so the pane shows exactly the script that is about to be uploaded.
-
 \subsection*{Step 2: upload it and make it executable}
 
 \begin{pane}
@@ -133,7 +131,7 @@ probe.cgi                                       100%   80     6.8KB/s   00:00
 uploaded
 \end{cmdout}
 
-\name{scp} copies the file into \name{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked. \here[comments after \texttt{\&\&}, Steps 2, 4] A line ending in \texttt{\&\&} continues on the next one, which leaves room for a comment after each step: the shell ignores everything from \texttt{\#} to the end of the line.
+\here[comments in Steps 1, 2, 4; prose trimmed] \texttt{chmod 755} sets the file's permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, and a line ending in it continues on the next, which leaves room for a comment after each step: the shell ignores everything from \texttt{\#} to the end of the line.
 
 \subsection*{Step 3: ask for it, as a browser would}
 
@@ -169,7 +167,7 @@ ssh cims 'rm public_html/probe.cgi' &&           # delete it on cims
 |!403!|
 \end{cmdout}
 
-This deletes the script on \name{cims}, asks for its address again, and deletes the local copy. This time \name{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code. \here[\texttt{-w}, explained] \texttt{-w} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
+\here[prose trimmed; \texttt{-w} explained] \texttt{-o /dev/null} throws the content away. \texttt{-w} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
 
 \section{What this unlocks}
 
