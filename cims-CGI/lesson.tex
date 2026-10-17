@@ -67,7 +67,7 @@ My web space on \name{cims} is the folder \name{public\_html} in my home directo
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
-  \node[box=aqua] (phone) {phone\\browser};
+  \node[box=aqua, label={[font=\scriptsize, black!70]above:user}] (phone) {phone\\browser};
   \node[box=blue, right=2.2cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=orange, right=1.6cm of apache] (file) {\name{chinese.html}\\in \name{public\_html}};
   \draw[flow] ([yshift=4pt]phone.east) -- node[lbl]{\texttt{GET}} ([yshift=4pt]apache.west);
@@ -80,17 +80,15 @@ This road is one-way. The web can only \emph{read} files. Only someone logged in
 
 \section{What a mistake log needs: a \texttt{POST}, and something to catch it}
 
-\here[diagram: the app drawn] To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \texttt{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the \texttt{POST} and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
+\here[diagrams: agent above the browser] To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \texttt{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the \texttt{POST} and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
-  \node[box=aqua] (app) {practice app\\(JavaScript)};
-  \node[draw=aqua!70!black, rounded corners=4pt, inner sep=5pt, fit=(app),
-    label={[font=\scriptsize, black!70]above:phone browser}] (phone) {};
+  \node[box=aqua, label={[font=\scriptsize, black!70]above:JS app}] (phone) {phone\\browser};
   \node[box=blue, right=2.0cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\name{log.cgi})};
   \node[box=orange, right=2.0cm of prog] (file) {mistakes file};
-  \draw[flow] (app) -- node[lbl, align=center]{\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
+  \draw[flow] (phone) -- node[lbl, align=center]{\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{runs} (prog);
   \draw[flow] (prog) -- node[lbl]{appends} (file);
 \end{tikzpicture}
@@ -177,24 +175,22 @@ $ ssh cims 'rm public_html/probe.cgi' &&         # delete it on cims
 The phone can now \texttt{POST} each mistake to a small program on \name{cims}, \name{log.cgi}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}.
 
 \needspace{7\baselineskip}
-\here[diagram: the app drawn] A mistake travels like this~\cite[\textit{Writing CGI Scripts in Python}, p.~1128]{lutz}:
+\here[diagram: agent above the browser] A mistake travels like this~\cite[\textit{Writing CGI Scripts in Python}, p.~1128]{lutz}:
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
-  \node[box=aqua] (app) {practice app\\(JavaScript)};
-  \node[draw=aqua!70!black, rounded corners=4pt, inner sep=5pt, fit=(app),
-    label={[font=\scriptsize, black!70]above:phone browser}] (phone) {};
+  \node[box=aqua, label={[font=\scriptsize, black!70]above:JS app}] (phone) {phone\\browser};
   \node[box=blue, right=1.8cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=lavender, right=1.4cm of apache] (cgi) {\name{log.cgi}};
   \node[box=orange, right=1.7cm of cgi] (file) {mistakes file};
   \node[box=grey, above=1.0cm of cgi] (conf) {config:\\hash of my user};
   \node[box=green, above=1.0cm of file] (vault) {vault};
-  \draw[flow] (app) -- node[lbl, align=center]{1.\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
+  \draw[flow] (phone) -- node[lbl, align=center]{1.\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{2. runs} node[lbl, below]{3. stdin} (cgi);
   \draw[flow] (conf) -- node[lbl, right]{reads} (cgi);
   \draw[flow] (cgi) -- node[lbl]{4. appends} (file);
   \draw[flow] (file) -- node[lbl, left, align=right]{Claude,\\over \name{ssh}} (vault);
-  \draw[flow] ([xshift=-3mm]cgi.south) -- ++(0,-0.7) -| node[lbl, pos=0.25, below]{5. prints: saved / refused} (app.south);
+  \draw[flow] ([xshift=-3mm]cgi.south) -- ++(0,-0.7) -| node[lbl, pos=0.25, below]{5. prints: saved / refused} (phone.south);
 \end{tikzpicture}
 \end{center}
 
