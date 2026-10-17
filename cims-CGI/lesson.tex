@@ -180,11 +180,11 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
   \node[box=aqua] (phone) {phone\\browser};
-  \node[box=blue, right=2.2cm of phone] (apache) {\name{Apache}\\on \name{cims}};
-  \node[box=lavender, right=1.5cm of apache] (cgi) {\name{log.cgi}};
+  \node[box=blue, right=2.0cm of phone] (apache) {\name{Apache}\\on \name{cims}};
+  \node[box=lavender, right=1.4cm of apache] (cgi) {\name{log.cgi}};
   \node[box=orange, right=1.7cm of cgi] (file) {mistakes file};
   \node[box=grey, above=1.0cm of cgi] (conf) {config:\\hash of my user};
-  \node[box=green, below=1.0cm of file] (vault) {vault};
+  \node[box=green, above=1.0cm of file] (vault) {vault};
   \draw[flow] (phone) -- node[lbl, align=center]{1.\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{2. runs} node[lbl, below]{3. stdin} (cgi);
   \draw[flow] (conf) -- node[lbl, right]{reads} (cgi);
