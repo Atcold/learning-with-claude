@@ -49,7 +49,7 @@
 }
 
 \title{\emo{globe with meridians}\ Can \name{cims} run a program?\\[0.3em]
-  \large From a file server to one that takes a POST}
+  \large From a file server to one that takes a \texttt{POST}}
 \author{Lesson for Alfredo Canziani, written by Claude}
 \date{Sat 17 Oct 2026}
 
@@ -69,7 +69,7 @@ My web space on \name{cims} is the folder \name{public\_html} in my home directo
   \node[box=aqua] (phone) {phone\\browser};
   \node[box=blue, right=2.8cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=orange, right=1.6cm of apache] (file) {\name{chinese.html}\\in \name{public\_html}};
-  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, align=center]{GET\\give me the page} ([yshift=4pt]apache.west);
+  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, align=center]{\texttt{GET}\\give me the page} ([yshift=4pt]apache.west);
   \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
   \draw[flow] (apache) -- node[lbl]{reads} (file);
 \end{tikzpicture}
@@ -77,9 +77,9 @@ My web space on \name{cims} is the folder \name{public\_html} in my home directo
 
 This road is one-way. The web can only \emph{read} files. Only someone logged in to \name{cims}, me or Claude over \name{ssh}, can change them.
 
-\section{What a mistake log needs: a POST, and something to catch it}
+\section{What a mistake log needs: a \texttt{POST}, and something to catch it}
 
-To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \textbf{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the POST and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
+To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \textbf{\texttt{POST}}. But a plain file cannot receive anything. Something on \name{cims} has to take the \texttt{POST} and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -87,7 +87,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
   \node[box=blue, right=2.4cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\name{log.cgi})};
   \node[box=orange, right=1.4cm of prog] (file) {mistakes file};
-  \draw[flow] (phone) -- node[lbl, align=center]{POST\\\yuanyi\ ✗ \yuanyin} (apache);
+  \draw[flow] (phone) -- node[lbl, align=center]{\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{runs} (prog);
   \draw[flow] (prog) -- node[lbl]{appends} (file);
 \end{tikzpicture}
@@ -167,10 +167,10 @@ This deletes the script on \name{cims}, asks for its address again, and deletes 
 
 \section{What this unlocks}
 
-The phone can now POST each mistake to a small program on \name{cims}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}. Two precautions come with it:
+The phone can now \texttt{POST} each mistake to a small program on \name{cims}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}. Two precautions come with it:
 
 \begin{itemize}[leftmargin=1.2em]
-  \item The program answers anyone who finds its address, so the app sends a secret word with every POST, and the program ignores any request without it.
+  \item The program answers anyone who finds its address, so the app sends a secret word with every \texttt{POST}, and the program ignores any request without it.
   \item The mistakes file lives outside \name{public\_html}, so the web can write to it only through the program, and never read it back.
 \end{itemize}
 
