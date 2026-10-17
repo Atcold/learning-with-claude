@@ -9,4 +9,4 @@ Each folder is one lesson.
 
 ## Building
 
-Lessons are LaTeX. In a lesson folder, run `latexmk`; the PDF lands in `build/`.
+Lessons are LaTeX. In a lesson folder, run `latexmk`; the PDF lands in `build/`. Shared colours, boxes and rules live in [`style/`](style/).

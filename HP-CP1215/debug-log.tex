@@ -12,6 +12,7 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,shapes.misc}
 \usepackage{twemojis}
+\usepackage{lesson}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{enumitem}
@@ -27,18 +28,6 @@
 \setlength{\parskip}{0.6em}
 \setlength{\emergencystretch}{3em}  % room to break around long \texttt paths
 
-% ColorBrewer Set3, in order
-\definecolor{aqua}{HTML}{8DD3C7}
-\definecolor{yellow}{HTML}{FFFFB3}
-\definecolor{lavender}{HTML}{BEBADA}
-\definecolor{red}{HTML}{FB8072}
-\definecolor{blue}{HTML}{80B1D3}
-\definecolor{orange}{HTML}{FDB462}
-\definecolor{green}{HTML}{B3DE69}
-\definecolor{pink}{HTML}{FCCDE5}
-\definecolor{grey}{HTML}{D9D9D9}
-\definecolor{violet}{HTML}{BC80BD}
-
 % Who wrote what (same mapping as the slides)
 \colorlet{cApple}{blue}
 \colorlet{cOP}{lavender}
@@ -47,7 +36,6 @@
 \colorlet{cPharos}{grey}
 \colorlet{cYou}{pink}
 
-\newcommand{\emo}[1]{\texttwemoji{#1}}
 \newcommand{\bugemo}{\texttwemoji{lady beetle}}
 
 % Further reading in TLCL: \tlcl{chapter}{page}{concept} cites it inline and
@@ -75,44 +63,15 @@
   colbacktitle=red!60, coltitle=black, title={\bugemo\ Culprit: #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
 \newtcolorbox{fix}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
   colbacktitle=green!60, coltitle=black, title={\emo{wrench}\ Fix: #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
-\newtcolorbox{insight}[1]{enhanced, breakable, colback=blue!18, colframe=blue!60!black,
-  colbacktitle=blue!60, coltitle=black, title={\emo{light bulb}\ #1}, fonttitle=\bfseries, boxrule=0.8pt, arc=2pt}
 \newtcolorbox{printed}[1]{enhanced, breakable, colback=aqua!30, colframe=aqua!40!black,
   colbacktitle=aqua!60, coltitle=black, title={\emo{printer}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
-
-% Code listings
-\lstdefinestyle{shell}{
-  language=bash, basicstyle=\ttfamily\footnotesize, columns=fullflexible,
-  keepspaces=true, breaklines=true, breakatwhitespace=false, showstringspaces=false,
-  keywordstyle=\color{violet!80!black}\bfseries, stringstyle=\color{green!40!black},
-  commentstyle=\color{black!55}\itshape,
-  morekeywords={ssh,sudo,brew,gs,lp,lpstat,lpoptions,lpinfo,cupsctl,cupsfilter,grep,ls,find,tail,head,strings,file,identify,tmux,killall,launchctl,cancel,mdfind,sed,xxd,stat,which,type,pmset,open,rm,tr,wc,cut,cat,sleep,file,lpinfo},
-  literate={×}{{$\times$}}1 {→}{{$\rightarrow$}}1
-}
-\lstdefinestyle{out}{
-  basicstyle=\ttfamily\scriptsize\color{black!80}, columns=fullflexible, keepspaces=true,
-  breaklines=true, breakatwhitespace=false, showstringspaces=false,
-  % Invisible markers around recorded output: |!…!| the line to read, |~…~| noise to skip
-  moredelim=[is][\color{red!80!black}\bfseries]{|!}{!|},
-  moredelim=[is][\color{black!35}]{|~}{~|},
-  literate={×}{{$\times$}}1 {→}{{$\rightarrow$}}1
-}
-\lstdefinestyle{python}{
-  language=Python, basicstyle=\ttfamily\footnotesize, columns=fullflexible, keepspaces=true,
-  breaklines=true, showstringspaces=false,
-  keywordstyle=\color{violet!80!black}\bfseries, stringstyle=\color{green!40!black},
-  commentstyle=\color{black!55}\itshape, literate={×}{{$\times$}}1
-}
 
 % Where a command ran: mine (invisible to Alf), the shared pane, or typed by Alf
 \newtcblisting{mine}{listing engine=listings, listing only, enhanced, breakable,
   colback=lavender!18, colframe=lavender!70!black, boxrule=0.6pt, arc=2pt,
   colbacktitle=lavender!60, coltitle=black, title={\emo{robot}\ Claude, own SSH connection to AlfMAC3 (you could not see this)}, fonttitle=\small\bfseries,
   listing options={style=shell}}
-\newtcblisting{pane}{listing engine=listings, listing only, enhanced, breakable,
-  colback=blue!12, colframe=blue!70!black, boxrule=0.6pt, arc=2pt,
-  colbacktitle=blue!60, coltitle=black, title={\emo{desktop computer}\ Shared pane 2.2: SSH to AlfMAC3 (visible to you)}, fonttitle=\small\bfseries,
-  listing options={style=shell}}
+\renewcommand{\panetitle}{Shared pane 2.2: SSH to AlfMAC3 (visible to you)}
 \newtcblisting{yours}{listing engine=listings, listing only, enhanced, breakable,
   colback=pink!35, colframe=pink!55!black, boxrule=0.6pt, arc=2pt,
   colbacktitle=pink, coltitle=black, title={\emo{keyboard}\ Typed by you in the pane}, fonttitle=\small\bfseries,
@@ -121,10 +80,6 @@
   colback=grey!35, colframe=black!45, boxrule=0.6pt, arc=2pt,
   colbacktitle=grey, coltitle=black, title={\emo{laptop}\ Claude, on AlfMAC5 (tmux)}, fonttitle=\small\bfseries,
   listing options={style=shell}}
-\newtcblisting{cmdout}{listing engine=listings, listing only, enhanced, breakable,
-  colback=white, colframe=black!25, boxrule=0.4pt, arc=1pt, left=4pt,
-  title={Output}, fonttitle=\scriptsize, coltitle=black!70, colbacktitle=black!6,
-  listing options={style=out}}
 
 % Pipeline diagram nodes
 \tikzset{

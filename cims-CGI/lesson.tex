@@ -11,6 +11,7 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta}
 \usepackage{twemojis}
+\usepackage{lesson}
 \usepackage{enumitem}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 \usepackage{newunicodechar}
@@ -26,65 +27,13 @@
 \setlength{\parskip}{0.6em}
 \setlength{\emergencystretch}{3em}
 
-% ColorBrewer Set3, in order
-\definecolor{aqua}{HTML}{8DD3C7}
-\definecolor{yellow}{HTML}{FFFFB3}
-\definecolor{lavender}{HTML}{BEBADA}
-\definecolor{red}{HTML}{FB8072}
-\definecolor{blue}{HTML}{80B1D3}
-\definecolor{orange}{HTML}{FDB462}
-\definecolor{green}{HTML}{B3DE69}
-\definecolor{pink}{HTML}{FCCDE5}
-\definecolor{grey}{HTML}{D9D9D9}
-\definecolor{violet}{HTML}{BC80BD}
-
-\newcommand{\emo}[1]{\texttwemoji{#1}}
-\newcommand{\name}[1]{\textsf{#1}}   % names of systems and programs, as in the TeX companions
-
-% Tone colours, as in the dictionary: 1 warm, 2 green, 3 blue, 4 purple
-\definecolor{tone1}{HTML}{D1503F}
-\definecolor{tone2}{HTML}{6A9E33}
-\definecolor{tone3}{HTML}{3F7FA8}
-\definecolor{tone4}{HTML}{8F4F91}
-\newcommand{\toneA}[1]{\textcolor{tone1}{#1}}
-\newcommand{\toneB}[1]{\textcolor{tone2}{#1}}
-\newcommand{\toneD}[1]{\textcolor{tone4}{#1}}
+\renewcommand{\panetitle}{Shared pane 2.2 on \name{AlfMAC5} (visible to you)}
 \newcommand{\yuanyi}{\toneD{願}\toneD{意}}
 \newcommand{\yuanyin}{\toneB{原}\toneA{因}}
 
-\newtcolorbox{insight}[1]{enhanced, breakable, colback=blue!18, colframe=blue!60!black,
-  colbacktitle=blue!60, coltitle=black, title={\emo{light bulb}\ #1}, fonttitle=\bfseries, boxrule=0.8pt, arc=2pt}
 \newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
   colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
 
-\lstdefinestyle{shell}{
-  language=bash, basicstyle=\ttfamily\footnotesize, columns=fullflexible,
-  keepspaces=true, breaklines=true, showstringspaces=false,
-  keywordstyle=\color{violet!80!black}\bfseries, stringstyle=\color{green!40!black},
-  commentstyle=\color{black!55}\itshape,
-  morekeywords={ssh,scp,curl,chmod,cat,rm,head,cd,clear,echo}
-}
-\lstdefinestyle{out}{
-  basicstyle=\ttfamily\scriptsize\color{black!80}, columns=fullflexible, keepspaces=true,
-  breaklines=true, showstringspaces=false,
-  % |!…!| the line to read, |~…~| noise to skip
-  moredelim=[is][\color{red!80!black}\bfseries]{|!}{!|},
-  moredelim=[is][\color{black!35}]{|~}{~|}
-}
-\lstdefinestyle{python}{
-  language=Python, basicstyle=\ttfamily\footnotesize, columns=fullflexible, keepspaces=true,
-  showstringspaces=false, keywordstyle=\color{violet!80!black}\bfseries,
-  stringstyle=\color{green!40!black}, commentstyle=\color{black!55}\itshape
-}
-
-\newtcblisting{pane}{listing engine=listings, listing only, enhanced, breakable,
-  colback=blue!12, colframe=blue!70!black, boxrule=0.6pt, arc=2pt,
-  colbacktitle=blue!60, coltitle=black, title={\emo{desktop computer}\ Shared pane 2.2 on \name{AlfMAC5} (visible to you)}, fonttitle=\small\bfseries,
-  listing options={style=shell}}
-\newtcblisting{cmdout}{listing engine=listings, listing only, enhanced, breakable,
-  colback=white, colframe=black!25, boxrule=0.4pt, arc=1pt, left=4pt,
-  title={Output}, fonttitle=\scriptsize, coltitle=black!70, colbacktitle=black!6,
-  listing options={style=out}}
 \newtcblisting{script}{listing engine=listings, listing only, enhanced,
   colback=yellow!35, colframe=orange!70!black, boxrule=0.6pt, arc=2pt,
   colbacktitle=orange!50, coltitle=black, title={\emo{page facing up}\ \name{probe.cgi}}, fonttitle=\small\bfseries,
