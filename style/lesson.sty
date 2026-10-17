@@ -58,7 +58,8 @@
 
 % Names of things (programs, files, folders, hosts) in sans; \texttt only for literal text
 % The sans underscore is a third wider than a letter; inside \name it is as wide as a space
-\newcommand{\name@us}{\leavevmode\rule[-0.2ex]{\fontdimen2\font}{0.045em}}
+% (stroke: the stem of l, 0.075 em; height: the font's own underscore, from -0.164 em)
+\newcommand{\name@us}{\leavevmode\rule[-0.164em]{\fontdimen2\font}{0.075em}}
 \newcommand{\name}[1]{\textsf{\let\_\name@us#1}}
 \newcommand{\emo}[1]{\texttwemoji{#1}}
 
