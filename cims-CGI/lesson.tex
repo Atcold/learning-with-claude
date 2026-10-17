@@ -80,15 +80,17 @@ This road is one-way. The web can only \emph{read} files. Only someone logged in
 
 \section{What a mistake log needs: a \texttt{POST}, and something to catch it}
 
-To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \texttt{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the \texttt{POST} and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
+\here[diagram: the app drawn] To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \texttt{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the \texttt{POST} and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
-  \node[box=aqua] (phone) {phone\\browser};
-  \node[box=blue, right=2.4cm of phone] (apache) {\name{Apache}\\on \name{cims}};
+  \node[box=aqua] (app) {practice app\\(JavaScript)};
+  \node[draw=aqua!70!black, rounded corners=4pt, inner sep=5pt, fit=(app),
+    label={[font=\scriptsize, black!70]above:phone browser}] (phone) {};
+  \node[box=blue, right=2.0cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\name{log.cgi})};
   \node[box=orange, right=2.0cm of prog] (file) {mistakes file};
-  \draw[flow] (phone) -- node[lbl, align=center]{\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
+  \draw[flow] (app) -- node[lbl, align=center]{\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{runs} (prog);
   \draw[flow] (prog) -- node[lbl]{appends} (file);
 \end{tikzpicture}
