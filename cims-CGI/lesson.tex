@@ -115,24 +115,25 @@ The first line tells the system which interpreter runs the file (\name{Python}~3
 \subsection*{Step 1: look at the script}
 
 \begin{pane}
-cd ~/Work/Scratch && clear && cat probe.cgi
+cd ~/Work/Scratch    # where probe.cgi was written
+cat probe.cgi        # print it, to see what goes up
 \end{pane}
 
-\here[the clear, owned] The \name{clear} was a mistake: it wiped the pane, including the \texttt{cd} and the prompt, so the pane no longer showed where we were running from or what had run. Only the script, printed after it, stayed on screen. A shared pane should never be cleared.
+\here[no clear: cd, then cat] \name{cat} prints the file, so the pane shows exactly the script that is about to be uploaded.
 
 \subsection*{Step 2: upload it and make it executable}
 
 \begin{pane}
-scp probe.cgi cims:public_html/ \
-  && ssh cims 'chmod 755 public_html/probe.cgi' \
-  && echo uploaded
+scp probe.cgi cims:public_html/ &&               # copy it into the web folder
+  ssh cims 'chmod 755 public_html/probe.cgi' &&  # make it runnable
+  echo uploaded                                  # reached only if both worked
 \end{pane}
 \begin{cmdout}
 probe.cgi                                       100%   80     6.8KB/s   00:00
 uploaded
 \end{cmdout}
 
-\name{scp} copies the file into \name{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked. \here[split lines, explained] A \texttt{\textbackslash} at the end of a line continues the command on the next one; the long commands here are split that way for reading, though each ran as one line.
+\name{scp} copies the file into \name{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked. \here[comments after \texttt{\&\&}, Steps 2, 4] A line ending in \texttt{\&\&} continues on the next one, which leaves room for a comment after each step: the shell ignores everything from \texttt{\#} to the end of the line.
 
 \subsection*{Step 3: ask for it, as a browser would}
 
@@ -159,9 +160,10 @@ The answer is \texttt{hello}, and the content type is the \texttt{text/plain} th
 \subsection*{Step 4: remove the probe}
 
 \begin{pane}
-ssh cims 'rm public_html/probe.cgi' \
-  && curl -s -o /dev/null -w '%{http_code}\n' https://cims.nyu.edu/~atcold/probe.cgi \
-  && rm probe.cgi
+ssh cims 'rm public_html/probe.cgi' &&           # delete it on cims
+  curl -s -o /dev/null -w '%{http_code}\n' \
+    https://cims.nyu.edu/~atcold/probe.cgi &&    # ask again, keep only the status
+  rm probe.cgi                                   # delete the local copy
 \end{pane}
 \begin{cmdout}
 |!403!|
