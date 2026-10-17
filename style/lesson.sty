@@ -57,7 +57,9 @@
 \newcommand{\toneE}[1]{\textcolor{tone5}{#1}}
 
 % Names of things (programs, files, folders, hosts) in sans; \texttt only for literal text
-\newcommand{\name}[1]{\textsf{#1}}
+% The sans underscore is a third wider than a letter; inside \name it is one letter wide
+\newcommand{\name@us}{\leavevmode\kern0.03em\rule[-0.2ex]{0.45em}{0.045em}\kern0.03em}
+\newcommand{\name}[1]{\textsf{\let\_\name@us#1}}
 \newcommand{\emo}[1]{\texttwemoji{#1}}
 
 % Code listings
