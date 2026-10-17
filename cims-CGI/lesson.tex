@@ -13,6 +13,7 @@
 \usepackage{twemojis}
 \usepackage{lesson}
 \usepackage{enumitem}
+\usepackage{needspace}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 \usepackage{newunicodechar}
 \newunicodechar{→}{\ensuremath{\rightarrow}}
@@ -62,7 +63,7 @@
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here[HTTP, defined] Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[p.~994]{lutz}.\here[cited: Lutz p.~994] The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here[HTTP, defined] Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[\textit{HTTP: Accessing Websites}, p.~994]{lutz}.\here[cited: Lutz, section named] The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -94,7 +95,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
 \end{center}
 
 \begin{insight}{CGI}
-The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[p.~1126]{lutz}.\here[cited: Lutz p.~1126] The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
+The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[\textit{What's a Server-Side CGI Script?}, p.~1126]{lutz}.\here[cited: Lutz, section named] The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
 \end{insight}
 
 Whether \name{Apache} on \name{cims} is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.
@@ -173,7 +174,25 @@ $ ssh cims 'rm public_html/probe.cgi' &&         # delete it on cims
 
 The phone can now \texttt{POST} each mistake to a small program on \name{cims}, \name{log.cgi}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}.
 
-\here[new: a POST, step by step] A mistake travels like this~\cite[pp.~1128--1129]{lutz}:
+\needspace{7\baselineskip}
+\here[new: a POST, step by step; diagram] A mistake travels like this~\cite[\textit{Writing CGI Scripts in Python}, pp.~1128--1129]{lutz}:
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.1cm]
+  \node[box=aqua] (phone) {phone\\browser};
+  \node[box=blue, right=2.2cm of phone] (apache) {\name{Apache}\\on \name{cims}};
+  \node[box=lavender, right=1.5cm of apache] (cgi) {\name{log.cgi}};
+  \node[box=orange, right=1.7cm of cgi] (file) {mistakes file};
+  \node[box=grey, above=1.0cm of cgi] (conf) {config:\\hash of my user};
+  \node[box=green, below=1.0cm of file] (vault) {vault};
+  \draw[flow] (phone) -- node[lbl, align=center]{1\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
+  \draw[flow] (apache) -- node[lbl]{2 runs} node[lbl, below]{3 stdin} (cgi);
+  \draw[flow] (conf) -- node[lbl, right]{reads} (cgi);
+  \draw[flow] (cgi) -- node[lbl]{4 appends} (file);
+  \draw[flow] (file) -- node[lbl, left]{Claude, over \name{ssh}} (vault);
+  \draw[flow] ([xshift=-3mm]cgi.south) -- ++(0,-0.7) -| node[lbl, pos=0.25, below]{5 prints: saved / refused} (phone.south);
+\end{tikzpicture}
+\end{center}
 
 \begin{enumerate}[leftmargin=1.5em]
   \item The phone's browser sends a \texttt{POST} to the address of \name{log.cgi}, with the mistake in the body of the request. The practice app's code tells it to.
@@ -192,7 +211,7 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 \end{itemize}
 
 \begin{thebibliography}{Lut11}
-  \bibitem[Lut11]{lutz}\here[one Lutz entry; no JS, no APUE] Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. ‘HTTP: Accessing Websites’, p.~994; ‘What's a Server-Side CGI Script?’, pp.~1126--1129.  \bibitem[curl]{curl} \name{curl} manual page, \texttt{man curl}, option \texttt{-w, --write-out}.
+  \bibitem[Lut11]{lutz}\here[one Lutz entry; no JS, no APUE] Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. \textit{HTTP: Accessing Websites}, p.~994; \textit{What's a Server-Side CGI Script?}, p.~1126, and its \textit{Writing CGI Scripts in Python}, pp.~1128--1129.  \bibitem[curl]{curl} \name{curl} manual page, \texttt{man curl}, option \texttt{-w, --write-out}.
 \end{thebibliography}
 
 \end{document}
