@@ -40,6 +40,17 @@
 
 \newcommand{\emo}[1]{\texttwemoji{#1}}
 
+% Tone colours, as in the dictionary: 1 warm, 2 green, 3 blue, 4 purple
+\definecolor{tone1}{HTML}{D1503F}
+\definecolor{tone2}{HTML}{6A9E33}
+\definecolor{tone3}{HTML}{3F7FA8}
+\definecolor{tone4}{HTML}{8F4F91}
+\newcommand{\toneA}[1]{\textcolor{tone1}{#1}}
+\newcommand{\toneB}[1]{\textcolor{tone2}{#1}}
+\newcommand{\toneD}[1]{\textcolor{tone4}{#1}}
+\newcommand{\yuanyi}{\toneD{願}\toneD{意}}
+\newcommand{\yuanyin}{\toneB{原}\toneA{因}}
+
 \newtcolorbox{insight}[1]{enhanced, breakable, colback=blue!18, colframe=blue!60!black,
   colbacktitle=blue!60, coltitle=black, title={\emo{light bulb}\ #1}, fonttitle=\bfseries, boxrule=0.8pt, arc=2pt}
 \newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
@@ -83,7 +94,7 @@
     minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize},
   unknown/.style={draw=red!85!black, fill=red!12, very thick, dashed, rounded corners=3pt,
     minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize},
-  flow/.style={-{Stealth[length=7pt]}, very thick, black!60},
+  flow/.style={->, very thick, black!60},
   lbl/.style={font=\scriptsize, black!70, above, midway},
 }
 
@@ -97,7 +108,7 @@
 
 \section*{Why we asked}
 
-The Chinese practice app will run in the phone's browser, served from cims. When I mismatch two words, say 願意 \textit{yuànyì} ‘willing’ with 原因 \textit{yuányīn} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether cims can do that on its own.
+The Chinese practice app will run in the phone's browser, served from cims. When I mismatch two words, say \yuanyi\ \textit{\toneD{yuàn}\toneD{yì}} ‘willing’ with \yuanyin\ \textit{\toneB{yuán}\toneA{yīn}} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether cims can do that on its own.
 
 \section{The starting point: a file server}
 
@@ -108,7 +119,7 @@ My web space on cims is the folder \texttt{public\_html} in my home directory th
   \node[box=aqua] (phone) {phone\\browser};
   \node[box=blue, right=1.6cm of phone] (apache) {Apache\\on cims};
   \node[box=orange, right=1.6cm of apache] (file) {\texttt{chinese.html}\\in \texttt{public\_html}};
-  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl]{GET: give me the page} ([yshift=4pt]apache.west);
+  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, yshift=2ex]{GET: give me the page} ([yshift=4pt]apache.west);
   \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
   \draw[flow] (apache) -- node[lbl]{reads} (file);
 \end{tikzpicture}
@@ -126,7 +137,7 @@ To save a mistake, data has to travel the other way, from the phone to cims. Bro
   \node[box=blue, right=1.4cm of phone] (apache) {Apache\\on cims};
   \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\texttt{log.cgi})};
   \node[box=orange, right=1.4cm of prog] (file) {mistakes file};
-  \draw[flow] (phone) -- node[lbl]{POST: 願意 ✗ 原因} (apache);
+  \draw[flow] (phone) -- node[lbl, yshift=2ex]{POST: \yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{runs} (prog);
   \draw[flow] (prog) -- node[lbl]{appends} (file);
 \end{tikzpicture}
