@@ -113,13 +113,13 @@ The Chinese practice app will run in the phone's browser, served from \name{cims
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
   \node[box=aqua] (phone) {phone\\browser};
   \node[box=blue, right=2.8cm of phone] (apache) {\name{Apache}\\on \name{cims}};
-  \node[box=orange, right=1.6cm of apache] (file) {\texttt{chinese.html}\\in \texttt{public\_html}};
+  \node[box=orange, right=1.6cm of apache] (file) {\name{chinese.html}\\in \name{public\_html}};
   \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, align=center]{give me the page\\GET} ([yshift=4pt]apache.west);
   \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
   \draw[flow] (apache) -- node[lbl]{reads} (file);
@@ -181,7 +181,7 @@ probe.cgi                                       100%   80     6.8KB/s   00:00
 uploaded
 \end{cmdout}
 
-\name{scp} copies the file into \texttt{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked.
+\name{scp} copies the file into \name{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked.
 
 \subsection*{Step 3: ask for it, as a browser would}
 
@@ -222,7 +222,7 @@ The phone can now POST each mistake to a small program on \name{cims}, which app
 
 \begin{itemize}[leftmargin=1.2em]
   \item The program answers anyone who finds its address, so the app sends a secret word with every POST, and the program ignores any request without it.
-  \item The mistakes file lives outside \texttt{public\_html}, so the web can write to it only through the program, and never read it back.
+  \item The mistakes file lives outside \name{public\_html}, so the web can write to it only through the program, and never read it back.
 \end{itemize}
 
 \end{document}
