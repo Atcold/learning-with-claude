@@ -86,7 +86,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
   \node[box=aqua] (phone) {phone\\browser};
   \node[box=blue, right=2.4cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\name{log.cgi})};
-  \node[box=orange, right=1.4cm of prog] (file) {mistakes file};
+  \node[box=orange, right=2.0cm of prog] (file) {mistakes file};
   \draw[flow] (phone) -- node[lbl, align=center]{\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{runs} (prog);
   \draw[flow] (prog) -- node[lbl]{appends} (file);
