@@ -87,7 +87,7 @@
   listing options={style=out}}
 \newtcblisting{script}{listing engine=listings, listing only, enhanced,
   colback=yellow!35, colframe=orange!70!black, boxrule=0.6pt, arc=2pt,
-  colbacktitle=orange!50, coltitle=black, title={\emo{page facing up}\ probe.cgi}, fonttitle=\small\bfseries,
+  colbacktitle=orange!50, coltitle=black, title={\emo{page facing up}\ \name{probe.cgi}}, fonttitle=\small\bfseries,
   listing options={style=python}}
 
 \tikzset{
@@ -113,7 +113,7 @@ The Chinese practice app will run in the phone's browser, served from \name{cims
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. That is how the dictionary is published: \name{deploy.py} copies the files there with \texttt{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -126,7 +126,7 @@ My web space on \name{cims} is the folder \texttt{public\_html} in my home direc
 \end{tikzpicture}
 \end{center}
 
-This road is one-way. The web can only \emph{read} files. Only someone logged in to \name{cims}, me or Claude over \texttt{ssh}, can change them.
+This road is one-way. The web can only \emph{read} files. Only someone logged in to \name{cims}, me or Claude over \name{ssh}, can change them.
 
 \section{What a mistake log needs: a POST, and something to catch it}
 
@@ -136,7 +136,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
 \begin{tikzpicture}[node distance=1.1cm]
   \node[box=aqua] (phone) {phone\\browser};
   \node[box=blue, right=2.4cm of phone] (apache) {\name{Apache}\\on \name{cims}};
-  \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\texttt{log.cgi})};
+  \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\name{log.cgi})};
   \node[box=orange, right=1.4cm of prog] (file) {mistakes file};
   \draw[flow] (phone) -- node[lbl, align=center]{\yuanyi\ ✗ \yuanyin\\POST} (apache);
   \draw[flow] (apache) -- node[lbl]{runs} (prog);
@@ -169,7 +169,7 @@ The first line tells the system which interpreter runs the file (\name{Python}~3
 cd ~/Work/Scratch && clear && cat probe.cgi
 \end{pane}
 
-\texttt{clear} wiped the pane \emph{before} \texttt{cat} printed the script, so the script was on screen afterwards. The commands typed before it were what got erased.
+\name{clear} wiped the pane \emph{before} \name{cat} printed the script, so the script was on screen afterwards. The commands typed before it were what got erased.
 
 \subsection*{Step 2: upload it and make it executable}
 
@@ -181,7 +181,7 @@ probe.cgi                                       100%   80     6.8KB/s   00:00
 uploaded
 \end{cmdout}
 
-\texttt{scp} copies the file into \texttt{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked.
+\name{scp} copies the file into \texttt{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked.
 
 \subsection*{Step 3: ask for it, as a browser would}
 
@@ -199,7 +199,7 @@ curl -si https://cims.nyu.edu/~atcold/probe.cgi | head -15
 |!hello!|
 \end{cmdout}
 
-\texttt{curl} fetches an address from the terminal: \texttt{-s} keeps it silent about progress, \texttt{-i} also shows the response headers, the lines before the content. \texttt{head -15} keeps only the first 15 lines.
+\name{curl} fetches an address from the terminal: \texttt{-s} keeps it silent about progress, \texttt{-i} also shows the response headers, the lines before the content. \texttt{head -15} keeps only the first 15 lines.
 
 \begin{result}{\name{cims} runs my programs}
 The answer is \texttt{hello}, and the content type is the \texttt{text/plain} the script printed. So \name{Apache} \emph{ran} the script and sent back its output. Had it only served files, the answer would have been the script's own text, the four \name{Python} lines, or an error page. \texttt{200} is HTTP for ‘OK’.
@@ -214,11 +214,11 @@ ssh cims 'rm public_html/probe.cgi' && curl -s -o /dev/null -w '%{http_code}\n' 
 |!403!|
 \end{cmdout}
 
-This deletes the script on \name{cims}, asks for its address again, and deletes the local copy. This time \texttt{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code (\texttt{-w}). \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
+This deletes the script on \name{cims}, asks for its address again, and deletes the local copy. This time \name{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code (\texttt{-w}). \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
 
 \section{What this unlocks}
 
-The phone can now POST each mistake to a small program on \name{cims}, which appends it to a file. Claude then copies the new lines into the vault over \texttt{ssh}. Two precautions come with it:
+The phone can now POST each mistake to a small program on \name{cims}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}. Two precautions come with it:
 
 \begin{itemize}[leftmargin=1.2em]
   \item The program answers anyone who finds its address, so the app sends a secret word with every POST, and the program ignores any request without it.
