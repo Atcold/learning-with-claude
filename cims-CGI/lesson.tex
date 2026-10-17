@@ -198,7 +198,7 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 
 \begin{enumerate}[leftmargin=1.5em]
   \item \here[the app sends it, not me] The practice app, the JavaScript that came with the page, has the browser send a \texttt{POST} to the address of \name{log.cgi}, with the mistake in the body of the request. I never send it myself: the app does, whenever I make a mistake.
-  \item \name{Apache} on \name{cims} sees a \texttt{.cgi} file at that address and runs it, instead of sending it.
+  \item \here[whose POST] \name{Apache} on \name{cims} receives the app's \texttt{POST}, sees a \texttt{.cgi} file at that address, and runs it instead of sending it.
   \item \name{log.cgi} reads the body of the \texttt{POST} on its standard input, as if it were typed at it. Details such as its length arrive as environment variables.
   \item What it does next is up to us: it is our program. Here, it checks who sent the mistake, then appends a line to the mistakes file.
   \item Whatever it prints goes back to the phone as the response, as \texttt{hello} did in the test. That is how the app learns whether the mistake was saved or refused.
