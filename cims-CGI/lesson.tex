@@ -9,7 +9,7 @@
 \usepackage[most]{tcolorbox}
 \usepackage{listings}
 \usepackage{tikz}
-\usetikzlibrary{positioning,arrows.meta}
+\usetikzlibrary{positioning,arrows.meta,fit}
 \usepackage{twemojis}
 \usepackage{lesson}
 \usepackage{enumitem}
@@ -59,11 +59,11 @@
 
 \section*{Why we asked}
 
-\here[the app, defined] I am building a Chinese practice app: a web page where I match characters, sounds and meanings by drawing lines between them. It will run in the phone's browser, served from \name{cims}. When I mismatch two words, say \yuanyi\ \textit{\toneD{yuàn}\toneD{yì}} ‘willing’ with \yuanyin\ \textit{\toneB{yuán}\toneA{yīn}} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether \name{cims} can do that on its own.
+I am building a Chinese practice app: a web page where I match characters, sounds and meanings by drawing lines between them. It will run in the phone's browser, served from \name{cims}. When I mismatch two words, say \yuanyi\ \textit{\toneD{yuàn}\toneD{yì}} ‘willing’ with \yuanyin\ \textit{\toneB{yuán}\toneA{yīn}} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether \name{cims} can do that on its own.
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here[HTTP, defined] Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[\textit{HTTP: Accessing Websites}, p.~994]{lutz}.\here[cited: Lutz, section named] The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[\textit{HTTP: Accessing Websites}, p.~994]{lutz}. The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them. \here[new: a page can carry a program] A page can also carry a program, written in JavaScript, which the browser runs once the page has arrived. The practice app is such a program.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -71,7 +71,7 @@ My web space on \name{cims} is the folder \name{public\_html} in my home directo
   \node[box=blue, right=2.2cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=orange, right=1.6cm of apache] (file) {\name{chinese.html}\\in \name{public\_html}};
   \draw[flow] ([yshift=4pt]phone.east) -- node[lbl]{\texttt{GET}} ([yshift=4pt]apache.west);
-  \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
+  \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below, align=center]{the page\\+ its JavaScript} ([yshift=-4pt]phone.east);
   \draw[flow] (apache) -- node[lbl]{reads} (file);
 \end{tikzpicture}
 \end{center}
@@ -95,7 +95,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
 \end{center}
 
 \begin{insight}{CGI}
-The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[\textit{What's a Server-Side CGI Script?}, p.~1126]{lutz}.\here[cited: Lutz, section named] The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
+The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[\textit{What's a Server-Side CGI Script?}, p.~1126]{lutz}. The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
 \end{insight}
 
 Whether \name{Apache} on \name{cims} is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.
@@ -132,7 +132,7 @@ probe.cgi                                       100%   80     6.8KB/s   00:00
 uploaded
 \end{cmdout}
 
-\here[\texttt{\$} prompt; comments in Steps 1, 2, 4; prose trimmed] \texttt{chmod 755} sets the file's permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, and a line ending in it continues on the next, which leaves room for a comment after each step: the shell ignores everything from \texttt{\#} to the end of the line.
+\texttt{chmod 755} sets the file's permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, \name{Apache} would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, and a line ending in it continues on the next, which leaves room for a comment after each step: the shell ignores everything from \texttt{\#} to the end of the line.
 
 \subsection*{Step 3: ask for it, as a browser would}
 
@@ -150,7 +150,7 @@ $ curl --silent --include https://cims.nyu.edu/~atcold/probe.cgi | head -n 15
 |!hello!|
 \end{cmdout}
 
-\here[long flags] \name{curl} fetches an address from the terminal: \texttt{--silent} keeps it quiet about progress, \texttt{--include} also shows the response headers, the lines before the content. \texttt{head -n 15} keeps only the first 15 lines.
+\name{curl} fetches an address from the terminal: \texttt{--silent} keeps it quiet about progress, \texttt{--include} also shows the response headers, the lines before the content. \texttt{head -n 15} keeps only the first 15 lines.
 
 \begin{result}{\name{cims} runs my programs}
 The answer is \texttt{hello}, and the content type is the \texttt{text/plain} the script printed. So \name{Apache} \emph{ran} the script and sent back its output. Had it only served files, the answer would have been the script's own text, the four \name{Python} lines, or an error page. \texttt{200} is HTTP for ‘OK’.
@@ -168,34 +168,36 @@ $ ssh cims 'rm public_html/probe.cgi' &&         # delete it on cims
 |!403!|
 \end{cmdout}
 
-\here[prose trimmed; long flags] \texttt{--output /dev/null} throws the content away. \texttt{--write-out} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
+\texttt{--output /dev/null} throws the content away. \texttt{--write-out} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
 
 \section{What this unlocks}
 
 The phone can now \texttt{POST} each mistake to a small program on \name{cims}, \name{log.cgi}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}.
 
 \needspace{7\baselineskip}
-\here[new: a POST, step by step; diagram] A mistake travels like this~\cite[\textit{Writing CGI Scripts in Python}, p.~1128]{lutz}:
+\here[diagram: the app drawn] A mistake travels like this~\cite[\textit{Writing CGI Scripts in Python}, p.~1128]{lutz}:
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
-  \node[box=aqua] (phone) {phone\\browser};
-  \node[box=blue, right=2.0cm of phone] (apache) {\name{Apache}\\on \name{cims}};
+  \node[box=aqua] (app) {practice app\\(JavaScript)};
+  \node[draw=aqua!70!black, rounded corners=4pt, inner sep=5pt, fit=(app),
+    label={[font=\scriptsize, black!70]above:phone browser}] (phone) {};
+  \node[box=blue, right=1.8cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=lavender, right=1.4cm of apache] (cgi) {\name{log.cgi}};
   \node[box=orange, right=1.7cm of cgi] (file) {mistakes file};
   \node[box=grey, above=1.0cm of cgi] (conf) {config:\\hash of my user};
   \node[box=green, above=1.0cm of file] (vault) {vault};
-  \draw[flow] (phone) -- node[lbl, align=center]{1.\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
+  \draw[flow] (app) -- node[lbl, align=center]{1.\enspace\texttt{POST}\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{2. runs} node[lbl, below]{3. stdin} (cgi);
   \draw[flow] (conf) -- node[lbl, right]{reads} (cgi);
   \draw[flow] (cgi) -- node[lbl]{4. appends} (file);
   \draw[flow] (file) -- node[lbl, left, align=right]{Claude,\\over \name{ssh}} (vault);
-  \draw[flow] ([xshift=-3mm]cgi.south) -- ++(0,-0.7) -| node[lbl, pos=0.25, below]{5. prints: saved / refused} (phone.south);
+  \draw[flow] ([xshift=-3mm]cgi.south) -- ++(0,-0.7) -| node[lbl, pos=0.25, below]{5. prints: saved / refused} (app.south);
 \end{tikzpicture}
 \end{center}
 
 \begin{enumerate}[leftmargin=1.5em]
-  \item The phone's browser sends a \texttt{POST} to the address of \name{log.cgi}, with the mistake in the body of the request. The practice app's code tells it to.
+  \item \here[the app sends it, not me] The practice app, the JavaScript that came with the page, has the browser send a \texttt{POST} to the address of \name{log.cgi}, with the mistake in the body of the request. I never send it myself: the app does, whenever I make a mistake.
   \item \name{Apache} on \name{cims} sees a \texttt{.cgi} file at that address and runs it, instead of sending it.
   \item \name{log.cgi} reads the body of the \texttt{POST} on its standard input, as if it were typed at it. Details such as its length arrive as environment variables.
   \item What it does next is up to us: it is our program. Here, it checks who sent the mistake, then appends a line to the mistakes file.
@@ -205,13 +207,13 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 \name{log.cgi} answers anyone who finds its address, so it has to tell my mistakes from anyone else's:
 
 \begin{itemize}[leftmargin=1.2em]
-  \item Nothing secret can live in the \here[‘practice’ added] practice app: every browser that opens it downloads its code, and anyone can read it. So the app asks me who I am the first time it sends a mistake, keeps the answer on the phone, and sends it with every \texttt{POST}. \here[identity editable] I can change the answer there if I mistype it.
+  \item Nothing secret can live in the practice app: every browser that opens it downloads its code, and anyone can read it. So the app asks me who I am the first time it sends a mistake, keeps the answer on the phone, and sends it with every \texttt{POST}. I can change the answer there if I mistype it.
   \item \name{log.cgi} appends only my mistakes and refuses the rest; the app shows a notice when a \texttt{POST} is refused. Its code is never sent out, and holds nothing personal anyway: it reads a small config file on \name{cims}, outside \name{public\_html}, with a hash of my user (a fingerprint that can be checked but not turned back into the user) and the place of the mistakes file. \name{deploy.py} writes that file from my own config.
   \item The mistakes file also lives outside \name{public\_html}, so the web can write to it only through \name{log.cgi}, and never read it back.
 \end{itemize}
 
 \begin{thebibliography}{Lut11}
-  \bibitem[Lut11]{lutz}\here[one Lutz entry; no JS, no APUE] Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. \textit{HTTP: Accessing Websites}, p.~994; \textit{What's a Server-Side CGI Script?}, p.~1126, and its \textit{Writing CGI Scripts in Python}, p.~1128.  \bibitem[curl]{curl} \name{curl} manual page, \texttt{man curl}, option \texttt{-w, --write-out}.
+  \bibitem[Lut11]{lutz} Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. \textit{HTTP: Accessing Websites}, p.~994; \textit{What's a Server-Side CGI Script?}, p.~1126, and its \textit{Writing CGI Scripts in Python}, p.~1128.  \bibitem[curl]{curl} \name{curl} manual page, \texttt{man curl}, option \texttt{-w, --write-out}.
 \end{thebibliography}
 
 \end{document}
