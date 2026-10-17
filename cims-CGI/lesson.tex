@@ -167,11 +167,14 @@ This deletes the script on \name{cims}, asks for its address again, and deletes 
 
 \section{What this unlocks}
 
-The phone can now \texttt{POST} each mistake to a small program on \name{cims}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}. Two precautions come with it:
+The phone can now \texttt{POST} each mistake to a small program on \name{cims}, \name{log.cgi}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}.
+
+\name{log.cgi} answers anyone who finds its address, so it has to tell my mistakes from anyone else's:
 
 \begin{itemize}[leftmargin=1.2em]
-  \item The program answers anyone who finds its address, so the app sends a secret word with every \texttt{POST}, and the program ignores any request without it.
-  \item The mistakes file lives outside \name{public\_html}, so the web can write to it only through the program, and never read it back.
+  \item Nothing secret can live in the app: every browser that opens it downloads its code, and anyone can read it. So the app asks me who I am the first time it sends a mistake, keeps the answer on the phone, and sends it with every \texttt{POST}.
+  \item \name{log.cgi} appends only my mistakes and refuses the rest; the app shows a notice when a \texttt{POST} is refused. Its code is never sent out, and holds nothing personal anyway: it reads a small config file on \name{cims}, outside \name{public\_html}, with a hash of my user (a fingerprint that can be checked but not turned back into the user) and the place of the mistakes file. \name{deploy.py} writes that file from my own config.
+  \item The mistakes file also lives outside \name{public\_html}, so the web can write to it only through \name{log.cgi}, and never read it back.
 \end{itemize}
 
 \end{document}
