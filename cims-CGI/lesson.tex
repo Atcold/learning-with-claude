@@ -63,7 +63,7 @@ I am building a Chinese practice app: a web page where I match characters, sound
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[\textit{HTTP: Accessing Websites}, p.~994]{lutz}. The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them. \here[new: a page can carry a program] A page can also carry a program, written in JavaScript, which the browser runs once the page has arrived. The practice app is such a program.
+My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[\textit{HTTP: Accessing Websites}, p.~994]{lutz}. The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them. A page can also carry a program, written in JavaScript, which the browser runs once the page has arrived. The practice app is such a program.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -80,7 +80,7 @@ This road is one-way. The web can only \emph{read} files. Only someone logged in
 
 \section{What a mistake log needs: a \texttt{POST}, and something to catch it}
 
-\here[diagrams: agent above the browser] To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \texttt{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the \texttt{POST} and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
+To save a mistake, data has to travel the other way, from the phone to \name{cims}. Browsers can send data: that request is called a \texttt{POST}. But a plain file cannot receive anything. Something on \name{cims} has to take the \texttt{POST} and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -168,14 +168,14 @@ $ ssh cims 'rm public_html/probe.cgi' &&         # delete it on cims
 |!403!|
 \end{cmdout}
 
-\texttt{--output /dev/null} throws the content away. \texttt{--write-out} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}~\cite{curl}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
+\texttt{--output /dev/null} throws the content away. \texttt{--write-out} takes a format to print once the request is done: \name{curl} replaces \texttt{\%\{http\_code\}} with the status code, and \texttt{\textbackslash n} ends the line. The single quotes stop the shell from touching the \texttt{\%} and the \texttt{\textbackslash}. \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why \name{cims} answers 403 here rather than 404 (‘not found’).
 
 \section{What this unlocks}
 
 The phone can now \texttt{POST} each mistake to a small program on \name{cims}, \name{log.cgi}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}.
 
 \needspace{7\baselineskip}
-\here[diagram: agent above the browser] A mistake travels like this~\cite[\textit{Writing CGI Scripts in Python}, p.~1128]{lutz}:
+A mistake travels like this~\cite[\textit{Writing CGI Scripts in Python}, p.~1128]{lutz}:
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -195,8 +195,8 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 \end{center}
 
 \begin{enumerate}[leftmargin=1.5em]
-  \item \here[the app sends it, not me] The practice app, the JavaScript that came with the page, has the browser send a \texttt{POST} to the address of \name{log.cgi}, with the mistake in the body of the request. I never send it myself: the app does, whenever I make a mistake.
-  \item \here[whose POST] \name{Apache} on \name{cims} receives the app's \texttt{POST}, sees a \texttt{.cgi} file at that address, and runs it instead of sending it.
+  \item The practice app, the JavaScript that came with the page, has the browser send a \texttt{POST} to the address of \name{log.cgi}, with the mistake in the body of the request. I never send it myself: the app does, whenever I make a mistake.
+  \item \name{Apache} on \name{cims} receives the app's \texttt{POST}, sees a \texttt{.cgi} file at that address, and runs it instead of sending it.
   \item \name{log.cgi} reads the body of the \texttt{POST} on its standard input, as if it were typed at it. Details such as its length arrive as environment variables.
   \item What it does next is up to us: it is our program. Here, it checks who sent the mistake, then appends a line to the mistakes file.
   \item Whatever it prints goes back to the phone as the response, as \texttt{hello} did in the test. That is how the app learns whether the mistake was saved or refused.
@@ -211,7 +211,7 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 \end{itemize}
 
 \begin{thebibliography}{Lut11}
-  \bibitem[Lut11]{lutz} Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. \textit{HTTP: Accessing Websites}, p.~994; \textit{What's a Server-Side CGI Script?}, p.~1126, and its \textit{Writing CGI Scripts in Python}, p.~1128.  \bibitem[curl]{curl} \name{curl} manual page, \texttt{man curl}, option \texttt{-w, --write-out}.
+  \bibitem[Lut11]{lutz} Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. \textit{HTTP: Accessing Websites}, p.~994; \textit{What's a Server-Side CGI Script?}, p.~1126, and its \textit{Writing CGI Scripts in Python}, p.~1128.
 \end{thebibliography}
 
 \end{document}
