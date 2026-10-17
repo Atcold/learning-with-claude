@@ -62,7 +62,7 @@
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite{flanagan}, \cite[p.~994]{lutz}.\here The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \name{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. \here Browser and server talk in \textbf{HTTP} (HyperText Transfer Protocol). Each exchange is a request (a method, an address, a few header lines) and a response (a status code such as \texttt{200}, ‘OK’, header lines, then the content)~\cite[p.~792]{apue}, \cite[pp.~994, 997]{lutz}.\here{} The request ‘give me this file’ uses the method \texttt{GET}. That is how the dictionary is published: \name{deploy.py} copies the files there with \name{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
@@ -94,7 +94,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
 \end{center}
 
 \begin{insight}{CGI}
-The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[p.~1126]{lutz}.\here The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
+The old, simple way for \name{Apache} to run a program is \textbf{CGI} (Common Gateway Interface)~\cite[p.~1126]{lutz}.\here{} The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
 \end{insight}
 
 Whether \name{Apache} on \name{cims} is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.
@@ -173,6 +173,16 @@ This deletes the script on \name{cims}, asks for its address again, and deletes 
 
 The phone can now \texttt{POST} each mistake to a small program on \name{cims}, \name{log.cgi}, which appends it to a file. Claude then copies the new lines into the vault over \name{ssh}.
 
+\here A mistake travels like this~\cite[pp.~1128--1129]{lutz}:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item The phone's browser sends a \texttt{POST} to the address of \name{log.cgi}, with the mistake in the body of the request. The practice app's code tells it to.
+  \item \name{Apache} on \name{cims} sees a \texttt{.cgi} file at that address and runs it, instead of sending it.
+  \item \name{log.cgi} reads the body of the \texttt{POST} on its standard input, as if it were typed at it. Details such as its length arrive as environment variables.
+  \item What it does next is up to us: it is our program. Here, it checks who sent the mistake, then appends a line to the mistakes file.
+  \item Whatever it prints goes back to the phone as the response, as \texttt{hello} did in the test. That is how the app learns whether the mistake was saved or refused.
+\end{enumerate}
+
 \name{log.cgi} answers anyone who finds its address, so it has to tell my mistakes from anyone else's:
 
 \begin{itemize}[leftmargin=1.2em]
@@ -182,8 +192,8 @@ The phone can now \texttt{POST} each mistake to a small program on \name{cims}, 
 \end{itemize}
 
 \begin{thebibliography}{Lut11}
-  \bibitem[Fla20]{flanagan}\here David Flanagan, \textit{JavaScript: The Definitive Guide}, 7th ed., O'Reilly, 2020. §15.11 ‘Networking’, p.~518.
-  \bibitem[Lut11]{lutz} Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. ‘HTTP: Accessing Websites’, p.~994; ‘What's a Server-Side CGI Script?’, p.~1126.
+  \bibitem[Lut11]{lutz}\here Mark Lutz, \textit{Programming Python}, 4th ed., O'Reilly, 2011. ‘HTTP: Accessing Websites’, pp.~994--997; ‘What's a Server-Side CGI Script?’, pp.~1126--1129.
+  \bibitem[SR13]{apue}\here W.~Richard Stevens and Stephen A.~Rago, \textit{Advanced Programming in the UNIX Environment}, 3rd ed., Addison-Wesley, 2013. Ch.~21 ‘Communicating with a Network Printer’, p.~792.
   \bibitem[curl]{curl} \name{curl} manual page, \texttt{man curl}, option \texttt{-w, --write-out}.
 \end{thebibliography}
 
