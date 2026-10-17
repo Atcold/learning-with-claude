@@ -5,6 +5,7 @@ Lessons Claude writes for me after we work through something together: what we d
 Each folder is one lesson.
 
 - [HP Color LaserJet CP1215 on macOS](HP-CP1215/): CUPS, foomatic, Ghostscript.
+- [Can cims run a program?](cims-CGI/): static files, POST, CGI.
 
 ## Building
 

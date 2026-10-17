@@ -1,0 +1,216 @@
+% Lesson: can my cims web space run a program, not just serve files?
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{twemojis}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{✗}{\ensuremath{\times}}
+\newfontfamily\zhfont{Songti TC}
+\newunicodechar{願}{{\zhfont 願}}
+\newunicodechar{意}{{\zhfont 意}}
+\newunicodechar{原}{{\zhfont 原}}
+\newunicodechar{因}{{\zhfont 因}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+% ColorBrewer Set3, in order
+\definecolor{aqua}{HTML}{8DD3C7}
+\definecolor{yellow}{HTML}{FFFFB3}
+\definecolor{lavender}{HTML}{BEBADA}
+\definecolor{red}{HTML}{FB8072}
+\definecolor{blue}{HTML}{80B1D3}
+\definecolor{orange}{HTML}{FDB462}
+\definecolor{green}{HTML}{B3DE69}
+\definecolor{pink}{HTML}{FCCDE5}
+\definecolor{grey}{HTML}{D9D9D9}
+\definecolor{violet}{HTML}{BC80BD}
+
+\newcommand{\emo}[1]{\texttwemoji{#1}}
+
+\newtcolorbox{insight}[1]{enhanced, breakable, colback=blue!18, colframe=blue!60!black,
+  colbacktitle=blue!60, coltitle=black, title={\emo{light bulb}\ #1}, fonttitle=\bfseries, boxrule=0.8pt, arc=2pt}
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\lstdefinestyle{shell}{
+  language=bash, basicstyle=\ttfamily\footnotesize, columns=fullflexible,
+  keepspaces=true, breaklines=true, showstringspaces=false,
+  keywordstyle=\color{violet!80!black}\bfseries, stringstyle=\color{green!40!black},
+  commentstyle=\color{black!55}\itshape,
+  morekeywords={ssh,scp,curl,chmod,cat,rm,head,cd,clear,echo}
+}
+\lstdefinestyle{out}{
+  basicstyle=\ttfamily\scriptsize\color{black!80}, columns=fullflexible, keepspaces=true,
+  breaklines=true, showstringspaces=false,
+  % |!…!| the line to read, |~…~| noise to skip
+  moredelim=[is][\color{red!80!black}\bfseries]{|!}{!|},
+  moredelim=[is][\color{black!35}]{|~}{~|}
+}
+\lstdefinestyle{python}{
+  language=Python, basicstyle=\ttfamily\footnotesize, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, keywordstyle=\color{violet!80!black}\bfseries,
+  stringstyle=\color{green!40!black}, commentstyle=\color{black!55}\itshape
+}
+
+\newtcblisting{pane}{listing engine=listings, listing only, enhanced, breakable,
+  colback=blue!12, colframe=blue!70!black, boxrule=0.6pt, arc=2pt,
+  colbacktitle=blue!60, coltitle=black, title={\emo{desktop computer}\ Shared pane 2.2 on AlfMAC5 (visible to you)}, fonttitle=\small\bfseries,
+  listing options={style=shell}}
+\newtcblisting{cmdout}{listing engine=listings, listing only, enhanced, breakable,
+  colback=white, colframe=black!25, boxrule=0.4pt, arc=1pt, left=4pt,
+  title={Output}, fonttitle=\scriptsize, coltitle=black!70, colbacktitle=black!6,
+  listing options={style=out}}
+\newtcblisting{script}{listing engine=listings, listing only, enhanced,
+  colback=yellow!35, colframe=orange!70!black, boxrule=0.6pt, arc=2pt,
+  colbacktitle=orange!50, coltitle=black, title={\emo{page facing up}\ probe.cgi}, fonttitle=\small\bfseries,
+  listing options={style=python}}
+
+\tikzset{
+  box/.style={draw=#1!70!black, fill=#1!45, very thick, rounded corners=3pt,
+    minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize},
+  unknown/.style={draw=red!85!black, fill=red!12, very thick, dashed, rounded corners=3pt,
+    minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize},
+  flow/.style={-{Stealth[length=7pt]}, very thick, black!60},
+  lbl/.style={font=\scriptsize, black!70, above, midway},
+}
+
+\title{\emo{globe with meridians}\ Can cims run a program?\\[0.3em]
+  \large From a file server to one that takes a POST}
+\author{Lesson for Alfredo Canziani, written by Claude}
+\date{Sat 17 Oct 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Why we asked}
+
+The Chinese practice app will run in the phone's browser, served from cims. When I mismatch two words, say 願意 \textit{yuànyì} ‘willing’ with 原因 \textit{yuányīn} ‘reason’, the app should record the mistake somewhere Claude can later read and copy into the vault. The question was whether cims can do that on its own.
+
+\section{The starting point: a file server}
+
+My web space on cims is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (Apache) hands out to anyone who asks for its address. That is how the dictionary is published: \texttt{deploy.py} copies the files there with \texttt{scp}, and the phone fetches them.
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.1cm]
+  \node[box=aqua] (phone) {phone\\browser};
+  \node[box=blue, right=1.6cm of phone] (apache) {Apache\\on cims};
+  \node[box=orange, right=1.6cm of apache] (file) {\texttt{chinese.html}\\in \texttt{public\_html}};
+  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl]{GET: give me the page} ([yshift=4pt]apache.west);
+  \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
+  \draw[flow] (apache) -- node[lbl]{reads} (file);
+\end{tikzpicture}
+\end{center}
+
+This road is one-way. The web can only \emph{read} files. Only someone logged in to cims, me or Claude over \texttt{ssh}, can change them.
+
+\section{What a mistake log needs: a POST, and something to catch it}
+
+To save a mistake, data has to travel the other way, from the phone to cims. Browsers can send data: that request is called a \textbf{POST}. But a plain file cannot receive anything. Something on cims has to take the POST and write it down, and that something has to be a \textbf{program} the server runs when the request arrives.
+
+\begin{center}
+\begin{tikzpicture}[node distance=1.1cm]
+  \node[box=aqua] (phone) {phone\\browser};
+  \node[box=blue, right=1.4cm of phone] (apache) {Apache\\on cims};
+  \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\texttt{log.cgi})};
+  \node[box=orange, right=1.4cm of prog] (file) {mistakes file};
+  \draw[flow] (phone) -- node[lbl]{POST: 願意 ✗ 原因} (apache);
+  \draw[flow] (apache) -- node[lbl]{runs} (prog);
+  \draw[flow] (prog) -- node[lbl]{appends} (file);
+\end{tikzpicture}
+\end{center}
+
+\begin{insight}{CGI}
+The old, simple way for Apache to run a program is \textbf{CGI} (Common Gateway Interface). The rules are short. A file whose name ends in \texttt{.cgi} and that is allowed to execute gets \emph{run} instead of sent. Whatever the program prints is what the browser receives. It must print a header line saying what kind of content follows, then one empty line, then the content.
+\end{insight}
+
+Whether Apache on cims is allowed to run \emph{my} programs is a setting NYU chooses, and I cannot see it from outside. So we tried it.
+
+\section{The test}
+
+The probe is the smallest CGI program possible. It prints the header, the empty line, and the word \texttt{hello}:
+
+\begin{script}
+#!/usr/bin/env python3
+print("Content-Type: text/plain")
+print()
+print("hello")
+\end{script}
+
+The first line tells the system which interpreter runs the file (Python 3). \texttt{text/plain} says the content is plain text. The bare \texttt{print()} is the empty line that ends the headers.
+
+\subsection*{Step 1: look at the script}
+
+\begin{pane}
+cd ~/Work/Scratch && clear && cat probe.cgi
+\end{pane}
+
+\texttt{clear} wiped the pane \emph{before} \texttt{cat} printed the script, so the script was on screen afterwards. The commands typed before it were what got erased.
+
+\subsection*{Step 2: upload it and make it executable}
+
+\begin{pane}
+scp probe.cgi cims:public_html/ && ssh cims 'chmod 755 public_html/probe.cgi' && echo uploaded
+\end{pane}
+\begin{cmdout}
+probe.cgi                                       100%   80     6.8KB/s   00:00
+uploaded
+\end{cmdout}
+
+\texttt{scp} copies the file into \texttt{public\_html}. \texttt{chmod 755} sets its permissions: I may read, write and run it, everyone else may read and run it. Without the ‘run’ bit, Apache would refuse to execute it. \texttt{\&\&} runs the next command only if the previous one succeeded, so \texttt{uploaded} appears only if both worked.
+
+\subsection*{Step 3: ask for it, as a browser would}
+
+\begin{pane}
+curl -si https://cims.nyu.edu/~atcold/probe.cgi | head -15
+\end{pane}
+\begin{cmdout}
+|!HTTP/2 200!|
+|!content-type: text/plain; charset=UTF-8!|
+|~date: Sat, 17 Oct 2026 16:42:47 GMT~|
+|~server: Apache/2.4.62~|
+|~content-security-policy: upgrade-insecure-requests~|
+|~strict-transport-security: max-age=31536000; preload;~|
+|~set-cookie: USERSERVERID=p1; path=/~|
+|!hello!|
+\end{cmdout}
+
+\texttt{curl} fetches an address from the terminal: \texttt{-s} keeps it silent about progress, \texttt{-i} also shows the response headers, the lines before the content. \texttt{head -15} keeps only the first 15 lines.
+
+\begin{result}{cims runs my programs}
+The answer is \texttt{hello}, and the content type is the \texttt{text/plain} the script printed. So Apache \emph{ran} the script and sent back its output. Had it only served files, the answer would have been the script's own text, the four Python lines, or an error page. \texttt{200} is HTTP for ‘OK’.
+\end{result}
+
+\subsection*{Step 4: remove the probe}
+
+\begin{pane}
+ssh cims 'rm public_html/probe.cgi' && curl -s -o /dev/null -w '%{http_code}\n' https://cims.nyu.edu/~atcold/probe.cgi && rm probe.cgi
+\end{pane}
+\begin{cmdout}
+|!403!|
+\end{cmdout}
+
+This deletes the script on cims, asks for its address again, and deletes the local copy. This time \texttt{curl} throws the content away (\texttt{-o /dev/null}) and prints only the status code (\texttt{-w}). \texttt{403} means the server refuses: the probe is no longer answering. We did not check what that address returned \emph{before} the upload, so this lesson cannot say why cims answers 403 here rather than 404 (‘not found’).
+
+\section{What this unlocks}
+
+The phone can now POST each mistake to a small program on cims, which appends it to a file. Claude then copies the new lines into the vault over \texttt{ssh}. Two precautions come with it:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item The program answers anyone who finds its address, so the app sends a secret word with every POST, and the program ignores any request without it.
+  \item The mistakes file lives outside \texttt{public\_html}, so the web can write to it only through the program, and never read it back.
+\end{itemize}
+
+\end{document}
