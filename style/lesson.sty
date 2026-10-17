@@ -16,15 +16,20 @@
 \newif\ifreview
 \reviewtrue
 \newcounter{here}
-\newcommand{\here@hand}{\ifreview\refstepcounter{here}\label{here:\thehere}\tikz[remember picture,overlay,baseline]
-  \node[anchor=east, inner sep=0pt, font=\small\bfseries\color{red!85!black}]
-  at ([xshift=1.95cm]current page.west |- 0,0.3em) {\thehere\,\pgfornament[height=0.9em]{152}};\fi}
+\newcommand{\here@hand}[1]{\ifreview\refstepcounter{here}\label{here:\thehere}\tikz[remember picture,overlay,baseline]{
+  \node[anchor=east, inner sep=0pt, font=\small\bfseries\color{red!85!black}] (here@h)
+    at ([xshift=1.95cm]current page.west |- 0,0.3em) {\thehere\,\pgfornament[height=0.9em]{152}};
+  \if\relax\detokenize{#1}\relax\else
+    \node[anchor=north east, inner sep=0pt, text width=1.7cm, align=right,
+      font=\tiny\itshape\color{red!85!black}] at ([yshift=-1.5pt]here@h.south east) {#1};
+  \fi}\fi}
+% \here[what changed]: the optional note goes under the hand, in tiny italic.
 % Keeps the space a control word would swallow (".\here The"), but adds none at a
 % paragraph start or after a space ("the \here word").
-\newcommand{\here}{%
-  \ifvmode\leavevmode\let\here@next\relax
-  \else\ifdim\lastskip>\z@\let\here@next\relax\else\let\here@next\xspace\fi\fi
-  \here@hand\here@next}
+\newcommand{\here}[1][]{%
+  \ifvmode\leavevmode\let\here@next\ignorespaces
+  \else\ifdim\lastskip>\z@\let\here@next\ignorespaces\else\let\here@next\xspace\fi\fi
+  \here@hand{#1}\here@next}
 
 % ColorBrewer Set3, in order
 \definecolor{aqua}{HTML}{8DD3C7}
