@@ -10,3 +10,5 @@ This lesson is how we got both working again. Two bugs: a Ghostscript missing it
 - `print.py`: my print script, as listed in the lesson.
 - `print-ui.png`: its window.
 - `probe-alfmac3.sh`: read-only checks for the lesson's open questions, run on AlfMAC3.
+
+Possible reference, not yet used: Stevens & Rago, *Advanced Programming in the UNIX Environment*, 3rd ed., ch. 21 ‘Communicating with a Network Printer’ (IPP over HTTP), p. 792.
