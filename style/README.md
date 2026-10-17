@@ -7,3 +7,4 @@ Rules the package cannot enforce:
 - Every name of a thing (program, file, folder, host) in sans, with `\name{}`. Monospace only for literal text you would type or see printed. No underlines.
 - TikZ defaults: plain `->` tips, default line width, labels clear of the arrows.
 - Pinyin and characters are always tone-coloured.
+- Each feedback round marks every edit with `\here[what changed]`: a numbered hand in the margin with a tiny italic note. `\reviewfalse` hides them all.
