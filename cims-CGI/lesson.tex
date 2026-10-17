@@ -69,7 +69,7 @@ My web space on \name{cims} is the folder \name{public\_html} in my home directo
   \node[box=aqua] (phone) {phone\\browser};
   \node[box=blue, right=2.8cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=orange, right=1.6cm of apache] (file) {\name{chinese.html}\\in \name{public\_html}};
-  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, align=center]{\texttt{GET}\\give me the page} ([yshift=4pt]apache.west);
+  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl]{\texttt{GET}} ([yshift=4pt]apache.west);
   \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
   \draw[flow] (apache) -- node[lbl]{reads} (file);
 \end{tikzpicture}
