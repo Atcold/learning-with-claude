@@ -113,7 +113,7 @@ The Chinese practice app will run in the phone's browser, served from \name{cims
 
 \section{The starting point: a file server}
 
-My web space on \name{cims} is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. That is how the dictionary is published: \texttt{deploy.py} copies the files there with \texttt{scp}, and the phone fetches them.
+My web space on \name{cims} is the folder \texttt{public\_html} in my home directory there. Whatever file I put in it, the web server (\name{Apache}) hands out to anyone who asks for its address. That is how the dictionary is published: \name{deploy.py} copies the files there with \texttt{scp}, and the phone fetches them.
 
 \begin{center}
 \begin{tikzpicture}[node distance=1.1cm]
