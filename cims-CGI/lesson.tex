@@ -69,7 +69,7 @@ My web space on \name{cims} is the folder \name{public\_html} in my home directo
   \node[box=aqua] (phone) {phone\\browser};
   \node[box=blue, right=2.8cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[box=orange, right=1.6cm of apache] (file) {\name{chinese.html}\\in \name{public\_html}};
-  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, align=center]{give me the page\\GET} ([yshift=4pt]apache.west);
+  \draw[flow] ([yshift=4pt]phone.east) -- node[lbl, align=center]{GET\\give me the page} ([yshift=4pt]apache.west);
   \draw[flow] ([yshift=-4pt]apache.west) -- node[lbl, below]{the page} ([yshift=-4pt]phone.east);
   \draw[flow] (apache) -- node[lbl]{reads} (file);
 \end{tikzpicture}
@@ -87,7 +87,7 @@ To save a mistake, data has to travel the other way, from the phone to \name{cim
   \node[box=blue, right=2.4cm of phone] (apache) {\name{Apache}\\on \name{cims}};
   \node[unknown, right=1.4cm of apache] (prog) {a program?\\(\name{log.cgi})};
   \node[box=orange, right=1.4cm of prog] (file) {mistakes file};
-  \draw[flow] (phone) -- node[lbl, align=center]{\yuanyi\ ✗ \yuanyin\\POST} (apache);
+  \draw[flow] (phone) -- node[lbl, align=center]{POST\\\yuanyi\ ✗ \yuanyin} (apache);
   \draw[flow] (apache) -- node[lbl]{runs} (prog);
   \draw[flow] (prog) -- node[lbl]{appends} (file);
 \end{tikzpicture}
