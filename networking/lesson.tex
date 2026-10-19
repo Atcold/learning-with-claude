@@ -1,0 +1,182 @@
+% Lesson: networking, starting from the tailnet: how do my machines reach each other?
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,calc}
+\usepackage{twemojis}
+\usepackage{lesson}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\renewcommand{\panetitle}{Shared pane 5.2, logged in to \name{AlfSPARK}}
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\tikzset{
+  box/.style={draw=#1!70!black, fill=#1!45, very thick, rounded corners=3pt,
+    minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize},
+  alt/.style={draw=black!40, fill=grey!30, dashed, rounded corners=3pt,
+    minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize, text=black!60},
+  flow/.style={->, black!60},
+  lbl/.style={font=\scriptsize, black!70, above, midway},
+}
+
+\title{\emo{globe with meridians}\ Networking\\[0.3em]
+  \large How my machines reach each other}
+\author{Lesson for Alfredo Canziani, written by Claude}
+\date{Sun 18 Oct 2026}
+
+\begin{document}
+\maketitle
+
+\section{The tailnet: which path does the traffic take?}
+
+My machines share a tailnet, so \texttt{ssh alfspark} or \texttt{ssh alfmac4} works from any of them, wherever they are. That hides \emph{how} the traffic gets there. Two commands, typed on any machine of the tailnet, show the path to each of the others. The examples here are run on \name{AlfSPARK}. The addresses are partly masked (\texttt{x}, \texttt{y}) because this repo is public.
+
+\begin{insight}{Tailscale, in three lines}
+Every machine on the tailnet gets an address of its own, starting with \texttt{100.}, which works only inside the tailnet. Between two machines, \name{Tailscale} first tries a \textbf{direct} path, an encrypted tunnel straight from one to the other, across the house or across the Internet. If firewalls block that, it falls back to a \textbf{relay}: a \name{Tailscale} server on the Internet that passes the traffic along. \here[no speed claim] Both work.
+\end{insight}
+
+\begin{center}
+\here[AlfMAC4 at NYU]\begin{tikzpicture}
+  \node[box=blue] (mac) {\name{AlfMAC5}\\\texttt{192.168.4.x}};
+  \node[box=green, right=2.6cm of mac] (spark) {\name{AlfSPARK}\\\texttt{192.168.4.y}};
+  \node[box=grey, below=0.9cm of $(mac)!0.5!(spark)$] (router) {home router};
+  \node[draw=black!40, rounded corners=4pt, inner sep=8pt,
+    label={[font=\scriptsize, black!70]below:home LAN}, fit=(mac)(spark)(router)] (lan) {};
+  \node[box=orange, right=3.4cm of spark] (far) {\name{AlfMAC4}\\at NYU};
+  \node[alt, above=1.3cm of $(spark)!0.5!(far)$] (relay) {relay\\on the Internet};
+  \draw[flow, <->] (mac) -- node[lbl]{1. direct, LAN} (spark);
+  \draw[black!40] (mac) |- (router);
+  \draw[black!40] (spark) |- (router);
+  \draw[flow, <->] (spark) -- node[lbl]{2. direct, Internet} (far);
+  \draw[flow, <->, dashed] (spark.north) |- (relay);
+  \draw[flow, <->, dashed] (far.north) |- (relay);
+  \node[font=\scriptsize, black!70, above=1pt of relay] {3. relay, if 2 is blocked};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Step 1: every machine, and its path}
+
+\begin{pane}
+$ tailscale status    # one line per machine on the tailnet
+\end{pane}
+\begin{cmdout}
+|~100.x.x.x       alfspark  alfredo.canziani@  linux    -~|
+|~100.x.x.x       alfmac3   alfredo.canziani@  macOS    offline, last seen 8d ago~|
+|~100.x.x.x       alfmac4   alfredo.canziani@  macOS    -~|
+|!100.x.x.x       alfmac5   alfredo.canziani@  macOS    active; direct 192.168.4.x:41641, tx 75252 rx 107436!|
+|~100.x.x.x       alfphone  alfredo.canziani@  iOS      -~|
+|~100.x.x.x       go-10     alfredo.canziani@  android  offline, last seen 23d ago~|
+\end{cmdout}
+
+The first line is the machine I am on. The last column is the one to read:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \texttt{-}: online, but no traffic right now, so no path to report.
+  \item \texttt{offline, last seen \ldots}: switched off, or not connected.
+  \item \texttt{active; direct 192.168.4.x:41641}: a tunnel straight to that machine, landing at that address.
+  \item \here[see step 3] \texttt{active; relay "nyc"}: through a relay, here the one in New York. Step 3 catches one.
+\end{itemize}
+
+\subsection*{Step 2: a machine at home}
+
+\begin{pane}
+$ tailscale ping alfmac5    # stops once the path is direct
+\end{pane}
+\begin{cmdout}
+|!pong from alfmac5 (100.x.x.x) via 192.168.4.x:41641 in 5ms!|
+\end{cmdout}
+
+\here[until direct] The same path, \texttt{via 192.168.4.x}, plus the round trip: 5\,ms. \texttt{tailscale ping} keeps pinging until the path is direct, so here one answer was enough.
+
+\subsection*{Step 3: a machine away from home}
+
+\here[relay, recorded] \name{AlfMAC4} sits at NYU, not at home.
+
+\begin{pane}
+$ tailscale ping alfmac4
+\end{pane}
+\begin{cmdout}
+pong from alfmac4 (100.x.x.x) via DERP(nyc) in 13ms
+pong from alfmac4 (100.x.x.x) via DERP(nyc) in 13ms
+pong from alfmac4 (100.x.x.x) via DERP(nyc) in 9ms
+|!pong from alfmac4 (100.x.x.x) via 216.165.x.x:1029 in 8ms!|
+\end{cmdout}
+
+The first three answers came \texttt{via DERP(nyc)}, through the New York relay: case 3 in the drawing. Meanwhile the two machines found a way through, and the fourth came straight from \texttt{216.165.x.x}, an address of NYU's network: case 2. Then the ping stopped.
+
+\begin{insight}{Reading the address}
+\here[trimmed to the gist] \texttt{DERP(\ldots)} or \texttt{relay "\ldots"} means a relay. An address means a direct path, and the address says where the other machine is. \texttt{192.168.\ldots} or \texttt{10.\ldots}, like mine: the same network, case 1. Anything else: somewhere across the Internet, case 2.
+\end{insight}
+
+\begin{result}{Where my traffic goes}
+\name{AlfSPARK} and \name{AlfMAC5} talk straight across the home LAN. \name{AlfSPARK} and \name{AlfMAC4} started on the New York relay, then went direct across the Internet.
+\end{result}
+
+\here[paths move] The path is not fixed. It often starts on a relay and goes direct once the machines find each other, and it can switch between a machine's addresses later. Look again, and it may have moved.
+
+\needspace{6\baselineskip}
+\subsection*{The same commands on a Mac}
+
+\here[CLI integration] On the Macs, \name{tailscale} comes inside the app and is not on the \name{PATH}. The app's Settings \texttt{→} ‘CLI integration’ adds a small \name{tailscale} script in \name{/usr/local/bin} that calls it. After that, the commands above work as they are.
+
+\section{A device on the LAN: the smart plug}
+
+\here[new section] \name{AlfSPARK} draws its power through a Kasa smart plug, an HS110, on the home Wi-Fi at \texttt{192.168.4.z}. The plug can be switched off and on, and it measures the power going through it. The Kasa app on the phone controls it from anywhere, through TP-Link's servers. At home, a Mac can talk to it directly, with no server in between.
+
+\begin{insight}{No web page, one port}
+The plug runs no web server: ports \texttt{80} and \texttt{443} are closed. It listens on port \texttt{9999} only, for Kasa's own protocol. A request is a line of JSON, such as \texttt{\{"emeter":\{"get\_realtime":\{\}\}\}} (‘give me the power meter's readings’), \textbf{scrambled}: each byte is XORed with the one before it, starting from 171. The reply comes back scrambled the same way. That is not encryption: there is no key and no login, so anything on the LAN can read the plug or switch it.
+\end{insight}
+
+\subsection*{Step 1: by hand, with \name{nc}}
+
+\name{nc} opens a plain connection and passes bytes through. Here it sends that request, scrambled in advance and preceded by its length:
+
+\renewcommand{\panetitle}{Shared pane 5.2, on \name{AlfMAC5}}
+\begin{pane}
+$ printf '\x00\x00\x00\x1e\xd0\xf2\x97\xfa\x9f\xeb\x8e\xfc\xde\xe4\x9f\xbd\xda\xbf\xcb\x94\xe6\x83\xe2\x8e\xfa\x93\xfe\x9b\xb9\x83\xf8\x85\xf8\x85' | nc -w 2 192.168.4.z 9999 | xxd    # length + scrambled request
+\end{pane}
+\begin{cmdout}
+00000000: 0000 0075 d0f2 97fa 9feb 8efc dee4 9fbd  ...u............
+00000010: dabf cb94 e683 e28e fa93 fe9b b983 f8da  ................
+|~...~|
+00000070: c1a5 c0e2 d8e8 95e8 95                   .........
+\end{cmdout}
+
+The plug answers: \texttt{0000 0075} says 117 bytes follow. But they are scrambled, and the shell has no tool to undo that. Carrying the bytes is easy; reading them takes a program.
+
+\subsection*{Step 2: with \name{kasa}}
+
+\name{kasa}, installed with \texttt{pipx install python-kasa}, does the scrambling both ways, and finds the plug by its name instead of its address:
+
+\renewcommand{\panetitle}{A shell on \name{AlfMAC5}}
+\begin{pane}
+$ kasa --alias AlfSPARK state | grep -E '^== |Host:|Current consumption'
+\end{pane}
+\begin{cmdout}
+== AlfSPARK - HS110 ==
+Host: 192.168.4.z
+|!Current consumption (current_consumption): 24.5 W!|
+\end{cmdout}
+
+24.5\,W is \name{AlfSPARK} idling, about three LED bulbs. \texttt{kasa --alias AlfSPARK off} and \texttt{on} switch it.
+
+\begin{result}{The plug is a LAN device}
+\name{kasa} reaches it only from inside the house: from NYU, \texttt{192.168.4.z} does not exist. From outside, the Kasa app goes through TP-Link's servers instead. The tailnet does not help here, because the plug is not on it.
+\end{result}
+
+\end{document}

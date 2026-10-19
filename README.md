@@ -6,7 +6,8 @@ Each folder is one lesson.
 
 - [HP Color LaserJet CP1215 on macOS](HP-CP1215/): CUPS, foomatic, Ghostscript.
 - [Can cims run a program?](cims-CGI/): static files, POST, CGI.
+- [Networking](networking/): the tailnet, direct paths and relays, private addresses; a smart plug on the LAN.
 
 ## Building
 
-Lessons are LaTeX. In a lesson folder, run `latexmk`; the PDF lands in `build/`. Shared colours, boxes and rules live in [`style/`](style/).
+Lessons are LaTeX. In a lesson folder, run `latexmk`; the PDF lands in `build/`, named after the folder (`build/networking.pdf`). Shared colours, boxes and rules live in [`style/`](style/).
