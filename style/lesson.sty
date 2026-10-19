@@ -67,23 +67,23 @@
 \lstdefinestyle{shell}{
   language=bash, basicstyle=\ttfamily\footnotesize, columns=flexible,  % flexible keeps trailing comments aligned
   keepspaces=true, breaklines=true, breakatwhitespace=false, showstringspaces=false,
-  keywordstyle=\color{violet!80!black}\bfseries, stringstyle=\color{green!40!black},
+  keywordstyle=\color{violet!80!black}, stringstyle=\color{green!40!black},  % no bold: bold mono swaps in a narrower font
   commentstyle=\color{black!40}\itshape,
-  morekeywords={ssh,scp,curl,chmod,echo,cd,clear,sudo,brew,gs,lp,lpstat,lpoptions,lpinfo,cupsctl,cupsfilter,grep,ls,find,tail,head,strings,file,identify,tmux,killall,launchctl,cancel,mdfind,sed,xxd,stat,which,type,pmset,open,rm,tr,wc,cut,cat,sleep},
+  morekeywords={ssh,scp,curl,chmod,echo,cd,clear,sudo,brew,gs,lp,lpstat,lpoptions,lpinfo,cupsctl,cupsfilter,grep,ls,find,tail,head,strings,file,identify,tmux,killall,launchctl,cancel,mdfind,sed,xxd,stat,which,type,pmset,open,rm,tr,wc,cut,cat,sleep,tailscale,kasa,nc,printf,pipx},
   literate={×}{{$\times$}}1 {→}{{$\rightarrow$}}1
 }
 \lstdefinestyle{out}{
   basicstyle=\ttfamily\scriptsize\color{black!80}, columns=fullflexible, keepspaces=true,
   breaklines=true, breakatwhitespace=false, showstringspaces=false,
   % Invisible markers around recorded output: |!…!| the line to read, |~…~| noise to skip
-  moredelim=[is][\color{red!80!black}\bfseries]{|!}{!|},
+  moredelim=[is][\color{red!80!black}]{|!}{!|},  % colour only: bold mono swaps in a narrower font
   moredelim=[is][\color{black!35}]{|~}{~|},
   literate={×}{{$\times$}}1 {→}{{$\rightarrow$}}1
 }
 \lstdefinestyle{python}{
   language=Python, basicstyle=\ttfamily\footnotesize, columns=fullflexible, keepspaces=true,
   breaklines=true, showstringspaces=false,
-  keywordstyle=\color{violet!80!black}\bfseries, stringstyle=\color{green!40!black},
+  keywordstyle=\color{violet!80!black}, stringstyle=\color{green!40!black},
   commentstyle=\color{black!40}\itshape, literate={×}{{$\times$}}1
 }
 
