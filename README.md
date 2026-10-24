@@ -6,7 +6,7 @@ Each folder is one lesson.
 
 - [HP Color LaserJet CP1215 on macOS](HP-CP1215/): CUPS, foomatic, Ghostscript.
 - [Can cims run a program?](cims-CGI/): static files, POST, CGI.
-- [Networking](networking/): the tailnet, direct paths and relays, private addresses; a smart plug on the LAN.
+- [Networking](networking/): the tailnet, direct paths and relays, private addresses; a smart plug on the LAN. *A stub, not yet a lesson.*
 
 ## Building
 
