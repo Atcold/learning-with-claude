@@ -1,0 +1,236 @@
+% Lesson: where should an app keep its files? The XDG base directories, and eink.
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{lesson}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\renewcommand{\panetitle}{A terminal on \name{AlfMAC5}}
+\newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\title{\emo{file folder}\ Where should an app keep its files?\\[0.3em]
+  \large The XDG base directories, and a home for \name{eink}'s data}
+\author{Lesson for Alfredo Canziani, written by Claude}
+\date{Sat 24 Oct 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Why we asked}
+
+Today I made pizza dough from a Giallo Zafferano recipe, read off the e-ink tablet: \name{eink}, the site my Mac serves to the tablet, now fetches a recipe and shows it one step per screen. Trader Joe's flour is not the Manitoba and 00 the recipe asks for, so I added 100\,ml of water. Next time I want that note on the ingredients card, next to the 300\,ml it corrects.
+
+So \name{eink} has to remember something of mine. Until now it had only code: whatever it knew about me, such as the paths of the PDFs it can show, was written into the program itself. An app that keeps user data needs a place for it, and the question was where. My home folder already says how everyone else answered.
+
+\section{The crowded home folder}
+
+A file or folder whose name starts with a dot is \emph{hidden}: \name{ls} skips it unless asked. That is why programs put their files there, in the home folder, out of sight.
+
+\subsection*{Step 1: list what is hidden in the home folder}
+
+\begin{pane}
+$ cd && ls -d .*    # in the home folder, every name starting with a dot
+\end{pane}
+\begin{cmdout}
+.agents         .jupyter     .vscode-shared       .claude.json
+.avidemux6      .llamafile   .zsh_sessions        .lesshst
+.bash_sessions  |!.local!|       .chinese-lab         .profile
+.bundle         .lush        .claude              .python_history
+|!.cache!|          .matplotlib  .tg-mail             .obsidian-cli.sock
+.cisco          .mplayer     .vim                 .bash_history-12411.tmp
+.claude.bak     .npm         .claude.json.backup  .bash_history-12780.tmp
+.codex          .ollama      .bash_history        .bash_history-18298.tmp
+.conda          .platformio  .bashrc              .bash_history-48689.tmp
+|!.config!|         .settings    .digital.cfg         .bash_history-97192.tmp
+.copilot        .ssh         .svgStyle.cfg        .viminfo
+.dropbox        .subversion  .CFUserTextEncoding  .vimrc
+.easyeda        .terminfo    .tmux.conf           .wget-hsts
+.gemini         .tmux        .tmux.mac.conf       .Xauthority
+.gowinsemi      .Trash       .dir_colors          .zprofile
+.homebrew       .vpn         .DS_Store            .zsh_history
+.ipython        .vscode      .gitconfig
+\end{cmdout}
+
+\texttt{.*} is a pattern the shell expands to every name starting with a dot, and \texttt{-d} lists a folder by its name rather than by its contents. My \name{ls} is really \name{eza}, through an alias; its icons are left out of this listing.
+
+Sixty-seven names, and they are of very different kinds, all in one heap:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{settings} I wrote, or could: \name{.gitconfig}, \name{.tmux.conf}, \name{.bashrc};
+  \item \textbf{my data}, which programs collected for me: \name{.zsh\_history}, \name{.python\_history};
+  \item \textbf{caches}, which could be thrown away and rebuilt: \name{.npm}, \name{.cache};
+  \item \textbf{leftovers}: five \name{.bash\_history-….tmp} files nothing will ever read again, a socket (\name{.obsidian-cli.sock}).
+\end{itemize}
+
+Two of them are my own tools: \name{.tg-mail} and \name{.chinese-lab}. Each is a link into Dropbox, so that both Macs see the same files. Three names are different: \name{.cache}, \name{.config} and \name{.local}. They are not one program's; they are shared, and they are what this lesson is about.
+
+\section{The convention: four folders, by kind}
+
+\begin{insight}{XDG}
+\textbf{XDG} stands for X Desktop Group, the old name of \textbf{freedesktop.org}, where Linux and Unix desktops agree on shared standards. One of them, the \textit{XDG Base Directory Specification} (version 0.8, 8 May 2021), says where a program keeps its files: not in a dot folder of its own, but in one of a few shared folders, chosen by the \emph{kind} of file~\cite{xdg}.
+\end{insight}
+
+Each folder has an environment variable that says where it is, and a default for when the variable is not set:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  For & Variable & Default \\
+  \midrule
+  configuration: settings written by hand & \texttt{\$XDG\_CONFIG\_HOME} & \name{\home/.config} \\
+  data: what the user would not want to lose & \texttt{\$XDG\_DATA\_HOME} & \name{\home/.local/share} \\
+  state: worth keeping across restarts, not precious & \texttt{\$XDG\_STATE\_HOME} & \name{\home/.local/state} \\
+  cache: can be thrown away and rebuilt & \texttt{\$XDG\_CACHE\_HOME} & \name{\home/.cache} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Inside each, a program makes one folder named after itself: \name{\home/.config/gh}, \name{\home/.local/share/gh}. State is the newest of the four, added in version 0.8; the specification's examples are logs, history, recently used files, and what to reopen on restart (layout, open files, undo history).
+
+Three rules make the variables safe to use:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item a variable that is \emph{not set or empty} means the default;
+  \item a variable must hold an \emph{absolute} path, starting with \texttt{/}; a relative one is invalid and is ignored;
+  \item the same specification names \name{\home/.local/bin} for the user's own programs, and asks that it be on the \texttt{PATH}.
+\end{itemize}
+
+Two more variables, \texttt{\$XDG\_CONFIG\_DIRS} and \texttt{\$XDG\_DATA\_DIRS}, list system-wide folders searched \emph{after} the user's own, such as \name{/etc/xdg}. They are the only place my books mention XDG at all: they appear, unexplained, in an example listing of a Linux machine's environment~\cite[\textit{What is Stored in the Environment?}, p.~135]{tlcl}.
+
+\subsection*{Step 2: are the variables set here?}
+
+\begin{pane}
+$ echo "config=[$XDG_CONFIG_HOME] data=[$XDG_DATA_HOME] cache=[$XDG_CACHE_HOME] state=[$XDG_STATE_HOME]"
+\end{pane}
+\begin{cmdout}
+|!config=[] data=[] cache=[] state=[]!|
+\end{cmdout}
+
+\name{echo} prints its arguments; inside double quotes the shell replaces each \texttt{\$NAME} with that variable's value, and the brackets show where an empty value would be. All four are empty: nothing on my Mac moves them, so every program that follows the convention uses the defaults. That is the usual case, on Linux too.
+
+\section{Who follows it already}
+
+\subsection*{Step 3: look inside the shared folders}
+
+\begin{pane}
+$ ls ~/.config          # configuration
+$ ls ~/.local/share     # data
+$ ls ~/.local/state     # state
+$ ls ~/.local/bin       # the user's own programs
+\end{pane}
+\begin{cmdout}
+Autodesk    git        mpv     rclone                        texstudio
+|!gh!|          GowinSemi  |!nvim!|    spark
+gh-copilot  karabiner  ranger  steinberg-download-assistant
+\end{cmdout}
+\begin{cmdout}
+blesh   |!gh!|         man   ranger
+claude  karabiner  |!nvim!|  uv
+\end{cmdout}
+\begin{cmdout}
+blesh  claude  gem  |!gh!|  gh-copilot  |!nvim!|
+\end{cmdout}
+\begin{cmdout}
+claude             gmail          jupytext         nbdiff-web   py-spy
+|!eink!|               gog-docs       jupytext-config  nbdime       spark
+git-nbdiffdriver   hg-nbdiff      kasa             nbmerge
+git-nbdifftool     hg-nbdiffweb   lush             nbmerge-web
+git-nbmergedriver  hg-nbmerge     mlx_whisper      nbshow
+git-nbmergetool    hg-nbmergeweb  nbdiff           nbstripout
+\end{cmdout}
+
+About twenty programs already live by the convention. \name{eink} itself is in the last listing: \name{uv} installed it into \name{\home/.local/bin}, as the specification suggests. \name{gh}, GitHub's command, and \name{nvim} appear in all three of config, data and state.
+
+\subsection*{Step 4: one program, split by kind}
+
+\begin{pane}
+$ ls ~/.config/gh ~/.local/share/gh ~/.local/state/gh    # gh's three folders
+\end{pane}
+\begin{cmdout}
+|~/Users/atcold/.config/gh:~|
+config.yml  hosts.yml
+
+|~/Users/atcold/.local/share/gh:~|
+extensions
+
+|~/Users/atcold/.local/state/gh:~|
+extensions  device-id  state.yml
+\end{cmdout}
+
+\name{gh}'s settings and the accounts it is logged in to are configuration. The extensions I installed are data: losing them means installing them again. What it noted for itself, such as when it last checked for a new version, is state. One question sorts any file:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item Would I edit it by hand? \textbf{Configuration.}
+  \item Would losing it lose my work? \textbf{Data.}
+  \item Would losing it only lose a convenience? \textbf{State.}
+  \item Could the program simply make it again? \textbf{Cache.}
+\end{itemize}
+
+\begin{insight}{And macOS?}
+macOS has a place of its own for this: \name{\home/Library/Application Support}, where apps with a window keep their data (137 folders on my Mac: \name{Anki2}, \name{Firefox}, \name{obsidian}, …). Command-line programs mostly ignore it. Many of them run on Linux as well, and following XDG there and on the Mac gives one layout everywhere, the one \name{gh}, \name{nvim} and \name{uv} use above.
+\end{insight}
+
+\section{A home for \name{eink}'s data}
+
+The question sorts \name{eink}'s own files:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  What & Kind & Where \\
+  \midrule
+  the names \name{eink show} knows (\texttt{book}, \texttt{physics}) & configuration & \name{\home/.config/eink/show.toml} \\
+  my notes on each recipe & data & \name{\home/.local/share/eink/recipes/} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+The names are written in the program today. Moving them to a file is also a step the project's plan asks for before \name{eink} could ever be released: my paths belong to me, not to the code. The notes are data: I add them from the tablet over time, and losing them loses what I learned at the stove.
+
+In the code, the variable comes first and the default second, with all three rules in two lines: an unset variable reads as empty, and an empty path is not absolute either.
+
+\begin{lstlisting}[style=python]
+def data_home():
+    """Where eink keeps my data: $XDG_DATA_HOME/eink, or the default."""
+    path = os.environ.get("XDG_DATA_HOME", "")
+    if not os.path.isabs(path):  # not set, empty, or relative: ignored
+        path = os.path.expanduser("~/.local/share")
+    return os.path.join(path, "eink")
+\end{lstlisting}
+
+Two choices are still open, and they are mine to make:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Strict or loose.} The split above is what the specification means. Many programs simply put everything in \name{\home/.config/eink}; one place is simpler, two places are clearer about what each file is.
+  \item \textbf{One Mac or both.} \name{eink} runs on either Mac. For the notes to follow me, \name{\home/.local/share/eink} can be a link into Dropbox, the way \name{.tg-mail} is. The program would not notice: it opens the same path either way.
+\end{enumerate}
+
+\section{What this unlocks}
+
+Any service of \name{eink} can now keep what I tell it: first the recipe notes, shown on the ingredients card with a box to add one more; then the names \name{eink show} knows, out of the code. And when my home folder gains a new program, I know where its files should go, and which of my own tools, \name{.tg-mail} and \name{.chinese-lab}, still live by the old habit.
+
+\begin{thebibliography}{TLCL}
+  \bibitem[TLCL]{tlcl} William Shotts, \textit{The Linux Command Line}, Seventh Internet Edition, 2026. \textit{What is Stored in the Environment?}, p.~135.
+  \bibitem[XDG]{xdg} freedesktop.org, \textit{XDG Base Directory Specification}, version 0.8, 8 May 2021. \url{https://specifications.freedesktop.org/basedir/latest/}
+\end{thebibliography}
+
+\end{document}
