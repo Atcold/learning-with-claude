@@ -37,7 +37,7 @@
 
 \section*{Why we asked}
 
-Today I made pizza dough from a Giallo Zafferano recipe, read off the e-ink tablet: \name{eink}, the site my Mac serves to the tablet, now fetches a recipe and shows it one step per screen. Trader Joe's flour is not the Manitoba and 00 the recipe asks for, so I added 100\,ml of water. Next time I want that note on the ingredients card, next to the 300\,ml it corrects.
+Today I made pizza dough from a Giallo Zafferano recipe, read off the e-ink tablet: \name{eink}, the site my Mac serves to the tablet, now fetches a recipe and shows it one step per screen. Trader Joe's flour is not the Manitoba and 00 the recipe asks for, so I added 100\,ml of water. Next time I want that note on the ingredients card, next to the 600\,ml it corrects\here[600 ml, or 50 ml for 300]: 100\,ml more for 600\,ml, or 50\,ml if I make 300\,ml.
 
 So \name{eink} has to remember something of mine. Until now it had only code: whatever it knew about me, such as the paths of the PDFs it can show, was written into the program itself. An app that keeps user data needs a place for it, and the question was where. My home folder already says how everyone else answered.
 
@@ -70,7 +70,7 @@ $ cd && ls -d .*    # in the home folder, every name starting with a dot
 .ipython        .vscode      .gitconfig
 \end{cmdout}
 
-\texttt{.*} is a pattern the shell expands to every name starting with a dot, and \texttt{-d} lists a folder by its name rather than by its contents. My \name{ls} is really \name{eza}, through an alias; its icons are left out of this listing.
+\texttt{.*} is a pattern the shell expands to every name starting with a dot, and \texttt{-d} lists a folder by its name rather than by its contents.\here[eza aside cut]
 
 Sixty-seven names, and they are of very different kinds, all in one heap:
 
@@ -111,12 +111,11 @@ Three rules make the variables safe to use:
 \begin{itemize}[leftmargin=1.2em]
   \item a variable that is \emph{not set or empty} means the default;
   \item a variable must hold an \emph{absolute} path, starting with \texttt{/}; a relative one is invalid and is ignored;
-  \item the same specification names \name{\home/.local/bin} for the user's own programs, and asks that it be on the \texttt{PATH}.
+  \item the same specification names \name{\home/.local/bin} for the user's own programs, and asks that it be on the \texttt{PATH}. This folder has no variable\here[bin has no variable]: it is always \name{\home/.local/bin}.
 \end{itemize}
 
-Two more variables, \texttt{\$XDG\_CONFIG\_DIRS} and \texttt{\$XDG\_DATA\_DIRS}, list system-wide folders searched \emph{after} the user's own, such as \name{/etc/xdg}. They are the only place my books mention XDG at all: they appear, unexplained, in an example listing of a Linux machine's environment~\cite[\textit{What is Stored in the Environment?}, p.~135]{tlcl}.
-
-\subsection*{Step 2: are the variables set here?}
+\needspace{10\baselineskip}
+\subsection*{Step 2: are the variables set here?\here[TLCL paragraph cut]}
 
 \begin{pane}
 $ echo "config=[$XDG_CONFIG_HOME] data=[$XDG_DATA_HOME] cache=[$XDG_CACHE_HOME] state=[$XDG_STATE_HOME]"
@@ -129,36 +128,45 @@ $ echo "config=[$XDG_CONFIG_HOME] data=[$XDG_DATA_HOME] cache=[$XDG_CACHE_HOME] 
 
 \section{Who follows it already}
 
-\subsection*{Step 3: look inside the shared folders}
+\subsection*{Step 3: look inside the shared folders\here[one output per command]}
 
 \begin{pane}
 $ ls ~/.config          # configuration
-$ ls ~/.local/share     # data
-$ ls ~/.local/state     # state
-$ ls ~/.local/bin       # the user's own programs
 \end{pane}
 \begin{cmdout}
 Autodesk    git        mpv     rclone                        texstudio
 |!gh!|          GowinSemi  |!nvim!|    spark
 gh-copilot  karabiner  ranger  steinberg-download-assistant
 \end{cmdout}
+
+\begin{pane}
+$ ls ~/.local/share     # data
+\end{pane}
 \begin{cmdout}
 blesh   |!gh!|         man   ranger
 claude  karabiner  |!nvim!|  uv
 \end{cmdout}
+
+\begin{pane}
+$ ls ~/.local/state     # state
+\end{pane}
 \begin{cmdout}
 blesh  claude  gem  |!gh!|  gh-copilot  |!nvim!|
 \end{cmdout}
+
+\begin{pane}
+$ ls ~/.local/bin       # the user's own programs
+\end{pane}
 \begin{cmdout}
-claude             gmail          jupytext         nbdiff-web   py-spy
-|!eink!|               gog-docs       jupytext-config  nbdime       spark
+claude             |!gmail!|          jupytext         nbdiff-web   py-spy
+|!eink!|               |!gog-docs!|       jupytext-config  nbdime       |!spark!|
 git-nbdiffdriver   hg-nbdiff      kasa             nbmerge
 git-nbdifftool     hg-nbdiffweb   lush             nbmerge-web
 git-nbmergedriver  hg-nbmerge     mlx_whisper      nbshow
 git-nbmergetool    hg-nbmergeweb  nbdiff           nbstripout
 \end{cmdout}
 
-About twenty programs already live by the convention. \name{eink} itself is in the last listing: \name{uv} installed it into \name{\home/.local/bin}, as the specification suggests. \name{gh}, GitHub's command, and \name{nvim} appear in all three of config, data and state.
+About twenty programs already live by the convention. \name{gh}, GitHub's command, and \name{nvim} appear in all three of config, data and state. Four names in \name{\home/.local/bin} are mine\here[mine; pipx]: \name{eink}, and \name{gmail} and \name{gog-docs} from \name{tg-mail}, all three installed there by \name{uv}, as the specification suggests; and \name{spark}, a link to a script in my settings. Most of the rest, such as \name{kasa} and the \name{nb…} tools, were installed by \name{pipx}.
 
 \subsection*{Step 4: one program, split by kind}
 
@@ -185,9 +193,100 @@ extensions  device-id  state.yml
   \item Could the program simply make it again? \textbf{Cache.}
 \end{itemize}
 
-\begin{insight}{And macOS?}
-macOS has a place of its own for this: \name{\home/Library/Application Support}, where apps with a window keep their data (137 folders on my Mac: \name{Anki2}, \name{Firefox}, \name{obsidian}, …). Command-line programs mostly ignore it. Many of them run on Linux as well, and following XDG there and on the Mac gives one layout everywhere, the one \name{gh}, \name{nvim} and \name{uv} use above.
+\begin{insight}{And Dropbox?}
+\here[tg-mail, the eink way]So far \name{.tg-mail} is one folder, linked whole into Dropbox. The question splits it: \name{config.json} is configuration; \name{history} and \name{triage.json} are data; \name{state.json} is state. I am one user with one \name{tg-mail}, and it should behave the same on either Mac: same settings, same data, same state, same cache. With no cloud account to hold them, Dropbox does. The Dropbox folder stays one, \name{Dropbox/dot-tg-mail}, with a subfolder per kind named like the XDG folder it stands for, and each XDG folder gets a link named after the app, as \name{eink} already has:
+\begin{itemize}[leftmargin=1.2em]
+  \item \name{\home/.config/tg-mail} → \name{Dropbox/dot-tg-mail/config};
+  \item \name{\home/.local/share/tg-mail} → \name{Dropbox/dot-tg-mail/share};
+  \item \name{\home/.local/state/tg-mail} → \name{Dropbox/dot-tg-mail/state};
+  \item \name{\home/.cache/tg-mail} → \name{Dropbox/dot-tg-mail/cache}.
+\end{itemize}
+Both Macs make the same four links, so both see one app.
 \end{insight}
+
+\begin{insight}{And macOS?}
+\here[more on macOS]macOS has places of its own for this, in \name{\home/Library}, one per kind: \name{Application Support} for data, where apps with a window keep it (137 folders on my Mac: \name{Anki2}, \name{Firefox}, \name{obsidian}, …); \name{Preferences} for settings, as \name{.plist} files the app writes for me; \name{Caches}, where \name{brew} keeps its downloads; and \name{Logs}. The apps themselves, the programs, are in \name{/Applications}, as \name{.app} bundles. Command-line programs mostly ignore all of these. Many of them run on Linux as well, and following XDG there and on the Mac gives one layout everywhere, the one \name{gh}, \name{nvim} and \name{uv} use above.
+\end{insight}
+
+\section{Where \name{brew} keeps things}
+
+\here[new section: brew]XDG says where a program keeps \emph{my} files. Homebrew answers another question: where the programs themselves go. It installs them for the whole Mac, so it copies the layout Unix uses for installed programs (\name{bin}, \name{lib}, \name{share}, \name{etc}, \name{var}) into one folder of its own, its \emph{prefix}. Almost everything is there; the rest goes where macOS wants it.
+
+\subsection*{Step 5: ask \name{brew} where its folders are}
+
+\begin{pane}
+$ for w in prefix cellar caskroom cache; do echo "$w: $(brew --$w)"; done
+\end{pane}
+\begin{cmdout}
+prefix: /opt/homebrew
+cellar: /opt/homebrew/Cellar
+caskroom: /opt/homebrew/Caskroom
+cache: /Users/atcold/Library/Caches/Homebrew
+\end{cmdout}
+
+\texttt{brew -{}-prefix} and the others print one folder each; the loop labels each line with what was asked. \name{/opt/homebrew} is the prefix on every Mac with an Apple chip (Intel Macs used \name{/usr/local}). Inside it, 21\,GB on this Mac:
+
+\begin{center}
+\begin{tabular}{@{}lp{0.62\textwidth}@{}}
+  \toprule
+  Folder & What it holds \\
+  \midrule
+  \name{Cellar/} & every \emph{formula}, a command-line program, in a folder per version: \name{Cellar/gh/2.103.2}; 181 here \\
+  \name{bin/}, \name{sbin/} & links to the commands, almost all inside \name{Cellar}, 1193 names; this is the folder on the \texttt{PATH} \\
+  \name{opt/} & one link per formula to its current version, a path that survives upgrades \\
+  \name{lib/}, \name{include/}, \name{share/} & libraries, headers, manuals and data, also links into \name{Cellar} \\
+  \name{etc/}, \name{var/} & the installed programs' own settings, logs and running files: real folders, kept across upgrades \\
+  \name{Caskroom/} & a record of every \emph{cask}, an app with a window; 35 here \\
+  \name{Library/Taps/} & extra sources of formulas and casks I added, such as \name{texstudio-org} \\
+  the rest & \name{brew} itself: the prefix is also a git clone of \url{https://github.com/Homebrew/brew}, which \name{brew update} pulls \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Outside the prefix, \name{brew} uses the macOS folders:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \name{\home/Library/Caches/Homebrew}: every download, 4.2\,GB here; \name{brew cleanup} empties it;
+  \item \name{\home/Library/Logs/Homebrew}: logs of formulas built from source, empty here;
+  \item \name{/Applications}: the apps casks install, such as \name{Anki.app};
+  \item \name{\home/.homebrew}, the dot folder from Step~1: \name{brew}'s one setting of mine, \name{trust.json}, the third-party taps I trust. \name{brew} would use \name{\home/.config/homebrew} instead, but only when \texttt{\$XDG\_CONFIG\_HOME} is set, and Step~2 showed it is not.
+\end{itemize}
+
+\subsection*{Step 6: follow one command to its files}
+
+\begin{pane}
+$ readlink /opt/homebrew/bin/gh /opt/homebrew/opt/gh
+\end{pane}
+\begin{cmdout}
+../Cellar/gh/2.103.2/bin/gh
+../Cellar/gh/2.103.2
+\end{cmdout}
+
+\name{readlink} prints where a link points. \name{gh} is installed once, in \name{Cellar/gh/2.103.2}; \name{bin/gh} is only a link to it. An upgrade puts the new version in a new folder beside it and moves the links; \name{brew cleanup} later deletes the old folder. So \name{gh} the program is in \name{/opt/homebrew}, and \name{gh}'s files about me are in the three XDG folders of Step~4: the two never mix.
+
+\subsection*{Step 7: follow one app}
+
+\begin{pane}
+$ readlink /opt/homebrew/Caskroom/anki/*/Anki.app
+\end{pane}
+\begin{cmdout}
+/Applications/Anki.app
+\end{cmdout}
+
+A cask is the other way round: the app itself is moved into \name{/Applications}, where the Finder and Spotlight look, and \name{Caskroom} keeps a link to it, to know what to upgrade or remove. Some casks also link a command into \name{bin}: \name{/opt/homebrew/bin/calibre} points into \name{/Applications/calibre.app}.
+
+\subsection*{Step 8: how the shell finds them}
+
+\begin{pane}
+$ echo "$PATH" | tr : '\n' | head -3    # the first three folders searched
+\end{pane}
+\begin{cmdout}
+|!/opt/homebrew/bin!|
+|!/opt/homebrew/sbin!|
+/usr/local/bin
+\end{cmdout}
+
+\name{tr} turns the colons between folders into new lines. The shell runs the first match, and \name{brew}'s folders come first: \name{\home/.bashrc} runs \name{brew shellenv}, which puts them there. That is why \name{gh} means \name{/opt/homebrew/bin/gh}, ahead of any older copy the system has.
 
 \section{A home for \name{eink}'s data}
 
@@ -199,7 +298,7 @@ The question sorts \name{eink}'s own files:
   What & Kind & Where \\
   \midrule
   the names \name{eink show} knows (\texttt{book}, \texttt{physics}) & configuration & \name{\home/.config/eink/show.toml} \\
-  my notes on each recipe & data & \name{\home/.local/share/eink/recipes/} \\
+  my notes on each recipe & data & \name{\home/.local/share/eink/recipes-notes/}\here[recipes-notes] \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -221,15 +320,14 @@ Two choices are still open, and they are mine to make:
 
 \begin{enumerate}[leftmargin=1.5em]
   \item \textbf{Strict or loose.} The split above is what the specification means. Many programs simply put everything in \name{\home/.config/eink}; one place is simpler, two places are clearer about what each file is.
-  \item \textbf{One Mac or both.} \name{eink} runs on either Mac. For the notes to follow me, \name{\home/.local/share/eink} can be a link into Dropbox, the way \name{.tg-mail} is. The program would not notice: it opens the same path either way.
+  \item \textbf{One Mac or both.} \name{eink} runs on either Mac. \here[both, mirrored]Both, mirroring each other: \name{Dropbox/dot-eink} holds \name{config} and \name{share}, and on each Mac \name{\home/.config/eink} and \name{\home/.local/share/eink} are links to them, so a note added on one is there on the other. When \name{eink} first keeps state or cache, they get a subfolder and a link the same way. The program would not notice: it opens the same path either way.
 \end{enumerate}
 
 \section{What this unlocks}
 
-Any service of \name{eink} can now keep what I tell it: first the recipe notes, shown on the ingredients card with a box to add one more; then the names \name{eink show} knows, out of the code. And when my home folder gains a new program, I know where its files should go, and which of my own tools, \name{.tg-mail} and \name{.chinese-lab}, still live by the old habit.
+Any service of \name{eink} can now keep what I tell it: first the recipe notes, shown on the ingredients card with a box to add one more; then the names \name{eink show} knows, out of the code. And when my home folder gains a new program, I know where its files should go, and which of my own tools, \name{.tg-mail} and \name{.chinese-lab}, still live by the old habit. \here[other projects next]They are next: each moves to the same split, every kind in its XDG folder, each linked into Dropbox.
 
-\begin{thebibliography}{TLCL}
-  \bibitem[TLCL]{tlcl} William Shotts, \textit{The Linux Command Line}, Seventh Internet Edition, 2026. \textit{What is Stored in the Environment?}, p.~135.
+\begin{thebibliography}{XDG}
   \bibitem[XDG]{xdg} freedesktop.org, \textit{XDG Base Directory Specification}, version 0.8, 8 May 2021. \url{https://specifications.freedesktop.org/basedir/latest/}
 \end{thebibliography}
 
