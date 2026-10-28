@@ -1,0 +1,204 @@
+% Lesson: how I work with Claude. One home per project, rules and memory, the vault's role.
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{lesson}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\renewcommand{\panetitle}{A terminal on \name{AlfMAC5}}
+\newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\title{\emo{file folder}\ How I work with Claude\\[0.3em]
+  \large One home per project, rules in one place, the vault for what spans them}
+\author{Lesson for Alfredo Canziani, written by Claude}
+\date{Wed 28 Oct 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Why we asked}
+
+I ran every Claude session from my notes vault, \name{md-Wiki}. Projects were split between the vault and a second repo nested inside it, there was no list of my projects, and after a few months Claude's memory for the vault held 147 entries: mail rules next to LaTeX rules next to how to talk to me. I no longer knew where anything was, or which project needed me.
+
+Over two evenings we agreed on a way of working, and changed the setup to match it. This lesson is that agreement, and the evidence each part rests on.
+
+\section{Where Claude keeps what it knows}
+
+Claude Code carries knowledge between sessions in two ways~\cite{memory}:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{instruction files} I write: \name{CLAUDE.md} files and rule files, loaded at the start of a session;
+  \item \textbf{auto memory}, notes Claude writes itself when I correct it, one file per memory plus an index, \name{MEMORY.md}.
+\end{itemize}
+
+\begin{insight}{Which files load}
+\name{\home/.claude/CLAUDE.md} and every file in \name{\home/.claude/rules/} load in every session, wherever it starts. A \name{CLAUDE.md} in the folder where the session starts, or above it, loads too. A \name{CLAUDE.md} further down, inside a repo, loads only once Claude reads or edits a file there. A rule file can carry a \texttt{paths:} list in its header; then it loads only when Claude touches a matching file~\cite{memory}.
+\end{insight}
+
+The docs also say where auto memory goes, and that sentence turned out to matter:
+
+\begin{quote}
+The \texttt{<project>} path is derived from the git repository, so all worktrees and subdirectories within the same repo share one auto memory directory. Outside a git repo, the project root is used instead.~\cite[\textit{Storage location}]{memory}
+\end{quote}
+
+Memory follows the \emph{git repo} the session starts in. The session transcripts, instead, are filed by the folder itself.
+
+\section{The problem: every project shared one memory}
+
+My plan was one folder per project, \name{\home/PARA/Projects/<name>/}, each with its own memory. But \name{\home/PARA} was a link into my dotfiles, \name{\home/.settings}, which is a git repo. If the docs were right, every project folder wrote into the dotfiles' memory.
+
+\subsection*{Step 1: which folder did each memory come from?}
+
+Each memory file records the session that wrote it, and each session's transcript sits in a folder named after where it ran. So I matched the two:
+
+\begin{pane}
+$ cd ~/.claude/projects
+$ grep -h 'originSessionId' -- -Users-…-settings/memory/*.md |   # sessions that wrote dotfiles memories
+  awk '{print $2}' | sort -u |
+  while read s; do find . -maxdepth 2 -name "$s.jsonl"; done   # where each session ran
+\end{pane}
+\begin{cmdout}
+./-Users-…-settings-Mac-PARA-Projects-|!altair-8800-tang-nano-9k!|/0ca59df2-….jsonl
+./-Users-…-settings-Mac-PARA-Projects-|!altair-8800-tang-nano-9k!|/0f80ec61-….jsonl
+./-Users-…-settings-Mac-PARA-Projects-|!xdg-base-dirs!|/5df9ced5-….jsonl
+./-Users-…-settings-Mac-PARA-Projects-|!altair-8800-tang-nano-9k!|/71d9eb7c-….jsonl
+\end{cmdout}
+
+Sessions I started in the Altair and XDG project folders had written their memories, such as ‘every step goes in the worksheet’, into the dotfiles' memory. The per-project folders existed, but only for transcripts: none had a \name{memory/} inside.
+
+\section{The fix: PARA moves out of the repo, into Dropbox}
+
+PARA is only a tree of links, so it needs no git: it needs to reach both Macs. Dropbox would do, if it carries a link as a link and does not copy what the link points to.
+
+\subsection*{Step 2: does Dropbox sync a link unchanged?}
+
+A link already lived in Dropbox: \name{tg-mail}'s \name{accounts}, pointing into the vault. I looked at it from the other Mac:
+
+\begin{pane}
+$ ssh alfmac4 'ls -la ~/Dropbox/Apps/tg-mail/ | grep accounts'   # the office Mac's copy
+\end{pane}
+\begin{cmdout}
+lrwxr-xr-x@  1 atcold  staff  |!41!| 25 Oct 21:16 accounts -> ~/md-Wiki/Areas/Mail/accounts
+\end{cmdout}
+
+Same date, same target, 41 bytes: the link itself, not the folder behind it. So PARA moved to \name{\home/Dropbox/Apps/PARA}, outside any repo, and \name{\home/PARA} points there on both Macs. Each project folder now gets its own memory, and a change to the tree needs no commit.
+
+\name{\home/Dropbox/Apps/} holds every folder the apps and the Macs sync: \name{PARA}, \name{claude} (what \name{\home/.claude} points to), \name{tg-mail}, \name{chinese-lab}, \name{eink}.
+
+\section{The agreement}
+
+\begin{result}{How I work}
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{One project, one home.} I start Claude in \name{\home/PARA/Projects/<name>/}, and only there for that project. Its memory lives there.
+  \item \textbf{The book is its own home:} \name{\home/Book}, as it always was.
+  \item \textbf{The vault is for what spans projects:} mail (\texttt{/triage}, \texttt{/follow-up}, \texttt{/reply}), \texttt{/chinese-lesson}, the Inbox, planning, the notes themselves.
+  \item \textbf{Rules that hold everywhere live in \name{\home/.claude/rules/}}, one file per topic, each rule in one place.
+  \item \textbf{No repo without a project.} A repo is one part of a project, next to its note, \name{local} for what is not version-controlled, and, for courses, \name{g-drive}.
+\end{enumerate}
+\end{result}
+
+A project home is a folder of links:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{\name{note.md}}: the project's note in the vault, where the plan and the log live;
+  \item \textbf{\name{repo}}: the git repo; with more than one, \name{repo-<x>} for each (the salsa manual has \name{repo} and \name{repo-notes});
+  \item \textbf{\name{local}}, \textbf{\name{g-drive}}: data and shared files;
+  \item \textbf{\name{lesson}}: a lesson in this repo, when the project's write-up is one (the printer, XDG).
+\end{itemize}
+
+Every project is listed, by area, in the vault's \name{projects.md}.
+
+\section{Rules in one place}
+
+The 147 vault memories, and copies of the same rules in five other memories, became five rule files:
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+  \toprule
+  File & What it covers \\
+  \midrule
+  \name{talking.md} & how Claude answers me: short, numbered, questions \emph{vs.} requests \\
+  \name{writing.md} & prose: sentence case, no hard wrap, dates, pinyin, colours \\
+  \name{git.md} & commits, testing, drafts, binaries \\
+  \name{files.md} & where things go, PDFs, shared tmux panes \\
+  \name{latex.md} & names in sans, units, citations, TikZ; loads only for \texttt{.tex}, \texttt{.sty}, \texttt{.bib} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+The docs advise keeping each instruction file under 200 lines, because longer files cost context and are followed less, and warn that when two instructions conflict, Claude may pick either one~\cite{memory}. So each rule lives once, and \name{\home/.claude/CLAUDE.md} keeps only what no rule file covers. What stays in memory is specific to where it was learnt: the vault's memory holds mail and Chinese; a project's memory holds that project.
+
+\section{Getting to a project: \texttt{p}, \texttt{a}, \texttt{r}}
+
+Three shell commands jump into PARA: \texttt{p} to a project, \texttt{a} to an area, \texttt{r} to a resource. A space right after them lists the names; Tab walks the list. They live in \name{Mac/bashrc}; the list is a \name{ble.sh} binding in \name{Bash/bashrc}.
+
+\subsection*{Step 3: the list drew one column off}
+
+The first test showed a bug: as Tab moved through the list, the first name shifted left by one and left its last letter behind.
+
+\begin{pane}
+$ p <Space> <Tab> <Tab>
+\end{pane}
+\begin{cmdout}
+$ p book
+altair-8800-tang-nano-9k|!k!|               book|!k!|
+e-ink               em-salsa-manual     fall26-deep-learning
+\end{cmdout}
+
+The same happened with a bare \name{ble.sh}, without my settings, but only inside \name{tmux}; with \texttt{TERM=xterm-256color} it was gone. \name{ble.sh} learns that it runs in \name{tmux} from \name{tmux}'s own reply, whatever \texttt{TERM} says, so the difference had to come from the terminfo entry. Comparing the two:
+
+\begin{pane}
+$ infocmp -x -d xterm-256color tmux-256color | grep -E 'ech|hpa'   # what xterm has and ours lacks
+\end{pane}
+\begin{cmdout}
+	ech: '\E[%p1%dX', NULL.
+	|!hpa!|: '\E[%i%p1%dG', NULL.
+\end{cmdout}
+
+\begin{insight}{Off by one}
+\texttt{hpa} means ‘go to column $n$’. Without it, \name{ble.sh} goes to the start of the line and moves right $n$ columns, \texttt{\textbackslash r\textbackslash E[\%dC}. For column 0 that sends ‘move right 0’, and terminals read a count of 0 as 1. So every redraw at column 0 landed on column 1.
+\end{insight}
+
+\name{tmux} supports both commands. I added \texttt{ech} and \texttt{hpa} to \name{Tmux/tmux.terminfo}, the entry already patched for the \name{Neovim} cursor, and cleared \name{ble.sh}'s own cache of terminal capabilities, where it still held the old move:
+
+\begin{cmdout}
+before:  _ble_term_hpa=$'\r\E[%xC'
+after:   _ble_term_hpa=$'\E[%cG'
+\end{cmdout}
+
+After that the list redraws in place. \name{tmux.conf} now says why it keeps \texttt{tmux-256color}: switching to \texttt{xterm-256color} would have fixed the list and brought back the cursor bug.
+
+\section{What changed, in one place}
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Vault:} every project in \name{Projects/}, one index, \name{projects.md}; the nested repo merged in with its history.
+  \item \textbf{PARA:} \name{\home/Dropbox/Apps/PARA}, no longer in the dotfiles; a home for every active project.
+  \item \textbf{Dropbox:} the top level holds \name{Apps}, \name{Archive}, \name{Boox}, \name{Dance}, \name{NYU}, \name{onyx}, \name{Screenshots}, and the PDFs I am reading.
+  \item \textbf{Instructions:} five rule files; the memories they replaced deleted.
+\end{itemize}
+
+\begin{thebibliography}{BP}
+  \bibitem[Mem]{memory} Anthropic, \textit{How Claude remembers your project}, Claude Code documentation. \url{https://code.claude.com/docs/en/memory}
+  \bibitem[BP]{practices} Anthropic, \textit{Claude Code best practices}. \url{https://www.anthropic.com/engineering/claude-code-best-practices}
+\end{thebibliography}
+
+\end{document}

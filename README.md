@@ -8,6 +8,7 @@ Each folder is one lesson.
 - [Can cims run a program?](cims-CGI/): static files, POST, CGI.
 - [Networking](networking/): the tailnet, direct paths and relays, private addresses; a smart plug on the LAN. *A stub, not yet a lesson.*
 - [Where should an app keep its files?](XDG-base-dirs/): dot folders, the XDG base directories, a home for eink's data.
+- [How I work with Claude](working-with-claude/): one home per project, where Claude keeps rules and memory, PARA in Dropbox, a one-column terminfo bug.
 
 ## Building
 
