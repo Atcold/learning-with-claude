@@ -24,13 +24,12 @@
 \renewcommand{\panetitle}{A terminal on \name{AlfMAC5}}
 \newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
 \newcommand{\hereat}[1]{\setcounter{here}{\numexpr#1-1\relax}\here}  % a hand with the number of its chat reply
-\newcommand{\lnk}{\,\emo{link}}  % follows every name that is a link
 
 \newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
   colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
 
 \title{\emo{file folder}\ How I work with Claude\\[0.3em]
-  \large One home per project, rules in one place, \name{md-Wiki} for what spans them}
+  \large One home per project, rules in one place, \name{md-Wiki/} for what spans them}
 \author{Lesson for Alfredo Canziani, written by Claude}
 \date{Wed 28 Oct 2026}
 
@@ -39,11 +38,11 @@
 
 \section*{Why we asked}
 
-I ran every Claude session from my notes vault, \name{md-Wiki}. Projects were split between \name{md-Wiki} and a second repo nested inside it, there was no list of my projects, and after a few months Claude's memory for \name{md-Wiki} held 147 entries: mail rules next to LaTeX rules next to how to talk to me. I no longer knew where anything was, or which project needed me.
+I ran every Claude session from my notes vault, \name{md-Wiki/}. Projects were split between \name{md-Wiki/} and a second repo nested inside it, there was no list of my projects, and after a few months Claude's memory for \name{md-Wiki/} held 147 entries: mail rules next to LaTeX rules next to how to talk to me. I no longer knew where anything was, or which project needed me.
 
 Over two evenings we agreed on a way of working, and changed the setup to match it. This lesson is that agreement, and the evidence each part rests on.
 
-Names follow one convention: a folder ends in \name{/}, and a link carries \emo{link}, as in \name{\home/PARA\lnk}.
+Names follow one convention: a folder ends in \name{/}, and a link is grey and underlined; a link to a folder does both, as in \name{\home/\lk{PARA}/}. In a listing, \texttt{ls -F} marks them the same way, a folder with \texttt{/} and a link with \texttt{\symbol{64}}.
 
 \section{Where Claude keeps what it knows}
 
@@ -55,7 +54,7 @@ Claude Code carries knowledge between sessions in two ways~\cite{memory}:
 \end{itemize}
 
 \begin{insight}{Which files load}
-\name{\home/.claude/CLAUDE.md} and every file in \name{\home/.claude/rules/} load in every session, wherever it starts. A \name{CLAUDE.md} in the folder where the session starts, or above it, loads too. A \name{CLAUDE.md} further down, inside a repo, loads only once Claude reads or edits a file there. A rule file can list file patterns under the field \texttt{paths:} in its header\hereat{2}[field name, plural]; then it loads only when Claude touches a matching file~\cite{memory}.
+\name{\home/.claude/CLAUDE.md} and every file in \name{\home/.claude/rules/} load in every session, wherever it starts. A \name{CLAUDE.md} in the folder where the session starts, or above it, loads too. A \name{CLAUDE.md} further down, inside a repo, loads only once Claude reads or edits a file there. A rule file can list file patterns under the field \texttt{paths:} in its header; then it loads only when Claude touches a matching file~\cite{memory}.
 \end{insight}
 
 The docs also say where auto memory goes, and that sentence turned out to matter:
@@ -68,13 +67,13 @@ Memory follows the \emph{git repo} the session starts in. The session transcript
 
 \section{The problem: every project shared one memory}
 
-My plan was one folder per project, \name{\home/PARA\lnk/Projects/<name>/}, each with its own memory. But \name{\home/PARA\lnk} was a link into my dotfiles, \name{\home/.settings/}, which is a git repo. If the docs were right, every project folder wrote into the dotfiles' memory.
+My plan was one folder per project, \name{\home/\lk{PARA}/Projects/<name>/}, each with its own memory. But \name{\home/\lk{PARA}/} was a link into my dotfiles, \name{\home/.settings/}, which is a git repo. If the docs were right, every project folder wrote into the dotfiles' memory.
 
 \subsection*{Which folder did each memory come from?}
 
-Each memory file records the session that wrote it, and each session's transcript sits in a folder named after where it ran. So I matched the two.\hereat{4}[one stage at a time] The search is one pipeline; here it is built one stage at a time, each stage feeding the next, so every piece can be run and seen on its own. All three run in \name{\home/.claude\lnk/projects/}, the dotfiles' memory being \name{-Users-atcold-{}-settings/memory/}.
+Each memory file records the session that wrote it, and each session's transcript sits in a folder named after where it ran. So I matched the two. The search is one pipeline; here it is built one stage at a time, each stage feeding the next, so every piece can be run and seen on its own. All three run in \name{\home/\lk{.claude}/projects/}, where Claude Code keeps one folder per place a session started, named after its path with every \name{/} and \name{.} turned into \name{-}; in it are that place's transcripts and its \name{memory/}. The dotfiles' memory is \name{-Users-atcold--settings/memory/}.
 
-The memory files name their session in a header line; \texttt{grep -h} prints the matching lines without the file names:
+The memory files name their session in a header line. \name{grep} prints each matching line after the name of its file; \texttt{-h} leaves the file name out:
 
 \begin{pane}
 $ cd ~/.claude/projects
@@ -86,7 +85,7 @@ $ grep -h 'originSessionId' -- -Users-atcold--settings/memory/*.md   # one line 
   …
 \end{cmdout}
 
-The \texttt{--} tells \name{grep} that what follows is a file, even though the folder name starts with a dash. \name{awk} keeps the second word of each line, the session ID, and \texttt{sort -u} drops repeats, since one session can write several memories:
+The \texttt{--} tells \name{grep} that what follows is a file: without it, \name{grep} would read \name{-Users-atcold--settings/…}, which starts with a dash, as a list of options, \texttt{-U}, \texttt{-s}, \texttt{-e}, and so on. \name{awk} keeps the second word of each line, the session ID, and \texttt{sort -u} drops repeats, since one session can write several memories:
 
 \begin{pane}
 $ grep -h 'originSessionId' -- -Users-atcold--settings/memory/*.md |
@@ -114,56 +113,56 @@ $ grep -h 'originSessionId' -- -Users-atcold--settings/memory/*.md |
 ./-Users-…-settings-Mac-PARA-Projects-|!altair-8800-tang-nano-9k!|/71d9eb7c-….jsonl
 \end{cmdout}
 
-That output is from before the move. Run today, the last stage prints nothing: the memories it found now live in their project homes, and the sessions behind the remaining ones are no longer on disk.
+That output is from before the move.
 
-Sessions I started in the Altair and XDG project folders had written their memories, such as ‘every step goes in the worksheet’, into the dotfiles' memory. The per-project folders existed, but only for transcripts: none had a \name{memory/} inside.
+Sessions I started in the \name{altair-8800-tang-nano-9k/} and \name{xdg-base-dirs/} project folders had written their memories, such as ‘every step goes in the worksheet’, into the dotfiles' memory. The per-project folders existed, but only for transcripts: none had a \name{memory/} inside.
 
-\section{The fix:\hereat{3}[PARA in sans] \name{PARA} moves out of the repo, into Dropbox}
+\section{The fix: \name{PARA/} moves out of the repo, into Dropbox}
 
-\name{PARA} is only a tree of links, so it needs no git: it needs to reach both Macs. Dropbox would do, if it carries a link as a link and does not copy what the link points to.
+\name{PARA/} is only a tree of links, so it needs no \name{git}: it needs to reach both Macs. Dropbox would do, if it carries a link as a link and does not copy what the link points to.
 
-\subsection*{Does Dropbox sync a link unchanged?\hereat{10}[no step numbers]}
+\subsection*{Does Dropbox sync a link unchanged?}
 
-A link already lived in Dropbox: \name{tg-mail}'s \name{accounts\lnk}, pointing into \name{md-Wiki}. I looked at it from the other Mac:
+A link already lived in Dropbox: \name{tg-mail}'s \name{\lk{accounts}/}, pointing into \name{md-Wiki/}. I looked at it from the other Mac:
 
 \begin{pane}
-$ ssh alfmac4 'ls -la ~/Dropbox/Apps/tg-mail/ | grep accounts'   # the office Mac's copy
+$ ssh alfmac4 '/bin/ls -lF ~/Dropbox/Apps/tg-mail/ | grep accounts'   # the office Mac's copy
 \end{pane}
 \begin{cmdout}
-lrwxr-xr-x@  1 atcold  staff  |!41!| 25 Oct 21:16 accounts -> ~/md-Wiki/Areas/Mail/accounts
+lrwxr-xr-x@  1 atcold  staff      |!41!| 25 Oct 21:16 accounts@ -> /Users/atcold/md-Wiki/Areas/Mail/accounts
 \end{cmdout}
 
-Same date, same target, 41 bytes: the link itself, not the folder behind it. So \name{PARA} moved to \name{\home/Dropbox/Apps/PARA/}, outside any repo, and \name{\home/PARA\lnk} points there on both Macs. Each project folder now gets its own memory, and a change to the tree needs no commit.
+Same date, same target, 41 bytes: the link itself, not the folder behind it. So \name{PARA/} moved to \name{\home/Dropbox/Apps/PARA/}, outside any repo, and \name{\home/\lk{PARA}/} points there on both Macs. Each project folder now gets its own memory, and a change to the tree needs no commit.
 
-\name{\home/Dropbox/Apps/} holds every folder the apps and the Macs sync: \name{PARA/}, \name{claude/} (where \name{\home/.claude\lnk} points), \name{tg-mail/}, \name{chinese-lab/}, \name{eink/}.
+\name{\home/Dropbox/Apps/} holds every folder the apps and the Macs sync: \name{PARA/}, \name{claude/} (where \name{\home/\lk{.claude}/} points), \name{tg-mail/}, \name{chinese-lab/}, \name{eink/}.
 
 \section{The agreement}
 
 \begin{result}{How I work}
 \begin{enumerate}[leftmargin=1.4em]
-  \item\hereat{5}[repo and Book links] \textbf{One project, one home.} I start Claude in \name{\home/PARA\lnk/Projects/<name>/}, and only there for that project. Its memory lives there. The folder holds links, among them \name{repo\lnk} to the project's git repo in \name{\home/Work/GitHub/}.
-  \item \textbf{The book is its own home:} \name{\home/Book\lnk}, a link to its repo, \name{\home/Work/GitHub/Book/}, as it always was.
-  \item\hereat{6}[use vs. develop] \textbf{\name{md-Wiki} is for my areas and what spans projects:} mail (\texttt{/triage}, \texttt{/follow-up}, \texttt{/reply}), \texttt{/chinese-lesson}, the Inbox, planning, the notes themselves. Here I \emph{use} my tools; developing one is a project. Reading my mail with \name{tg-mail} happens in \name{md-Wiki}; changing \name{tg-mail} itself happens in \name{\home/PARA\lnk/Projects/tg-mail/}.
-  \item \textbf{Rules that hold everywhere live in \name{\home/.claude\lnk/rules/}}, one file per topic, each rule in one place.
-  \item \textbf{No repo without a project.} A repo is one part of a project, next to its note, \name{local\lnk} for what is not version-controlled, and, for courses, \name{g-drive\lnk}.
+  \item \textbf{One project, one home.} I start Claude in \name{\home/\lk{PARA}/Projects/<name>/}, and only there for that project. Its memory lives there. The folder holds links, among them \name{\lk{repo}/} to the project's git repo in \name{\home/Work/GitHub/}.
+  \item \textbf{The book is its own home:} \name{\home/\lk{Book}/}, a link to its repo, \name{\home/Work/GitHub/Book/}, as it always was.
+  \item \textbf{\name{md-Wiki/} is for my areas and what spans projects:} mail (\texttt{/triage}, \texttt{/follow-up}, \texttt{/reply}), \texttt{/chinese-lesson}, the Inbox, planning, the notes themselves. Here I \emph{use} my tools; developing one is a project. Reading my mail with \name{tg-mail} happens in \name{md-Wiki/}; changing \name{tg-mail} itself happens in \name{\home/\lk{PARA}/Projects/tg-mail/}.
+  \item \textbf{Rules that hold everywhere live in \name{\home/\lk{.claude}/rules/}}, one file per topic, each rule in one place.
+  \item \textbf{No repo without a project.} A repo is one part of a project, next to its note, \name{\lk{local}/} for what is not version-controlled, and, for courses, \name{\lk{g-drive}/}.
 \end{enumerate}
 \end{result}
 
-\hereat{8}[path first; link symbol]\name{\home/PARA\lnk/Projects/<name>/} is a folder of links:
+\name{\home/\lk{PARA}/Projects/<name>/} is a folder of links:
 
 \begin{itemize}[leftmargin=1.2em]
-  \item \textbf{\name{note.md\lnk}}: the project's note in \name{md-Wiki}, where the plan and the log live;
-  \item \textbf{\name{repo\lnk}}: the git repo; with more than one, \name{repo-<x>\lnk} for each (the salsa manual has \name{repo\lnk} and \name{repo-notes\lnk});
-  \item\hereat{9} \textbf{\name{local\lnk}}: the project's data, usually a folder in Dropbox, so both Macs have it;
-  \item\hereat{7} \textbf{\name{g-drive\lnk}}: a Google Drive folder, to share the material with the students;
-  \item \textbf{\name{lesson\lnk}}: a lesson in this repo, when the project's write-up is one (the printer, XDG).
+  \item \textbf{\name{\lk{note.md}}}: the project's note in \name{md-Wiki/}, where the plan and the log live;
+  \item \textbf{\name{\lk{repo}/}}: the git repo; with more than one, \name{\lk{repo-<x>}/} for each (the salsa manual has \name{\lk{repo}/} and \name{\lk{repo-notes}/});
+  \item \textbf{\name{\lk{local}/}}: the project's data, usually a folder in Dropbox, so both Macs have it;
+  \item \textbf{\name{\lk{g-drive}/}}: a Google Drive folder, to share the material with the students;
+  \item \textbf{\name{\lk{lesson}/}}: a lesson in this repo, when the project's write-up is one (the printer, XDG).
 \end{itemize}
 
-Every project is listed, by area, in \name{md-Wiki}'s \name{projects.md}.
+Every project is listed, by area, in \name{md-Wiki/Projects/projects.md}.
 
 \section{Rules in one place}
 
-The 147 \name{md-Wiki} memories, and copies of the same rules in five other memories, became five rule files:
+The 147 \name{md-Wiki/} memories, and copies of the same rules in five other memories, became five rule files, for every session, and two more that load only in \name{md-Wiki/}:
 
 \begin{center}
 \begin{tabular}{@{}ll@{}}
@@ -175,16 +174,19 @@ The 147 \name{md-Wiki} memories, and copies of the same rules in five other memo
   \name{git.md} & commits, testing, drafts, binaries \\
   \name{files.md} & where things go, PDFs, shared tmux panes \\
   \name{latex.md} & names in sans, units, citations, TikZ; loads only for \texttt{.tex}, \texttt{.sty}, \texttt{.bib} \\
+  \midrule
+  \name{mail.md} & drafts, recipients, Chat, \name{gog}; only in \name{md-Wiki/} \\
+  \name{chinese.md} & cards, lessons, \name{chinese-lab}; only in \name{md-Wiki/} \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-The docs advise keeping each instruction file under 200 lines, because longer files cost context and are followed less, and warn that when two instructions conflict, Claude may pick either one~\cite{memory}. So each rule lives once, and \name{\home/.claude\lnk/CLAUDE.md} keeps only what no rule file covers. What stays in memory is specific to where it was learnt: \name{md-Wiki}'s memory holds mail and Chinese; a project's memory holds that project.
+The docs advise keeping each instruction file under 200 lines, because longer files cost context and are followed less, and warn that when two instructions conflict, Claude may pick either one~\cite{memory}. So each rule lives once, and \name{\home/\lk{.claude}/CLAUDE.md} keeps only what no rule file covers. What stays in memory is specific to where it was learnt: the memory of \name{md-Wiki/} holds what is left once mail and Chinese became rules, such as how to write in \name{cc.md}; a project's memory holds that project.
 
 \needspace{10\baselineskip}
-\section{Getting to a project:\hereat{11}[bug cut] \texttt{p}, \texttt{a}, \texttt{r}}
+\section{Getting to a project: \texttt{p}, \texttt{a}, \texttt{r}}
 
-Three shell commands jump into \name{PARA}: \texttt{p} to a project, \texttt{a} to an area, \texttt{r} to a resource. A space right after them lists the names; Tab walks the list.
+Three shell commands jump into \name{PARA/}: \texttt{p} to a project, \texttt{a} to an area, \texttt{r} to a resource. A space right after them lists the names; Tab walks the list.
 
 \begin{pane}
 $ p em-salsa-manual    # same as cd ~/PARA/Projects/em-salsa-manual/
@@ -193,40 +195,19 @@ $ p em-salsa-manual    # same as cd ~/PARA/Projects/em-salsa-manual/
 \section{What changed, in one place}
 
 \begin{itemize}[leftmargin=1.2em]
-  \item\hereat{12}[vault is md-Wiki] \textbf{\name{md-Wiki}:} every project in \name{Projects/}, one index, \name{projects.md}; the nested repo merged in with its history.
-  \item \textbf{\name{PARA}:} \name{\home/Dropbox/Apps/PARA/}, no longer in the dotfiles; a home for every active project.
-  \item\hereat{13}[PDFs in Boox] \textbf{Dropbox:} the top level holds \name{Apps/}, \name{Archive/}, \name{Boox/} (the PDFs I am reading), \name{Dance/}, \name{NYU/}, \name{onyx/}, \name{Screenshots/}.
-  \item \textbf{Instructions:} five rule files; the memories they replaced deleted.
+  \item \textbf{\name{md-Wiki/}:} every project in \name{Projects/}, one index, \name{projects.md}; the nested repo merged in with its history.
+  \item \textbf{\name{PARA/}:} \name{\home/Dropbox/Apps/PARA/}, no longer in the dotfiles; a home for every active project.
+  \item \textbf{Dropbox:} the top level holds \name{Apps/}, \name{Archive/}, \name{Boox/} (the PDFs I am reading), \name{Dance/}, \name{NYU/}, \name{onyx/}, \name{Screenshots/}.
+  \item \textbf{Instructions:} five rule files in \name{\home/\lk{.claude}/rules/}, and two in \name{\home/Dropbox/Apps/claude/md-wiki-rules/}, which \name{md-Wiki/.claude/\lk{rules}/} points to; the memories they replaced deleted.
 \end{itemize}
 
-\section{Still open: what needs me\hereat{1}[dashboard]}
+\section{Still open: what needs me}
 
-The setup says where everything is; it does not yet say which project needs me. The next piece is a dashboard in the style of the activity boxes on GitHub's front page, or an Anki card: each project and what is waiting on it, at a glance. The options so far are in \name{md-Wiki}'s \name{engagement.md}, part of the second-brain project.
+The setup says where everything is; it does not yet say which project needs me. The next piece is a dashboard in the style of the activity boxes on GitHub's front page, or an Anki card: each project and what is waiting on it, at a glance. The options so far are in \name{md-Wiki/Projects/second-brain/engagement.md}, part of the second-brain project.
 
 \begin{thebibliography}{BP}
   \bibitem[Mem]{memory} Anthropic, \textit{How Claude remembers your project}, Claude Code documentation. \url{https://code.claude.com/docs/en/memory}
   \bibitem[BP]{practices} Anthropic, \textit{Claude Code best practices}. \url{https://www.anthropic.com/engineering/claude-code-best-practices}
 \end{thebibliography}
-
-\section*{Changes in this round}
-
-Each number matches a red hand in the margin.
-
-\begin{enumerate}[leftmargin=1.8em]
-  \item Dashboard: added a last section, ‘Still open: what needs me’. It points to \name{engagement.md}, which already lists the options. I took ‘kitab front page’ to mean GitHub's front page and its activity boxes.
-  \item \texttt{paths:} is plural because it's the literal field name. I reworded the sentence so that's clear: ‘list file patterns under the field \texttt{paths:}’.
-  \item \name{PARA} is now sans everywhere, since it always means the folder.
-  \item The pipeline is now built in three steps, each with its output. Steps 1–2 show what they print today. Step 3 keeps the old output: run today it prints nothing, because those memories have moved to their project homes.
-  \item Items 1–2 now say that \name{repo\lnk} links to the git repo in \name{\home/Work/GitHub/}, and that \name{\home/Book\lnk} is a link to its repo.
-  \item Using \emph{vs.} developing: I use the tools in \name{md-Wiki}, and changing a tool is its own project. The example is reading mail with \name{tg-mail} in \name{md-Wiki}, and changing \name{tg-mail} itself in \name{\home/PARA\lnk/Projects/tg-mail/}.
-  \item \name{g-drive\lnk}: ‘to share the material with the students’.
-  \item The project-home list now opens with \name{\home/PARA\lnk/Projects/<name>/}. Folders end in \name{/} and every link carries \emo{link}, explained once at the start.
-  \item \name{local\lnk}: ‘the project's data, usually a folder in Dropbox, so both Macs have it’.
-  \item Removed the ‘Step $n$’ numbering; the subsections are now titled by their question.
-  \item Cut the terminfo bug. The \texttt{p}/\texttt{a}/\texttt{r} part is now two lines and one example, and both READMEs are updated to match.
-  \item Every ‘vault’ is now \name{md-Wiki}.
-  \item The Dropbox line now says \name{Boox/} holds the PDFs you're reading. \name{files.md} still says ‘the copy for the Boox goes at the top of \name{\home/Dropbox}’: should that rule change once \name{Boox/} is cleaned up?
-\end{enumerate}
-
 
 \end{document}
