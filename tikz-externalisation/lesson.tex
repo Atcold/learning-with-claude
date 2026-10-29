@@ -1,0 +1,344 @@
+% Lesson: why a cached TikZ figure drawn with flags comes out wrong, and how to name it.
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{lesson}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\renewcommand{\panetitle}{A terminal on \name{AlfMAC5}, in \name{demo/}}
+
+% This lesson's panes and outputs are short: keep each whole on one page, instead of
+% lesson.sty's breakable boxes, which can leave a frame split across a page break
+\renewtcblisting{pane}{listing engine=listings, listing only, enhanced, unbreakable,
+  colback=blue!12, colframe=blue!70!black, boxrule=0.6pt, arc=2pt,
+  colbacktitle=blue!60, coltitle=black, title={\emo{desktop computer}\ \panetitle}, fonttitle=\small\bfseries,
+  listing options={style=shell}}
+\renewtcblisting{cmdout}{listing engine=listings, listing only, enhanced, unbreakable,
+  colback=white, colframe=black!25, boxrule=0.4pt, arc=1pt, left=4pt,
+  title={Output}, fonttitle=\scriptsize, coltitle=black!70, colbacktitle=black!6,
+  listing options={style=out}}
+
+% A source file shown whole: start it on the next page unless eight lines are left
+\let\lstinputlistingwhole\lstinputlisting
+\renewcommand{\lstinputlisting}[2][]{\needspace{8\baselineskip}\lstinputlistingwhole[#1]{#2}}
+% A command and its output travel together: start the pane on the next page unless
+% fourteen lines are left
+\BeforeBeginEnvironment{pane}{\needspace{14\baselineskip}}
+% A heading travels with its snippet: start it on the next page unless twelve lines are left
+\let\sectionalone\section
+\renewcommand{\section}{\needspace{12\baselineskip}\sectionalone}
+
+% A single control sequence in prose, e.g. \cs{edef}
+\newcommand{\cs}[1]{\texttt{\textbackslash #1}}
+
+% A named flag in two colours, \if and true orange, the flag's own name teal. listings reads
+% \ifReLU as one control word and hands it to the style as #2: ignore it, print the split
+\newcommand{\lstflagif}[2]{{\color{orange!85!black}\textbackslash if}{\color{teal!80!black}#1}}
+\newcommand{\lstflagtrue}[2]{{\color{teal!80!black}\textbackslash #1}{\color{orange!85!black}true}}
+
+% A LaTeX source file, shown as it is
+% Colours: naming commands blue, \if \else \fi orange (a flag's own name teal), drawing commands
+% violet, the rest grey; braces green, so the names inside them stand out
+\lstdefinestyle{latex}{style=out, language=[LaTeX]TeX, basicstyle=\ttfamily\footnotesize\color{black!85},
+  frame=single, rulecolor=\color{black!25}, framesep=5pt, xleftmargin=5pt, xrightmargin=5pt,  % a border, no fill
+  texcsstyle=*\color{black!55},
+  % The LaTeX language already lists primitives such as \else, \fi, \input in its first
+  % class, which wins: remove them there, so the classes below can claim them
+  deletetexcs={else,fi,if,input,def,edef,gdef,begin,end,hskip,fill,newif,documentclass,usepackage},
+  moretexcs=[2]{tikzsetnextfilename,tikzset,tikzexternalize,edef,def,gdef,dotname},
+  texcsstyle=*[2]\color{blue!75!black},
+  moretexcs=[3]{if,else,fi,newif},
+  texcsstyle=*[3]\color{orange!85!black},
+  moretexcs=[4]{fill,begin,end,input,usepackage,usetikzlibrary,documentclass,pdfcompresslevel,hskip},
+  texcsstyle=*[4]\color{violet!80!black},
+  commentstyle=\color{black!40}\itshape,
+  % listings treats TeX primitives (\else, \fi, \input, \def, …) as keywords, not as
+  % control sequences: drop them from the keywords so the groups above colour them
+  deletekeywords={else,fi,if,input,def,edef,gdef,begin,end,hskip,fill,newif},
+  % One class per named flag, each printing its own split
+  moretexcs=[6]{ifRed}, texcsstyle=*[6]\lstflagif{Red},
+  moretexcs=[7]{Redtrue}, texcsstyle=*[7]\lstflagtrue{Red},
+  moretexcs=[8]{ifReLU}, texcsstyle=*[8]\lstflagif{ReLU},
+  moretexcs=[9]{ReLUtrue}, texcsstyle=*[9]\lstflagtrue{ReLU},
+  moretexcs=[10]{ifTanh}, texcsstyle=*[10]\lstflagif{Tanh},
+  moretexcs=[11]{Tanhtrue}, texcsstyle=*[11]\lstflagtrue{Tanh},
+  moretexcs=[12]{ifSigmoid}, texcsstyle=*[12]\lstflagif{Sigmoid},
+  moretexcs=[13]{Sigmoidtrue}, texcsstyle=*[13]\lstflagtrue{Sigmoid},
+  moretexcs=[14]{ifModelManifold}, texcsstyle=*[14]\lstflagif{ModelManifold},
+  moretexcs=[15]{ifUenergy}, texcsstyle=*[15]\lstflagif{Uenergy},
+  literate={\{}{{\color{green!45!black}\{}}1 {\}}{{\color{green!45!black}\}}}1}
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\title{\emo{framed picture}\ One figure file, several cached pictures\\[0.3em]
+  \large TikZ caches by name and source text, not by flag, so each variant needs its own name}
+\author{Lesson for Alfredo Canziani, written by Claude}
+\date{Thu 29 Oct 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Why we asked}
+
+Several figure files in the book are drawn more than once, each time with a different flag switched on first: \name{inference-figs/activation.tex} (ReLU, tanh, sigmoid), \name{inference-figs/scatter.tex}, \name{ellipse-figs/ellipse.tex}, and \name{spiral-figs/ambient-space.tex}. In \name{inference.tex}, for example:
+
+\begin{lstlisting}[style=latex]
+  {\ReLUtrue\input{inference-figs/activation}}\hskip 10pt
+  {\Tanhtrue\input{inference-figs/activation}}\hskip 10pt
+  {\Sigmoidtrue\input{inference-figs/activation}}%
+\end{lstlisting}
+
+My convention gives every variant its own \emph{literal} name, picked by the flags, in one of two ways. The first is an \cs{if}…\cs{else} chain, as at the top of \name{activation.tex} (and \name{scatter.tex}):
+
+\begin{lstlisting}[style=latex]
+\ifReLU\tikzsetnextfilename{inference-ReLU}
+\else\ifTanh\tikzsetnextfilename{inference-Tanh}
+\else\ifSigmoid\tikzsetnextfilename{inference-Sigmoid}\fi\fi\fi
+\end{lstlisting}
+
+The second is a default name, then one line per flag that overrides it, as at the top of \name{ellipse.tex}:
+
+\begin{lstlisting}[style=latex]
+\tikzsetnextfilename{ellipse-ambient-space}
+\ifModelManifold\tikzsetnextfilename{ellipse-ambient-space-and-manifold}\fi
+\ifUenergy\tikzsetnextfilename{ellipse-ambient-space-and-manifold-U-annotated}\fi
+\end{lstlisting}
+
+\name{ambient-space.tex} was the exception. Since it became TikZ in 2022 (commit 85edb9f) it has had caching switched off, so its \name{pgfplots} panels are redrawn on every build, which is why the spiral chapter compiled slowly:
+
+\begin{lstlisting}[style=latex]
+%\tikzsetnextfilename{spiral-ambient-space}
+\tikzset{external/export next=false}
+\end{lstlisting}
+
+Today Claude switched its caching on with one fixed name, \texttt{spiral-ambient-space}, and every variant came out as the same picture. Then, instead of following my convention, Claude named the variants with an \cs{edef} that builds the name from the flags. I asked why that \cs{edef} is needed.
+
+To answer, we rebuilt the situation in miniature, in \name{demo/}: one figure file, a dot, drawn twice, once plain (blue) and once with a flag on (red), under six ways of naming it: the fixed name, no caching, my two conventions, and Claude's two variants.
+
+\section{What externalisation does}
+
+\begin{insight}{Externalisation}
+With \cs{tikzexternalize}, every \texttt{tikzpicture} is compiled once, on its own, into a small PDF; the document then includes that PDF instead of redrawing the picture. Two things identify the cached file:
+\begin{itemize}[leftmargin=1.2em,itemsep=0pt]
+  \item its \textbf{name}, set by \cs{tikzsetnextfilename}, which is also the file name on disk;
+  \item a \textbf{fingerprint} (an MD5 sum) of the picture's \emph{source text}, stored in a \name{.md5} file next to it. If the fingerprint matches, TikZ calls the image up to date and reuses it.
+\end{itemize}
+The fingerprint is taken from the code as written, before \TeX\ runs it. A flag such as \cs{ifRed} is part of that text, but its value is not.
+\end{insight}
+
+\section{The demo}
+
+The document draws the same figure file twice. \cs{fig} picks which of the six figure files to use, and the cached images go into \name{figs/}, prefixed with the experiment's name.
+
+\lstinputlisting[style=latex, title={\name{main.tex}}]{demo/main.tex}
+
+Each experiment is a one-line driver, so the job name is the experiment's name:
+
+\lstinputlisting[style=latex, title={\name{fixed.tex}}]{demo/fixed.tex}
+
+To see which colours ended in a PDF, we read its fill commands: \texttt{0 0 1 rg} is blue, \texttt{1 0 0 rg} is red.
+
+\section{One fixed name, as in the first attempt}
+
+\lstinputlisting[style=latex, title={\name{dot-fixed.tex}}]{demo/dot-fixed.tex}
+
+\begin{pane}
+$ pdflatex -shell-escape -interaction=batchmode fixed.tex   # compile, externalising each picture
+$ grep -a -o -E '(0 0 1|1 0 0) rg' fixed.pdf | sort | uniq -c   # count blue and red fills
+\end{pane}
+\begin{cmdout}
+   |!2 0 0 1 rg!|
+\end{cmdout}
+
+Two blue dots, no red one. The log says why:
+
+\begin{pane}
+$ grep -n 'fixed-dot' fixed.log   # what TikZ did with the picture named fixed-dot
+\end{pane}
+\begin{cmdout}
+|~399:\openout3 = `figs/fixed-dot.md5'.~|
+|~404:n-error -interaction=batchmode -jobname "figs/fixed-dot" "\def\tikzexternalreal~|
+407: "figs/fixed-dot" "\def\tikzexternalrealjob{fixed}\input{fixed}")...executed.
+|!412:===== Image 'figs/fixed-dot' is up-to-date. ======!|
+|~416:fixed-dot.pdf> <./figs/fixed-dot.pdf>] (./fixed.aux)~|
+\end{cmdout}
+
+The first picture is compiled (line 407). The second has the same name, and its source text is identical, flag and all, so its fingerprint matches and TikZ reuses the blue dot (line 412). It never compiles the red one.
+
+\section{No caching, as the file was before}
+
+\lstinputlisting[style=latex, title={\name{dot-off.tex}}]{demo/dot-off.tex}
+
+\begin{pane}
+$ pdflatex -shell-escape -interaction=batchmode off.tex
+$ grep -a -o -E '(0 0 1|1 0 0) rg' off.pdf | sort | uniq -c
+\end{pane}
+\begin{cmdout}
+   1 0 0 1 rg
+   1 1 0 0 rg
+\end{cmdout}
+
+Correct, one blue and one red, because each picture is drawn inline every time. That is also why \name{ambient-space.tex} made the spiral chapter slow: its \name{pgfplots} panels were redrawn on every build.
+
+\section{My chain, as in \name{activation.tex}}
+
+\lstinputlisting[style=latex, title={\name{dot-chain.tex}}]{demo/dot-chain.tex}
+
+\begin{pane}
+$ pdflatex -shell-escape -interaction=batchmode chain.tex
+$ grep -a -o -E '(0 0 1|1 0 0) rg' chain.pdf | sort | uniq -c
+$ ls figs/ | grep 'chain.*pdf'
+\end{pane}
+\begin{cmdout}
+   1 0 0 1 rg
+   1 1 0 0 rg
+chain-dot-red.pdf
+chain-dot.pdf
+\end{cmdout}
+
+Correct and cached: each flag picks its own literal name, so the two pictures never share a cache file.
+
+\section{My override, as in \name{ellipse.tex}}
+
+\lstinputlisting[style=latex, title={\name{dot-override.tex}}]{demo/dot-override.tex}
+
+\begin{pane}
+$ pdflatex -shell-escape -interaction=batchmode override.tex
+$ grep -a -o -E '(0 0 1|1 0 0) rg' override.pdf | sort | uniq -c
+$ ls figs/ | grep 'override.*pdf'
+\end{pane}
+\begin{cmdout}
+   1 0 0 1 rg
+   1 1 0 0 rg
+override-dot-red.pdf
+override-dot.pdf
+\end{cmdout}
+
+The same result. The second \cs{tikzsetnextfilename} simply replaces the first, because the command only remembers the last name it was given (section~\ref{sec:inline} shows its code). This form scales well: one line per variant, no nested \cs{else}.
+
+\section{Claude's variant, a name built with \cs{edef}}
+
+\lstinputlisting[style=latex, title={\name{dot-edef.tex}}]{demo/dot-edef.tex}
+
+\begin{pane}
+$ pdflatex -shell-escape -interaction=batchmode edef.tex
+$ grep -a -o -E '(0 0 1|1 0 0) rg' edef.pdf | sort | uniq -c
+$ ls figs/ | grep 'edef.*pdf'   # the cached images
+\end{pane}
+\begin{cmdout}
+   1 0 0 1 rg
+   1 1 0 0 rg
+edef-dot-red.pdf
+edef-dot.pdf
+\end{cmdout}
+
+Correct, and cached: two files, one per variant. \cs{edef} (expanded define) runs the \cs{if}…\cs{fi} \emph{now} and stores only its result, so \cs{dotname} is \texttt{dot} for the plain call and \texttt{dot-red} inside the group where \cs{Redtrue} holds. A plain \cs{def} would store the test itself, unevaluated.
+
+\section{Claude's variant, without \cs{edef}}\label{sec:inline}
+
+\lstinputlisting[style=latex, title={\name{dot-inline.tex}}]{demo/dot-inline.tex}
+
+\begin{pane}
+$ pdflatex -shell-escape -interaction=batchmode inline.tex
+$ grep -a -o -E '(0 0 1|1 0 0) rg' inline.pdf | sort | uniq -c
+$ ls figs/ | grep 'inline.*pdf'
+\end{pane}
+\begin{cmdout}
+   1 0 0 1 rg
+   1 1 0 0 rg
+inline-dot-red.pdf
+inline-dot.pdf
+\end{cmdout}
+
+The same result. The reason is in TikZ's own code, \name{tikzexternalshared.code.tex}:
+
+\begin{pane}
+$ grep -n 'def\\tikzsetnextfilename' $(kpsewhich tikzexternalshared.code.tex)
+\end{pane}
+\begin{cmdout}
+|!574:\def\tikzsetnextfilename#1{\gdef\tikzexternal@nextfile{#1}}!|
+\end{cmdout}
+
+\cs{tikzsetnextfilename} only stores what you give it, unexpanded (\cs{gdef}), and the name is expanded later, when the picture that follows is externalised. By then the flag still has the same value, so the test comes out the same.
+
+\begin{insight}{So why the \cs{edef}?}
+It is not needed. It freezes the name at the moment you write it, instead of when TikZ gets to it. That only differs if a flag changes between \cs{tikzsetnextfilename} and the \texttt{tikzpicture}, which in our figure files never happens. The inline form is shorter and just as correct.
+
+Neither is needed in the book at all: my chain and override already give each variant its own name. They write every name out in full, which costs a line per variant but keeps each name visible to \name{grep}, and, as the next section shows, to \name{build.sh}. Claude's variants save lines by assembling the name from the flags, so no file name appears anywhere in the source.
+\end{insight}
+
+\section{Why the book's build script cannot build these}
+
+\name{latex/build.sh} compiles the book as job \name{vscode} and builds missing figures itself. To know a figure's file name, it reads the literal text inside the braces of \cs{tikzsetnextfilename} with \name{sed}, and keeps the first match (line 64):
+
+\begin{lstlisting}[style=shell]
+name=$(sed -n 's/.*\\tikzsetnextfilename{\([^}]*\)}.*/\1/p' "$src" | head -1)
+\end{lstlisting}
+
+ Here is everything that same \name{sed} sees in the four working files:
+
+\begin{pane}
+$ for f in dot-chain.tex dot-override.tex dot-edef.tex dot-inline.tex; do printf '%s -> ' $f; sed -n 's/.*\\tikzsetnextfilename{\([^}]*\)}.*/\1/p' $f | tr '\n' ' '; echo; done
+\end{pane}
+\begin{cmdout}
+dot-chain.tex -> dot-red dot
+dot-override.tex -> dot dot-red
+dot-edef.tex -> |!\dotname!|
+dot-inline.tex -> |!dot\ifRed-red\fi!|
+\end{cmdout}
+
+My two forms give real file names; the script builds the first of each (\name{dot-red} for the chain, \name{dot} for the override), and a TeXstudio compile caches the rest. Claude's two forms give no file name at all, so the script never builds them. The document then tries to externalise them during its own run, and under the job name \name{vscode} that call cannot work. We reproduced it with the \cs{edef} experiment:
+
+\begin{pane}
+$ rm -f figs/edef-*   # forget the cached images
+$ pdflatex -shell-escape -interaction=batchmode -jobname vscode edef.tex
+$ sed -n 412,415p vscode.log
+\end{pane}
+\begin{cmdout}
+! Package tikz Error: Sorry, the system call 'pdflatex -shell-escape -halt-on-e
+rror -interaction=batchmode -jobname "figs/edef-dot" "\def\tikzexternalrealjob{
+|!vscode}\input{vscode}!|"' did NOT result in a usable output file 'figs/edef-dot'
+(expected one of .pdf:.jpg:.jpeg:.png:).
+\end{cmdout}
+
+To make the picture, TikZ reruns the \emph{whole document}, inputting the file named after the job, here \name{vscode.tex}, a file that does not exist. Under the real job name it works: compiling \name{edef.tex} again gives \name{edef-dot.pdf} and \name{edef-dot-red.pdf}. In the book, the real job is \name{main}, the one TeXstudio runs.
+
+\begin{result}{What to do in the book}
+Give \name{ambient-space.tex} my override form, like \name{ellipse.tex}: a default name, then one line per flag. Compile once from TeXstudio, job \name{main}, which caches one image per variant. From then on \name{build.sh} finds them up to date and reuses them.
+\end{result}
+
+\section*{Summary}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  naming & pictures & cached \\
+  \midrule
+  one fixed name & wrong: the second reuses the first & yes \\
+  \texttt{export next=false} & right & no, redrawn every build \\
+  my \cs{if}…\cs{else} chain & right & yes; names readable by \name{build.sh} \\
+  my default plus overrides & right & yes; names readable by \name{build.sh} \\
+  Claude's \cs{edef} name & right & yes; no name \name{build.sh} can read \\
+  Claude's inline \cs{if} in the name & right & yes; no name \name{build.sh} can read \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}

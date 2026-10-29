@@ -1,0 +1,12 @@
+% One document, one figure file, drawn twice: once plain, once with \ifRed on.
+% \fig names which version of the figure file to use (fixed, off, edef, inline).
+\documentclass{article}
+\pdfcompresslevel=0  % uncompressed, so the colour can be read with grep
+\usepackage{tikz}
+\usetikzlibrary{external}
+\tikzexternalize[prefix=figs/\fig-]
+\newif\ifRed
+\begin{document}
+\input{dot-\fig}%            plain: a blue dot
+{\Redtrue\input{dot-\fig}}%  flag on: a red dot
+\end{document}

@@ -9,6 +9,7 @@ Each folder is one lesson.
 - [Networking](networking/): the tailnet, direct paths and relays, private addresses; a smart plug on the LAN. *A stub, not yet a lesson.*
 - [Where should an app keep its files?](XDG-base-dirs/): dot folders, the XDG base directories, a home for eink's data.
 - [How I work with Claude](working-with-claude/): one home per project, where Claude keeps rules and memory, PARA in Dropbox.
+- [One figure file, several cached pictures](tikz-externalisation/): TikZ caches by name and source text, not by flag, so each variant needs its own name.
 
 ## Building
 
