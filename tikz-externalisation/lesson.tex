@@ -464,44 +464,8 @@ It is not needed. It freezes the name at the moment you write it, instead of whe
 Neither is needed in the book at all: my chain and override already give each variant its own name. They write every name out in full, which costs a line per variant but keeps each name visible to \name{grep}. Claude's variants save lines by assembling the name from the flags, so no file name appears anywhere in the source.
 \end{insight}
 
-\section{Why the book's build script cannot build these}
-
-\name{latex/build.sh} compiles the book as job \name{vscode} and builds missing figures itself. Line 64 finds a figure's file name:
-
-\begin{lstlisting}[style=shell]
-name=$(sed -n 's/.*\\tikzsetnextfilename{\([^}]*\)}.*/\1/p' "$src" | head -1)
-\end{lstlisting}
-
-\name{sed} prints the literal text inside the braces of \cs{tikzsetnextfilename}, and \texttt{head -1} keeps the first match. Here is everything that same \name{sed} sees in the four working files:
-
-\begin{pane}
-$ for f in chain-circle.tex override-circle.tex edef-circle.tex inline-circle.tex; do printf '%s -> ' $f; sed -n 's/.*\\tikzsetnextfilename{\([^}]*\)}.*/\1/p' $f | tr '\n' ' '; echo; done
-\end{pane}
-\begin{cmdout}
-chain-circle.tex -> circle-red circle
-override-circle.tex -> circle circle-red
-edef-circle.tex -> |!\circlename!|
-inline-circle.tex -> |!circle\ifRed-red\fi!|
-\end{cmdout}
-
-My two forms give real file names; the script builds the first of each (\name{circle-red} for the chain, \name{circle} for the override), and a TeXstudio compile caches the rest. Claude's two forms give no file name at all, so the script never builds them, and the document externalises them during its own run, under the job name \name{vscode}. We reproduced that run with the \cs{edef} experiment:
-
-\begin{pane}
-$ rm -f figs/edef-*   # forget the cached images
-$ pdflatex -shell-escape -interaction=batchmode -jobname vscode edef   # compile as build.sh does
-$ sed -n 412,415p vscode.log   # the error, lines 412 to 415
-\end{pane}
-\begin{cmdout}
-! Package tikz Error: Sorry, the system call 'pdflatex -shell-escape -halt-on-e
-rror -interaction=batchmode -jobname "figs/edef-circle" "\def\tikzexternalrealj
-|!ob{vscode}\input{vscode}!|"' did NOT result in a usable output file 'figs/edef-ci
-rcle' (expected one of .pdf:.jpg:.jpeg:.png:). Please verify that you have enab
-\end{cmdout}
-
-It fails. To make the picture, TikZ reruns the \emph{whole document}, inputting the file named after the job, here \name{vscode.tex}, a file that does not exist. Under the real job name it works: compiling \name{edef.tex} again gives \name{edef-circle.pdf} and \name{edef-circle-red.pdf}. In the book, the real job is \name{main}, the one TeXstudio runs.
-
 \begin{result}{What to do in the book}
-Give \name{ambient-space.tex} my override form, like \name{ellipse.tex}: a default name, then one line per flag. Compile once from TeXstudio, job \name{main}, which caches one image per variant. From then on \name{build.sh} finds them up to date and reuses them.
+Give \name{ambient-space.tex} my override form, like \name{ellipse.tex}: a default name, then one line per flag. Every variant gets its own cached image, and every name can be found with \name{grep}.
 \end{result}
 
 \section*{Summary}
@@ -513,10 +477,10 @@ Give \name{ambient-space.tex} my override form, like \name{ellipse.tex}: a defau
   \midrule
   one fixed name & wrong: the second reuses the first & yes \\
   \texttt{export next=false} & right & no, redrawn every build \\
-  my \cs{if}…\cs{else} chain & right & yes; names readable by \name{build.sh} \\
-  my default plus overrides & right & yes; names readable by \name{build.sh} \\
-  Claude's \cs{edef} name & right & yes; no name \name{build.sh} can read \\
-  Claude's inline \cs{if} in the name & right & yes; no name \name{build.sh} can read \\
+  my \cs{if}…\cs{else} chain & right & yes; every name written out \\
+  my default plus overrides & right & yes; every name written out \\
+  Claude's \cs{edef} name & right & yes; names built from the flags \\
+  Claude's inline \cs{if} in the name & right & yes; names built from the flags \\
   \bottomrule
 \end{tabular}
 \end{center}
