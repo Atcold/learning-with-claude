@@ -1,5 +1,5 @@
-% One document, one figure file, drawn twice: once plain, once with \ifRed on.
-% \fig names which version of the figure file to use (fixed, off, edef, inline).
+% One document, one figure file, read twice: once plain, once with \ifRed on.
+% \fig is the experiment: fixed, off, chain, override, edef, or inline.
 \documentclass{article}
 \pdfcompresslevel=0  % uncompressed, so the colour can be read with grep
 \usepackage{tikz}
@@ -7,6 +7,6 @@
 \tikzexternalize[prefix=figs/\fig-]
 \newif\ifRed
 \begin{document}
-\input{dot-\fig}%            plain: a blue dot
-{\Redtrue\input{dot-\fig}}%  flag on: a red dot
+\input{\fig-circle}%            plain: a blue circle
+{\Redtrue\input{\fig-circle}}%  flag on: a red circle
 \end{document}
