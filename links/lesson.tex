@@ -1,0 +1,133 @@
+% Lesson: hard links and symbolic links, and how uv shares packages between environments.
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{lesson}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
+
+% A short session, commands and their output together: \begin{session}{AlfMAC4} … \end{session}
+\newtcblisting{session}[1]{listing engine=listings, listing only, enhanced, breakable,
+  colback=white, colframe=blue!70!black, boxrule=0.5pt, arc=2pt, left=4pt, top=1pt, bottom=1pt,
+  colbacktitle=blue!40, coltitle=black, title={\emo{desktop computer}\ #1}, fonttitle=\scriptsize\bfseries,
+  listing options={style=out}}
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\title{\vspace{-2em}\emo{link}\ Two names for one file\\[0.2em]
+  \large Hard links, symbolic links, and how \name{uv} shares packages}
+\author{Lesson for Alfredo Canziani, written by Claude}
+\date{Tue 3 Nov 2026}
+
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\section*{Names and inodes}
+
+A file system keeps a file's contents and facts in an \textbf{inode}, a numbered record. A folder is a list of entries, each pairing a name with an inode number. A \textbf{hard link} is one more such entry for the same inode; the contents are freed when the last name goes. A \textbf{symbolic link} is a small file of its own whose contents are a path. My \name{ls} is \name{eza}, so the lab writes \texttt{command ls} for the system's.
+
+\begin{session}{AlfMAC4, in \home/Work/Scratch/links-lab}
+$ echo 'first line' > original.txt; ln original.txt hard.txt; ln -s original.txt soft.txt
+$ command ls -li *.txt
+|!202788056!| -rw-r--r--@ |!2!| atcold  staff  11  3 Nov 00:34 hard.txt
+|!202788056!| -rw-r--r--@ |!2!| atcold  staff  11  3 Nov 00:34 original.txt
+202788059 lrwxr-xr-x@ 1 atcold  staff  12  3 Nov 00:34 soft.txt -> original.txt
+$ readlink soft.txt; realpath soft.txt hard.txt
+original.txt
+/Users/atcold/Work/Scratch/links-lab/|!original.txt!|
+/Users/atcold/Work/Scratch/links-lab/|!hard.txt!|
+$ rm original.txt; cat hard.txt; cat soft.txt
+first line
+|!cat: soft.txt: No such file or directory!|
+\end{session}
+
+\texttt{-i} prints the inode, and the number after the permissions is the link count. \name{hard.txt} and \name{original.txt} are one inode with two names, and neither is the ``real'' one; \name{soft.txt} is its own inode, twelve bytes, the length of \texttt{original.txt}. \name{readlink} prints the path a symlink holds; \name{realpath} follows it, and for a hard link has nothing to follow. After \name{rm}, the hard link still has the contents and the symlink \emph{dangles}. This is why \name{uv cache clean} leaves environments working when \name{uv} hard-links them, and would break them if it used symlinks.
+
+Hard links have limits: \texttt{ln folder x} fails with \texttt{Is a directory}, and a hard link onto another file system (a mounted disk image) fails with \texttt{Cross-device link}, since an inode number means something only on its own file system.
+
+\section*{Clones, the third way to share}
+
+A \textbf{clone} is a new file, with its own inode and name, that shares the original's data on the disk, so at first it takes no extra space. When either file is edited, only the changed parts are written anew (\emph{copy on write}), and from then on the two differ there: unlike a hard link, editing one never changes the other. The file system has to support it.
+
+\begin{session}{AlfMAC4, in \home/Work/Scratch/links-lab}
+$ mkdir big && mkfile 100m big/data.bin && ln big/data.bin big/twin.bin
+$ cp -c big/data.bin big/clone.bin && command ls -li big
+total 614400
+|!202788116!| -rw-------@ |!1!| atcold  staff  104857600  3 Nov 00:34 clone.bin
+202788061 -rw-------@ 2 atcold  staff  104857600  3 Nov 00:34 data.bin
+202788061 -rw-------@ 2 atcold  staff  104857600  3 Nov 00:34 twin.bin
+$ df -k . | tail -1; rm big/clone.bin; df -k . | tail -1
+/dev/disk3s5   971350180 |!471432616!| 475228872    50% 4406007 4752288720    0%   /System/Volumes/Data
+/dev/disk3s5   971350180 |!471432616!| 475228872    50% 4406006 4752288720    0%   /System/Volumes/Data
+\end{session}
+
+\name{mkfile} makes a 100 MB file, and \name{ln} gives it a hard link, \name{twin.bin}: one inode, two names. \texttt{cp -c} asks APFS, the Mac's file system, for a clone: \name{clone.bin} is a new inode with one name. \name{df} prints the disk's used space (third column, in KB) before and after removing the clone, and it does not change: the clone's data was the original's.
+
+\begin{session}{AlfSPARK, in \home/Work/Scratch/links-lab}
+$ head -c 100M /dev/zero > data.bin
+$ cp --reflink=always data.bin clone.bin
+|!cp: failed to clone 'clone.bin' from 'data.bin': Operation not supported!|
+$ df -T . | tail -1
+/dev/nvme0n1p2 |!ext4!| 3937374564 128501828 3608832728   4% /
+\end{session}
+
+Linux calls a clone a \emph{reflink}, and \texttt{-{}-reflink=always} asks for one or nothing. \name{df -T} names the file system, ext4, Linux's usual one, which cannot make clones.
+
+\section*{What \name{uv} does on each machine}
+
+\name{uv} keeps one copy of every package in its cache, \name{\home/.cache/uv}, and puts it into each environment by the cheapest means available. \texttt{uv help pip install} says its default is \texttt{clone} on macOS and Linux. Two new environments on the Mac, each with the small package \name{six}:
+
+\begin{session}{AlfMAC4, in \home/Work/Scratch/links-lab}
+$ uv venv -q env-a && uv venv -q env-b
+$ uv pip install -q --python env-a six && uv pip install -q --python env-b six
+$ stat -f '%i %l %N' env-a/lib/python*/site-packages/six.py env-b/lib/python*/site-packages/six.py
+|!202786783 1!| env-a/lib/python3.13/site-packages/six.py
+|!202786804 1!| env-b/lib/python3.13/site-packages/six.py
+\end{session}
+
+\texttt{stat -f '\%i \%l \%N'} prints the inode, the link count, and the name. Two inodes with one name each: clones, as \name{clone.bin} was. The same on \name{AlfSPARK}, where \texttt{-v} makes \name{uv} say what it does:
+
+\begin{session}{AlfSPARK, in \home/Work/Scratch/links-lab}
+$ ~/.local/bin/uv venv -q env
+$ ~/.local/bin/uv pip install -v --python env six 2>&1 | grep -iE "clone|link|copy|reflink" | head
+DEBUG |!Failed to reflink!| `/home/atcold/.cache/uv/archive-v0/brEf-O42Vx38VnOz/six.py` to `/home/atcold/Work/Scratch/links-lab/env/lib/python3.12/site-packages/six.py`: Operation not supported (os error 95), |!falling back!|
+$ stat -c "%i %h %n" env/lib/python*/site-packages/six.py
+3429595 |!3!| env/lib/python3.12/site-packages/six.py
+\end{session}
+
+The clone fails, as \name{cp} did, and \name{uv} falls back to a hard link: the file now has three names, the cache's among them. (Linux's \name{stat} takes \texttt{-c}, and \texttt{\%h} is the link count.) That is what happened to PyTorch in the voice-lab environments:
+
+\begin{session}{AlfSPARK}
+$ stat -c "%i %h %n" ~/voice-lab/*/lib/python*/site-packages/torch/lib/libtorch_cuda.so
+2252467 7 /home/atcold/voice-lab/breeze/lib/python3.12/site-packages/torch/lib/libtorch_cuda.so
+2252467 7 /home/atcold/voice-lab/fish/lib/python3.12/site-packages/torch/lib/libtorch_cuda.so
+2252467 7 /home/atcold/voice-lab/ming/lib/python3.12/site-packages/torch/lib/libtorch_cuda.so
+$ du -sh ~/voice-lab/ming ~/voice-lab/breeze ~/voice-lab/fish
+|!5.4G!|	/home/atcold/voice-lab/ming
+723M	/home/atcold/voice-lab/breeze
+356M	/home/atcold/voice-lab/fish
+$ du -sh ~/voice-lab/fish ~/voice-lab/breeze ~/voice-lab/ming
+|!5.9G!|	/home/atcold/voice-lab/fish
+414M	/home/atcold/voice-lab/breeze
+152M	/home/atcold/voice-lab/ming
+\end{session}
+
+One inode, seven names: \name{find \home{} -xdev -inum 2252467} lists \name{uv}'s cache and six environments, so PyTorch is on the disk once, not six times. \name{du} counts an inode once per run, under the first name it meets, so whichever folder comes first is charged for PyTorch; both orders add up to about 6.4G, what the three environments really take.
+
+\end{document}
