@@ -161,7 +161,7 @@ Every project is listed, by area, in \name{md-Wiki/Projects/projects.md}.
 
 \section{Rules in one place}
 
-The 147 \name{md-Wiki/} memories, and copies of the same rules in five other memories, became five rule files, for every session, and two more that load only in \name{md-Wiki/}:
+The 147 \name{md-Wiki/} memories, and copies of the same rules in five other memories, became six rule files, for every session, and two more that load only in \name{md-Wiki/}:
 
 \begin{center}
 \begin{tabular}{@{}ll@{}}
@@ -171,7 +171,8 @@ The 147 \name{md-Wiki/} memories, and copies of the same rules in five other mem
   \name{talking.md} & how Claude answers me: short, numbered, questions \emph{vs.} requests \\
   \name{writing.md} & prose: sentence case, no hard wrap, dates, pinyin, colours \\
   \name{git.md} & commits, testing, drafts, binaries \\
-  \name{files.md} & where things go, PDFs, shared tmux panes \\
+  \name{files.md} & where things go, PDFs \\
+  \name{terminal.md} & experiments, the blackboard, shared tmux panes \\
   \name{latex.md} & names in sans, units, citations, TikZ; loads only for \texttt{.tex}, \texttt{.sty}, \texttt{.bib} \\
   \midrule
   \name{mail.md} & drafts, recipients, Chat, \name{gog}; only in \name{md-Wiki/} \\
@@ -191,13 +192,49 @@ Three shell commands jump into \name{PARA/}: \texttt{p} to a project, \texttt{a}
 $ p em-salsa-manual    # same as cd ~/PARA/Projects/em-salsa-manual/
 \end{pane}
 
+\section{Experiments in the terminal}
+
+Claude teaches me how something works by running it on my own machine, in a tmux pane, one of the panels a terminal window is split into, while I watch. This experiment comes from the session that set the habit up. It shows why a softer maximum, which uses exponentials to give each score a share of the total, subtracts the largest score first:
+
+\begingroup
+\renewcommand{\panetitle}{IPython on \name{AlfMAC4}}
+\begin{pane}
+In [1]: import numpy as np  # numerical arrays
+In [2]: x = np.array([1000., 1001.])  # two scores
+In [3]: # Broken: straight exponentials
+In [4]: e = np.exp(x)  # their exponentials
+<ipython-input-4-00ff81ee950c>:1: RuntimeWarning: overflow encountered in exp
+  e = np.exp(x)  # their exponentials
+In [5]: e  # too big for a float: inf
+Out[5]: array([inf, inf])
+In [6]: e / e.sum()  # each one's share of the total: nan
+<ipython-input-6-35bbf64e4400>:1: RuntimeWarning: invalid value encountered in divide
+  e / e.sum()  # each one's share of the total: nan
+Out[6]: array([nan, nan])
+In [7]: # Fixed: subtract the largest first
+In [8]: e = np.exp(x - x.max())  # the same, shifted
+In [9]: e  # now they fit
+Out[9]: array([0.36787944, 1.        ])
+In [10]: e / e.sum()  # each one's share of the total: correct
+Out[10]: array([0.26894142, 0.73105858])
+\end{pane}
+\endgroup
+
+The exponential of 1000 is too large for a floating-point number, so it becomes \texttt{inf}, and the shares come out as \texttt{nan}, which means not a number. Subtracting the largest score first keeps the exponentials in range, and the shares come out right.
+
+Each command ends with a short comment saying what it shows, so the explanation sits beside the code and its output, and the chat only reports what the experiment found. The experiment uses the tool’s own interactive session: the shell, \name{ipython}, or the equivalent for that language. The session stays open at the end, so I can carry on from there. On another machine, Claude opens \texttt{ssh} in the pane and continues there. A change to my terminal setup is tested the same way, in front of me.
+
+The same pane works as a blackboard. Output I should look at, such as \texttt{git s} or \texttt{git lg -5}, goes there instead of into the chat, because the pane keeps its colour and layout. Colour is for the screen: anything going into a pipe stays plain, so the next tool reads clean input.
+
+These rules are in \name{terminal.md}. Because an experiment depends on which machine it runs on, a session-start hook, a command Claude Code runs at launch, adds the machine’s name to every session.
+
 \section{What changed, in one place}
 
 \begin{itemize}[leftmargin=1.2em]
   \item \textbf{\name{md-Wiki/}:} every project in \name{Projects/}, one index, \name{projects.md}; the nested repo merged in with its history.
   \item \textbf{\name{PARA/}:} \name{\home/Dropbox/Apps/PARA/}, no longer in the dotfiles; a home for every active project.
   \item \textbf{Dropbox:} the top level holds \name{Apps/}, \name{Archive/}, \name{Boox/} (the PDFs I am reading), \name{Dance/}, \name{NYU/}, \name{onyx/}, \name{Screenshots/}.
-  \item \textbf{Instructions:} five rule files in \name{\home/\lk{.claude}/rules/}, and two in \name{\home/Dropbox/Apps/claude/md-wiki-rules/}, which \name{md-Wiki/.claude/\lk{rules}/} points to; the memories they replaced deleted.
+  \item \textbf{Instructions:} six rule files in \name{\home/\lk{.claude}/rules/}, and two in \name{\home/Dropbox/Apps/claude/md-wiki-rules/}, which \name{md-Wiki/.claude/\lk{rules}/} points to; the memories they replaced deleted.
 \end{itemize}
 
 \section{Using Codex with the same project home}
