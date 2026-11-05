@@ -239,30 +239,34 @@ These rules are in \name{terminal.md}. Because an experiment depends on which ma
 
 \section{Using Codex with the same project home}
 
-\name{Codex} is OpenAI's coding assistant. I start it in the same \name{PARA} project home as \name{Claude Code}, so both work from the same project note, repository, rules, and relevant memories. Both Macs use the same shared files. Their links lead to these actual locations:
+\name{Codex} is OpenAI's coding assistant. I start it in the same \name{PARA} project home as \name{Claude Code}, so both work from the same project note, repository, rules, and relevant memories. Both Macs share application state through Dropbox. The versioned instructions and rules live in each Mac’s local checkout of \name{Unix-dot-files}, reached through \name{\home/.settings/}. The application homes link to these locations:
 
 \begin{itemize}[leftmargin=1.2em]
   \item \name{\home/Dropbox/Apps/claude/}, reached through \name{\home/\lk{.claude}/}, contains:
     \begin{itemize}[leftmargin=1.2em]
-      \item \name{CLAUDE.md}, the global instructions, and \name{rules/}, the rules explained earlier;
+      \item \name{\lk{CLAUDE.md}}, a link to \name{\home/.settings/Claude/CLAUDE.md}, and \name{\lk{rules}/}, one folder link to \name{\home/.settings/Claude/rules/};
       \item \name{skills/}, the existing task instructions;
       \item \name{projects/}, the conversations and project memories saved by \name{Claude Code}.
     \end{itemize}
   \item \name{\home/Dropbox/Apps/codex/}, reached through \name{\home/\lk{.codex}/}, contains:
     \begin{itemize}[leftmargin=1.2em]
-      \item \name{AGENTS.md}, a regular instruction file that tells \name{Codex} how to use the existing Claude workflow;
+      \item \name{\lk{AGENTS.md}}, a link to \name{\home/.settings/Codex/AGENTS.md}, which tells \name{Codex} how to use the existing Claude workflow;
       \item \name{config.toml}, the Codex settings;
       \item \name{sessions/}, the saved conversations, and supporting databases beside it;
       \item \name{skills/} and \name{plugins/}, Codex's task instructions and optional integrations, plus its authentication and runtime state in other files.
     \end{itemize}
 \end{itemize}
 
+The two folders in \name{.settings/} each have their own Bash \name{install.sh}. The Claude installer links its global instructions, the entire rules folder, and the status-line script; it uses \name{jq} to update the status-line field in the existing JSON settings. The Codex installer links its \name{AGENTS.md}. Both preserve replaced files in Scratch. Installation is described in their respective READMEs.
+
+Each Mac needs the same settings revision: pulling the repository updates its local instruction sources, while Dropbox shares conversations and runtime state. The repository holds curated configuration examples; live JSON settings, credentials, and conversations stay in the application homes.
+
 \subsection{How Codex reads the existing instructions}
 
 \name{Codex} reads \name{AGENTS.md} as its instruction file. We wrote this small file to direct it to Claude's original instructions. Its opening paragraph reads:
 
 \begin{cmdout}
-Before working, read `~/.claude/CLAUDE.md` and the existing `talking.md`, `writing.md`, `git.md`, and `files.md` in `~/.claude/rules/`. Read `latex.md` there when working with `.tex`, `.sty`, or `.bib` files. These files are the source of truth; interpret references to Claude as applying to this assistant too. Number questions only, as the user clarified.
+Before working, read `~/.claude/CLAUDE.md` and the existing `talking.md`, `writing.md`, `git.md`, `files.md`, and `terminal.md` in `~/.claude/rules/`. Read `latex.md` there when working with `.tex`, `.sty`, or `.bib` files. These files are the source of truth; interpret references to Claude as applying to this assistant too. Number questions only, as the user clarified.
 \end{cmdout}
 
 The rest directs \name{Codex} to the PARA project home, its \name{note.md}, applicable \name{CLAUDE.md} files, and the project's existing memory index. This file is the \emph{adapter}: it tells one assistant where the other assistant's existing instructions live. The rules themselves stay in the Claude files.
