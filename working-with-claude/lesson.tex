@@ -23,14 +23,13 @@
 
 \renewcommand{\panetitle}{A terminal on \name{AlfMAC5}}
 \newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
-\newcommand{\hereat}[1]{\setcounter{here}{\numexpr#1-1\relax}\here}  % a hand with the number of its chat reply
 
 \newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
   colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
 
 \title{\emo{file folder}\ How I work with Claude\\[0.3em]
   \large One home per project, rules in one place, \name{md-Wiki/} for what spans them}
-\author{Lesson for Alfredo Canziani, written by Claude}
+\author{Lesson for Alfredo Canziani, written by Claude and Codex}
 \date{Wed 28 Oct 2026}
 
 \begin{document}
@@ -201,13 +200,160 @@ $ p em-salsa-manual    # same as cd ~/PARA/Projects/em-salsa-manual/
   \item \textbf{Instructions:} five rule files in \name{\home/\lk{.claude}/rules/}, and two in \name{\home/Dropbox/Apps/claude/md-wiki-rules/}, which \name{md-Wiki/.claude/\lk{rules}/} points to; the memories they replaced deleted.
 \end{itemize}
 
-\section{Still open: what needs me}
+\section{Using Codex with the same project home}
 
-The setup says where everything is; it does not yet say which project needs me. The next piece is a dashboard in the style of the activity boxes on GitHub's front page, or an Anki card: each project and what is waiting on it, at a glance. The options so far are in \name{md-Wiki/Projects/second-brain/engagement.md}, part of the second-brain project.
+\name{Codex} is OpenAI's coding assistant. I start it in the same \name{PARA} project home as \name{Claude Code}, so both work from the same project note, repository, rules, and relevant memories. Both Macs use the same shared files. Their links lead to these actual locations:
 
+\begin{itemize}[leftmargin=1.2em]
+  \item \name{\home/Dropbox/Apps/claude/}, reached through \name{\home/\lk{.claude}/}, contains:
+    \begin{itemize}[leftmargin=1.2em]
+      \item \name{CLAUDE.md}, the global instructions, and \name{rules/}, the rules explained earlier;
+      \item \name{skills/}, the existing task instructions;
+      \item \name{projects/}, the conversations and project memories saved by \name{Claude Code}.
+    \end{itemize}
+  \item \name{\home/Dropbox/Apps/codex/}, reached through \name{\home/\lk{.codex}/}, contains:
+    \begin{itemize}[leftmargin=1.2em]
+      \item \name{AGENTS.md}, a regular instruction file that tells \name{Codex} how to use the existing Claude workflow;
+      \item \name{config.toml}, the Codex settings;
+      \item \name{sessions/}, the saved conversations, and supporting databases beside it;
+      \item \name{skills/} and \name{plugins/}, Codex's task instructions and optional integrations, plus its authentication and runtime state in other files.
+    \end{itemize}
+\end{itemize}
+
+\subsection{How Codex reads the existing instructions}
+
+\name{Codex} reads \name{AGENTS.md} as its instruction file. We wrote this small file to direct it to Claude's original instructions. Its opening paragraph reads:
+
+\begin{cmdout}
+Before working, read `~/.claude/CLAUDE.md` and the existing `talking.md`, `writing.md`, `git.md`, and `files.md` in `~/.claude/rules/`. Read `latex.md` there when working with `.tex`, `.sty`, or `.bib` files. These files are the source of truth; interpret references to Claude as applying to this assistant too. Number questions only, as the user clarified.
+\end{cmdout}
+
+The rest directs \name{Codex} to the PARA project home, its \name{note.md}, applicable \name{CLAUDE.md} files, and the project's existing memory index. This file is the \emph{adapter}: it tells one assistant where the other assistant's existing instructions live. The rules themselves stay in the Claude files.
+
+\name{Codex} looks for shared skills in \name{\home/.agents/skills/}. In our setup, \name{\home/.agents/\lk{skills}/} points to \name{\home/\lk{.claude}/skills/}, so both assistants read the same skill files. The \name{.agents/} folder provides that discovery location, while \name{\lk{.codex}/} reaches Codex\textquotesingle s own settings and state. These names are application conventions rather than XDG defaults; we keep them as the paths the applications expect. The local \name{codex-ui} program and build artifacts follow XDG, as described below. These commands print the stored targets of the three links:
+
+\begin{pane}
+$ readlink ~/.codex           # Codex home
+$ readlink ~/.claude          # Claude home
+$ readlink ~/.agents/skills   # shared Claude skills
+\end{pane}
+\begin{cmdout}
+Dropbox/Apps/codex
+Dropbox/Apps/claude
+../.claude/skills
+\end{cmdout}
+
+In \name{config.toml}, \nolinkurl{project_doc_fallback_filenames} lists \name{CLAUDE.md} as an additional project instruction filename. Another setting disables automatic external-agent imports. Such an import converts configuration from another assistant into separate Codex copies; our setup reads the originals through the adapter and skill link.
+
+\begin{insight}{Skills and plugins}
+A skill is a file of instructions for a task. A plugin packages extra capabilities, such as skills or connections to tools. For example, the PDF plugin supplies instructions for reading, creating, and checking PDF files with the available tools. For document formats covered by both libraries, our adapter tells \name{Codex} to use its native skill with the available Codex tools. It uses the shared Claude skills for the remaining tasks. The original Claude rules apply in either case.
+\end{insight}
+
+\subsection{Conversations and project progress}
+
+\name{Claude Code} saves each project's conversation files under \name{\home/\lk{.claude}/projects/<encoded-project-path>/}. Its \name{memory/} subdirectory holds the project memories, which our \name{Codex} adapter also reads. \name{Codex} saves its conversations under \name{\home/\lk{.codex}/sessions/YYYY/MM/DD/}, with supporting databases in the shared Codex home. The PARA project's \name{note.md} carries durable progress and the next action for either assistant.
+
+\subsection{What goes into the opening context}
+
+\begin{insight}{What loads into the conversation}
+The sentence typed into the composer is only part of what the assistant receives. \name{Codex} also receives its operating instructions, available tools, a catalogue of skill names and descriptions, and the project's instruction chain. Our adapter then asks it to read the Claude rules and project context. File contents returned by those reads become part of the conversation.
+
+\end{insight}
+
+A character count gives the scale of the instruction files we supply. The token estimates below divide characters by four; they are approximate, since tokens are the model's pieces of text and their size varies.
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Text & Characters & Estimated tokens \\
+\midrule
+Claude's global instructions and four general rules & 10.9k & 2.7k \\
+\name{Codex} adapter & 1.6k & 0.4k \\
+LaTeX rules, when working on LaTeX & 1.9k & 0.5k \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The shared Claude skill directory contains 109 \name{SKILL.md} files. Their names and descriptions total about 19.5k characters, or roughly 4.9k tokens if all were advertised. This is a directory inventory: discovery and eligibility determine the catalogue actually supplied, and \name{Codex}'s own skills and plugin skills add further descriptions. A listed skill's full body is read when the task calls for it. The project note, memory, and repository files add their own text when read.
+
+The reported 3\% after the opening prompt therefore describes accumulated context, including setup and any work already performed. It cannot be attributed to that prompt alone. This audit measures the files under our control; it does not reconstruct the exact percentage shown at that earlier moment. Context occupancy and the five-hour account allowance are separate quantities.
+
+\subsection{The commands at the opening screen}
+
+The suggested commands are a menu of controls, much like menu items in a desktop app. I can begin with an ordinary request. The commands below are described in the official OpenAI documentation~\cite{codexcommands} and checked against the pinned \name{Codex} source used by the custom interface.
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \texttt{/status} displays the session configuration and token usage. It is the first place to inspect a session whose settings are unclear.
+  \item \texttt{/model} selects the model and reasoning effort. \texttt{/permissions} selects what \name{Codex} may do without asking.
+  \item \texttt{/review} asks for a review of changes. A normal request such as ``explain this file'' or ``fix this error'' starts ordinary work.
+  \item \texttt{/init} creates a project \name{AGENTS.md}. Our shared adapter already connects this workflow to the existing instructions; running it would introduce another instruction file to maintain.
+  \item \texttt{/rename} names the conversation, and \texttt{/resume} reopens a saved chat. The pinned source also includes \texttt{/voice}, whose availability depends on the running client and account.
+\end{itemize}
+
+\begin{result}{Starting a session}
+The practical starting routine is to enter the project home, launch \name{Codex}, and state the outcome wanted. Existing project notes carry durable progress between conversations. A new chat can read them again; a resumed chat also retains its conversation history.
+
+\end{result}
+
+To return to an existing conversation, I start in the same project home and run \texttt{cxa resume}, which opens a conversation picker filtered to that location. \texttt{cxa resume --last} opens its most recent conversation directly. Inside a running session, \texttt{/resume} opens the picker. The directory is a default filter: \texttt{cxa resume --all} shows conversations from other locations, and \texttt{cxa resume SESSION\_ID} selects a particular conversation by its ID~\cite{codexcli}.
+
+\begin{pane}
+$ p lwc        # this project's home
+$ cxa resume   # choose a saved conversation here
+\end{pane}
+
+\subsection{Keeping the terminal familiar}
+
+The public \name{codex-ui} repository~\cite{codexui} carries the patch and installer. Its footer follows the public Claude status line and Bash configuration in \name{Unix-dot-files}~\cite{dotfiles}: model, machine, project, context percentage, and consumed five-hour allowance. It also adds double-press quitting and single-line keyboard scrolling.
+
+Each Mac pulls the repository and builds its own executable. The source belongs in \name{\home/Work/GitHub/codex-ui/}. The XDG layout puts the installed program files in \name{\home/.local/share/codex-ui/} and generated build artifacts in \name{\home/.cache/codex-ui/}. The command \name{\home/.local/bin/codex-ui} starts that local installation; the existing \texttt{cxa} alias calls it with our usual permissions. The README gives the installation commands and honours \texttt{XDG\_DATA\_HOME} and \texttt{XDG\_CACHE\_HOME} when set.
+
+\begin{insight}{What a versioned installation contains}
+Each release directory contains the patched \name{codex-ui} executable and two helper programs from the same Codex release, \name{codex-code-mode-host} and \name{codex-exec-server}. Together they form one installation. The \name{\lk{current}/} link selects the version to run; \name{\lk{previous}/} selects the version available for rollback. These program files live locally on each Mac. Dropbox carries the shared Codex home described above.
+\end{insight}
+
+The pinned Codex release is \texttt{0.166.0}. The current \texttt{update-all} function updates \name{Homebrew} packages, \name{TeX Live}, \name{ble.sh}, and \name{Claude Code}. Updating the custom executable is a separate, manual choice of an upstream release~\cite{codexreleases}. From the packaging repository, replace \texttt{VERSION} with that release number:
+
+\begin{pane}
+$ git pull                     # get the published patch and installer changes
+$ ./manage.py update VERSION   # build and install the selected Codex release
+\end{pane}
+
+The updater fetches the release, applies the patch in a separate checkout, builds it, and selects the new installation once it is complete. If the patch needs porting, the current installation remains available. The installer records a successful update in \name{upstream.json} and the patch; review and commit those together before publishing them for the other Mac. To select the previous installed version:
+
+\begin{pane}
+$ ./manage.py rollback   # select the previous local installation
+\end{pane}
+
+The project note tracks one further footer improvement: a \texttt{|} marker for elapsed progress through the five-hour window. The filled boxes show allowance consumed; the time marker would make consumption and elapsed time comparable.
+
+\section{Local coding: a fallback in progress}
+
+The \name{local-coding} project has begun an offline coding fallback: a model on \name{AlfSPARK}, reached over the tailnet by a coding harness on the Mac. A harness is the program that gives the model access to files and tools. The intended harness will read the same Claude rules, project notes, skills, and relevant memories.
+
+The project note records downloads started overnight on 5 Nov 2026 for \name{Qwen3.8-Flash-Next NVFP4} and a pinned runtime image. At that handoff, model inference had not started. The next stage is to inspect the downloads, start the model, connect a Mac harness, and verify both instruction loading and operation without Internet access. \name{OpenCode} is the proposed first harness. This is the starting point for a later lesson, once that workflow has been exercised.
+
+
+\section{What else needs me}
+
+The project notes record the next steps that still need a decision or a trial:
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Local coding.} Inspect the overnight model and runtime downloads on \name{AlfSPARK}, start the pinned runtime, and connect a Mac harness. Then check that it reads the existing instructions and can work without Internet access. Starting the container still needs Docker permission; the earlier one-time image pull did not grant lasting access.
+  \item \textbf{The familiar interface.} Add the elapsed-time \texttt{|} marker to the five-hour footer. Try each Mac’s local installation. Manual release updates remain sufficient while the workflow is being tried.
+  \item \textbf{Continuing on the other Mac.} After Dropbox has synchronised the shared home, try \texttt{cxa resume} from this project home on \name{AlfMAC4} and confirm that the conversation is available there.
+  \item \textbf{Seeing what needs attention.} The setup says where everything is; the next piece is a dashboard that shows each project and what is waiting on it, at a glance. The options are in \name{md-Wiki/Projects/second-brain/engagement.md}, part of the second-brain project.
+\end{itemize}
+
+\needspace{22\baselineskip}
 \begin{thebibliography}{BP}
   \bibitem[Mem]{memory} Anthropic, \textit{How Claude remembers your project}, Claude Code documentation. \url{https://code.claude.com/docs/en/memory}
   \bibitem[BP]{practices} Anthropic, \textit{Claude Code best practices}. \url{https://www.anthropic.com/engineering/claude-code-best-practices}
+  \bibitem[Cx]{codexcommands} OpenAI, \textit{Developer commands}. \url{https://learn.chatgpt.com/docs/developer-commands}
+  \bibitem[Rel]{codexreleases} OpenAI, \textit{Codex releases}. \url{https://github.com/openai/codex/releases}
+  \bibitem[CLI]{codexcli} OpenAI, \textit{Command line options -- Codex CLI}. \url{https://learn.chatgpt.com/docs/cli/reference}
+  \bibitem[UI]{codexui} \textit{Codex familiar footer}, patch, installer, and README. \url{https://github.com/Atcold/codex-ui}
+  \bibitem[Dots]{dotfiles} \textit{Unix-dot-files}, Claude status line and Bash configuration. \url{https://github.com/Atcold/Unix-dot-files}
 \end{thebibliography}
 
 \end{document}
