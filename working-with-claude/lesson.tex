@@ -194,37 +194,40 @@ $ p em-salsa-manual    # same as cd ~/PARA/Projects/em-salsa-manual/
 
 \section{Experiments in the terminal}
 
-Claude teaches me how something works by running it on my own machine, in a tmux pane, one of the panels a terminal window is split into, while I watch. This experiment comes from the session that set the habit up. It shows why a softer maximum, which uses exponentials to give each score a share of the total, subtracts the largest score first:
+Claude teaches me how something works by running it on my own machine, in a \name{tmux} pane, one of the panels a terminal window is split into, while I watch. This experiment comes from the session that set the habit up.
+
+\begin{tcolorbox}[enhanced, breakable, colback=white, opacityback=1, colframe=black!40, boxrule=0.5pt, arc=1pt, title={Why softargmax subtracts the maximum}, colbacktitle=black!6, coltitle=black, fonttitle=\small\bfseries]
+The softargmax function converts scores into positive weights that sum to one: it exponentiates each score, then divides by the sum of those exponentials. Subtracting the largest score before exponentiating gives the same weights while avoiding overflow.
+
 
 \begingroup
-\renewcommand{\panetitle}{IPython on \name{AlfMAC4}}
+\renewcommand{\panetitle}{\name{IPython} on \name{AlfMAC4}}
 \begin{pane}
-In [1]: import numpy as np  # numerical arrays
-In [2]: x = np.array([1000., 1001.])  # two scores
-In [3]: # Broken: straight exponentials
-In [4]: e = np.exp(x)  # their exponentials
-<ipython-input-4-00ff81ee950c>:1: RuntimeWarning: overflow encountered in exp
-  e = np.exp(x)  # their exponentials
-In [5]: e  # too big for a float: inf
-Out[5]: array([inf, inf])
-In [6]: e / e.sum()  # each one's share of the total: nan
-<ipython-input-6-35bbf64e4400>:1: RuntimeWarning: invalid value encountered in divide
-  e / e.sum()  # each one's share of the total: nan
-Out[6]: array([nan, nan])
-In [7]: # Fixed: subtract the largest first
-In [8]: e = np.exp(x - x.max())  # the same, shifted
-In [9]: e  # now they fit
-Out[9]: array([0.36787944, 1.        ])
-In [10]: e / e.sum()  # each one's share of the total: correct
-Out[10]: array([0.26894142, 0.73105858])
+In [1]: x = array([88., 89.], dtype=float32)  # 32-bit scores
+In [2]: e = exp(x)  # second exponential overflows
+|!<ipython-input-2-71fc9e84a04c>:1: RuntimeWarning: overflow encountered in exp!|
+  e = exp(x)  # second exponential overflows
+In [3]: e  # finite value and infinity
+|~Out[3]: array([1.6516363e+38,           inf], dtype=float32)~|
+In [4]: e / e.sum()  # finite / inf and inf / inf
+|!<ipython-input-4-d9dcc5de4527>:1: RuntimeWarning: invalid value encountered in divide!|
+  e / e.sum()  # finite / inf and inf / inf
+|~Out[4]: array([ 0., nan], dtype=float32)~|
+In [5]: e = exp(x - x.max())  # shift scores to -1 and 0
+In [6]: e  # exponentials fit
+|~Out[6]: array([0.36787945, 1.        ], dtype=float32)~|
+In [7]: e / e.sum()  # weights sum to one
+|~Out[7]: array([0.26894143, 0.7310586 ], dtype=float32)~|
 \end{pane}
 \endgroup
 
-The exponential of 1000 is too large for a floating-point number, so it becomes \texttt{inf}, and the shares come out as \texttt{nan}, which means not a number. Subtracting the largest score first keeps the exponentials in range, and the shares come out right.
+The \texttt{dtype} argument chooses the array's number format. Here \texttt{float32} uses 32 bits per number, with a largest finite value of about $3.4\times10^{38}$. The smallest integer whose exponential exceeds that limit is 89: $\exp(88)\simeq1.65\times10^{38}$ fits, while $\exp(89)\simeq4.49\times10^{38}$ overflows, so the second exponential becomes \texttt{inf}. Their sum is then infinite: dividing the finite first exponential by it gives zero, while dividing infinity by infinity gives \texttt{nan}, meaning not a number. Without an explicit \texttt{dtype}, this array of decimal values uses \texttt{float64}, whose largest finite value is about $1.8\times10^{308}$: $\exp(89)$ fits, but $\exp(710)$ overflows~\cite{numpytypes}. Subtracting the largest score makes the largest exponential one and preserves the normalised weights, because the common factor cancels in the division.
+
+\end{tcolorbox}
 
 Each command ends with a short comment saying what it shows, so the explanation sits beside the code and its output, and the chat only reports what the experiment found. The experiment uses the tool’s own interactive session: the shell, \name{ipython}, or the equivalent for that language. The session stays open at the end, so I can carry on from there. On another machine, Claude opens \texttt{ssh} in the pane and continues there. A change to my terminal setup is tested the same way, in front of me.
 
-The same pane works as a blackboard. Output I should look at, such as \texttt{git s} or \texttt{git lg -5}, goes there instead of into the chat, because the pane keeps its colour and layout. Colour is for the screen: anything going into a pipe stays plain, so the next tool reads clean input.
+The same pane works as a blackboard. Output I should look at, such as \texttt{git s} or \texttt{git lg -5}, goes there instead of into the chat, because the pane keeps its colour and layout.
 
 These rules are in \name{terminal.md}. Because an experiment depends on which machine it runs on, a session-start hook, a command Claude Code runs at launch, adds the machine’s name to every session.
 
@@ -234,7 +237,7 @@ These rules are in \name{terminal.md}. Because an experiment depends on which ma
   \item \textbf{\name{md-Wiki/}:} every project in \name{Projects/}, one index, \name{projects.md}; the nested repo merged in with its history.
   \item \textbf{\name{PARA/}:} \name{\home/Dropbox/Apps/PARA/}, no longer in the dotfiles; a home for every active project.
   \item \textbf{Dropbox:} the top level holds \name{Apps/}, \name{Archive/}, \name{Boox/} (the PDFs I am reading), \name{Dance/}, \name{NYU/}, \name{onyx/}, \name{Screenshots/}.
-  \item \textbf{Instructions:} six rule files in \name{\home/\lk{.claude}/rules/}, and two in \name{\home/Dropbox/Apps/claude/md-wiki-rules/}, which \name{md-Wiki/.claude/\lk{rules}/} points to; the memories they replaced deleted.
+  \item \textbf{Instructions:} the six shared rule files are committed in \name{.settings/Claude/rules/}, in the \name{Unix-dot-files} repository. The folder link \name{\home/\lk{.claude}/\lk{rules}/} makes them available to every session.
 \end{itemize}
 
 \section{Using Codex with the same project home}
@@ -265,9 +268,11 @@ Each Mac needs the same settings revision: pulling the repository updates its lo
 
 \name{Codex} reads \name{AGENTS.md} as its instruction file. We wrote this small file to direct it to Claude's original instructions. Its opening paragraph reads:
 
-\begin{cmdout}
-Before working, read `~/.claude/CLAUDE.md` and the existing `talking.md`, `writing.md`, `git.md`, `files.md`, and `terminal.md` in `~/.claude/rules/`. Read `latex.md` there when working with `.tex`, `.sty`, or `.bib` files. These files are the source of truth; interpret references to Claude as applying to this assistant too. Number questions only, as the user clarified.
-\end{cmdout}
+
+\begin{quote}
+\raggedright\small\ttfamily
+Before working, read \textasciitilde{}/.claude/CLAUDE.md and the existing talking.md, writing.md, git.md, files.md, and terminal.md in \textasciitilde{}/.claude/rules/. Read latex.md there when working with .tex, .sty, or .bib files. These files are the source of truth; interpret references to Claude as applying to this assistant too. Number questions only, as the user clarified.
+\end{quote}
 
 The rest directs \name{Codex} to the PARA project home, its \name{note.md}, applicable \name{CLAUDE.md} files, and the project's existing memory index. This file is the \emph{adapter}: it tells one assistant where the other assistant's existing instructions live. The rules themselves stay in the Claude files.
 
@@ -394,6 +399,7 @@ The project notes record the next steps that still need a decision or a trial:
   \bibitem[Rel]{codexreleases} OpenAI, \textit{Codex releases}. \url{https://github.com/openai/codex/releases}
   \bibitem[CLI]{codexcli} OpenAI, \textit{Command line options -- Codex CLI}. \url{https://learn.chatgpt.com/docs/cli/reference}
   \bibitem[UI]{codexui} \textit{Codex familiar footer}, patch, installer, and README. \url{https://github.com/Atcold/codex-ui}
+  \bibitem[NP]{numpytypes} NumPy, \textit{Data types}. \url{https://numpy.org/doc/stable/user/basics.types.html}
   \bibitem[Dots]{dotfiles} \textit{Unix-dot-files}, Claude status line and Bash configuration. \url{https://github.com/Atcold/Unix-dot-files}
 \end{thebibliography}
 

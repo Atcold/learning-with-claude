@@ -97,7 +97,8 @@
 
 % Code listings
 \lstdefinestyle{shell}{
-  language=bash, basicstyle=\ttfamily\footnotesize, columns=flexible,  % flexible keeps trailing comments aligned
+  language=bash, moredelim=[is][\color{red!85!black}]{|!}{!|},
+  moredelim=[is][\color{black!40}]{|~}{~|}, basicstyle=\ttfamily\footnotesize, columns=flexible,  % flexible keeps trailing comments aligned
   keepspaces=true, breaklines=true, breakatwhitespace=false, showstringspaces=false,
   keywordstyle=\color{violet!80!black}, stringstyle=\color{green!40!black},  % no bold: bold mono swaps in a narrower font
   commentstyle=\color{black!40}\itshape,
