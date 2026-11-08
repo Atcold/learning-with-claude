@@ -163,7 +163,7 @@ $ ps -o command= -p 93184    # the one line that defines the tunnel
 Read the \texttt{-L} spec as two halves, \emph{listen} then \emph{connect}: bind \texttt{127.0.0.1:8000} here, on the Mac; once logged in to \texttt{alfspark}, connect from there to \texttt{127.0.0.1:8000}. Written identically, the two addresses are two machines' loopbacks. \texttt{-f} puts the process in the background and \texttt{-N} asks for no remote commands: forwarding is its only job.
 
 \begin{insight}{One ssh, two ends}
-The ssh dials \name{alfspark} over the tailnet, and Section 1 showed how that path gets chosen. Inside the encrypted connection it opens a second connection, on the Spark, to the Spark's own \texttt{127.0.0.1:8000} where \name{vLLM} listens — and binds its own listener, on the Mac's \texttt{127.0.0.1:8000}. Bytes arriving at either mouth are handed to the other.
+The ssh dials \name{alfspark} over the tailnet, and Section 1 showed how that path gets chosen. Inside the encrypted connection it opens a second connection, on the Spark, to the Spark's own \texttt{127.0.0.1:8000} where \name{vLLM} listens — and binds its own listener, on the Mac's \texttt{127.0.0.1:8000}. Bytes arriving at either mouth are handed to the other. Shotts explains how an ssh session is itself an encrypted tunnel that \name{scp} and \name{sftp} ride on \cite[\textit{Tunneling with SSH}, p.~229]{shotts}; port forwarding reuses exactly that machinery to carry other ports across.
 \end{insight}
 
 \subsection*{Step 2: from the port to the process}
@@ -276,5 +276,9 @@ Host: 192.168.4.z
 \begin{result}{The plug is a LAN device}
 \name{kasa} reaches it only from inside the house: from NYU, \texttt{192.168.4.z} does not exist. From outside, the Kasa app goes through TP-Link's servers instead. The tailnet does not help here, because the plug is not on it.
 \end{result}
+
+\begin{thebibliography}{TLCL}
+  \bibitem[TLCL]{shotts} William E. Shotts Jr., \textit{The Linux Command Line}, 2nd ed., No Starch Press, 2016, free at \url{https://linuxcommand.org/tlcl.php}. \textit{Tunneling with SSH}, p.~229.
+\end{thebibliography}
 
 \end{document}
