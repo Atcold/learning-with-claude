@@ -13,6 +13,8 @@
 \usepackage{twemojis}
 \usepackage{lesson}
 \usepackage{enumitem}
+\newlist{compactitemize}{itemize}{1}
+\setlist[compactitemize,1]{label=\textbullet,leftmargin=1.2em,nosep,topsep=0.2em}
 \usepackage{needspace}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 
@@ -47,11 +49,11 @@
 My machines share a tailnet, so \texttt{ssh alfspark} or \texttt{ssh alfmac4} works from any of them, wherever they are. That hides \emph{how} the traffic gets there. Two commands, typed on any machine of the tailnet, show the path to each of the others. The examples here are run on \name{AlfSPARK}. The addresses are partly masked (\texttt{x}, \texttt{y}) because this repo is public.
 
 \begin{insight}{Tailscale, in three lines}
-Every machine on the tailnet gets an address of its own, starting with \texttt{100.}, which works only inside the tailnet. Between two machines, \name{Tailscale} first tries a \textbf{direct} path, an encrypted tunnel straight from one to the other, across the house or across the Internet. If firewalls block that, it falls back to a \textbf{relay}: a \name{Tailscale} server on the Internet that passes the traffic along. \here[no speed claim] Both work.
+Every machine on the tailnet gets an address of its own, starting with \texttt{100.}, which works only inside the tailnet. Between two machines, \name{Tailscale} first tries a \textbf{direct} path, an encrypted tunnel straight from one to the other, across the house or across the Internet. If firewalls block that, it falls back to a \textbf{relay}: a \name{Tailscale} server on the Internet that passes the traffic along. Both work.
 \end{insight}
 
 \begin{center}
-\here[AlfMAC4 at NYU]\begin{tikzpicture}
+\begin{tikzpicture}
   \node[box=blue] (mac) {\name{AlfMAC5}\\\texttt{192.168.4.x}};
   \node[box=green, right=2.6cm of mac] (spark) {\name{AlfSPARK}\\\texttt{192.168.4.y}};
   \node[box=grey, below=0.9cm of $(mac)!0.5!(spark)$] (router) {home router};
@@ -89,7 +91,7 @@ The first line is the machine I am on. The last column is the one to read:
   \item \texttt{-}: online, but no traffic right now, so no path to report.
   \item \texttt{offline, last seen \ldots}: switched off, or not connected.
   \item \texttt{active; direct 192.168.4.x:41641}: a tunnel straight to that machine, landing at that address.
-  \item \here[see step 3] \texttt{active; relay "nyc"}: through a relay, here the one in New York. Step 3 catches one.
+  \item \texttt{active; relay "nyc"}: through a relay, here the one in New York. Step 3 catches one.
 \end{itemize}
 
 \subsection*{Step 2: a machine at home}
@@ -101,11 +103,11 @@ $ tailscale ping alfmac5    # stops once the path is direct
 |!pong from alfmac5 (100.x.x.x) via 192.168.4.x:41641 in 5ms!|
 \end{cmdout}
 
-\here[until direct] The same path, \texttt{via 192.168.4.x}, plus the round trip: 5\,ms. \texttt{tailscale ping} keeps pinging until the path is direct, so here one answer was enough.
+The same path, \texttt{via 192.168.4.x}, plus the round trip: 5\,ms. \texttt{tailscale ping} keeps pinging until the path is direct, so here one answer was enough.
 
 \subsection*{Step 3: a machine away from home}
 
-\here[relay, recorded] \name{AlfMAC4} sits at NYU, not at home.
+\name{AlfMAC4} sits at NYU, not at home.
 
 \begin{pane}
 $ tailscale ping alfmac4
@@ -120,23 +122,119 @@ pong from alfmac4 (100.x.x.x) via DERP(nyc) in 9ms
 The first three answers came \texttt{via DERP(nyc)}, through the New York relay: case 3 in the drawing. Meanwhile the two machines found a way through, and the fourth came straight from \texttt{216.165.x.x}, an address of NYU's network: case 2. Then the ping stopped.
 
 \begin{insight}{Reading the address}
-\here[trimmed to the gist] \texttt{DERP(\ldots)} or \texttt{relay "\ldots"} means a relay. An address means a direct path, and the address says where the other machine is. \texttt{192.168.\ldots} or \texttt{10.\ldots}, like mine: the same network, case 1. Anything else: somewhere across the Internet, case 2.
+\texttt{DERP(\ldots)} or \texttt{relay "\ldots"} means a relay. An address means a direct path, and the address says where the other machine is. \texttt{192.168.\ldots} or \texttt{10.\ldots}, like mine: the same network, case 1. Anything else: somewhere across the Internet, case 2.
 \end{insight}
 
 \begin{result}{Where my traffic goes}
 \name{AlfSPARK} and \name{AlfMAC5} talk straight across the home LAN. \name{AlfSPARK} and \name{AlfMAC4} started on the New York relay, then went direct across the Internet.
 \end{result}
 
-\here[paths move] The path is not fixed. It often starts on a relay and goes direct once the machines find each other, and it can switch between a machine's addresses later. Look again, and it may have moved.
+The path is not fixed. It often starts on a relay and goes direct once the machines find each other, and it can switch between a machine's addresses later. Look again, and it may have moved.
 
 \needspace{6\baselineskip}
 \subsection*{The same commands on a Mac}
 
-\here[CLI integration] On the Macs, \name{tailscale} comes inside the app and is not on the \name{PATH}. The app's Settings \texttt{→} ‘CLI integration’ adds a small \name{tailscale} script in \name{/usr/local/bin} that calls it. After that, the commands above work as they are.
+On the Macs, \name{tailscale} comes inside the app and is not on the \name{PATH}. The app's Settings \texttt{→} ‘CLI integration’ adds a small \name{tailscale} script in \name{/usr/local/bin} that calls it. After that, the commands above work as they are.
+
+\section{The ssh tunnel: who listens on port 8000?}
+
+My local model's server, \name{vLLM}, runs in a container on \name{AlfSPARK} and listens on port \texttt{8000} of the Spark's own loopback address, \texttt{127.0.0.1}. The harness I code from, \name{OpenCode}, runs on \name{AlfMAC5} and calls \texttt{http://127.0.0.1:8000} — the same spelling, a different machine: \texttt{127.0.0.1} means “this machine”, so each machine's copy of that address is its own private one. What carries the call across is an \textbf{ssh tunnel}, one process living on the Mac.
+
+\subsection*{Step 1: the process that defines the tunnel}
+
+\renewcommand{\panetitle}{Shared pane 3.2, on \name{AlfMAC5}}
+\begin{pane}
+$ pgrep -x ssh -l    # the ssh processes on this Mac
+\end{pane}
+\begin{cmdout}
+|~24354~|
+|!93184!|
+\end{cmdout}
+
+Two: 24354 is a login shell I left open on \name{AlfSPARK}, and 93184 is the tunnel. \name{ps} prints a process's own command line, which is the tunnel's whole contract:
+
+\begin{pane}
+$ ps -o command= -p 93184    # the one line that defines the tunnel
+\end{pane}
+\begin{cmdout}
+|!ssh -fN -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -L 127.0.0.1:8000:127.0.0.1:8000 alfspark!|
+\end{cmdout}
+
+Read the \texttt{-L} spec as two halves, \emph{listen} then \emph{connect}: bind \texttt{127.0.0.1:8000} here, on the Mac; once logged in to \texttt{alfspark}, connect from there to \texttt{127.0.0.1:8000}. Written identically, the two addresses are two machines' loopbacks. \texttt{-f} puts the process in the background and \texttt{-N} asks for no remote commands: forwarding is its only job.
+
+\begin{insight}{One ssh, two ends}
+The ssh dials \name{alfspark} over the tailnet, and Section 1 showed how that path gets chosen. Inside the encrypted connection it opens a second connection, on the Spark, to the Spark's own \texttt{127.0.0.1:8000} where \name{vLLM} listens — and binds its own listener, on the Mac's \texttt{127.0.0.1:8000}. Bytes arriving at either mouth are handed to the other.
+\end{insight}
+
+\subsection*{Step 2: from the port to the process}
+
+I typed the PID 93184 above only after finding it. The port is what you always know, so start there: \name{lsof} answers “who is waiting on this port?”
+
+\begin{pane}
+$ lsof -nP -iTCP:8000 -sTCP:LISTEN    # who waits for connections on port 8000, on this Mac
+\end{pane}
+\begin{cmdout}
+COMMAND   PID   USER   FD   TYPE            DEVICE SIZE/OFF NODE NAME
+|!ssh   93184 atcold    6u  IPv4 0xe608f4303ed842d     0t0  TCP localhost:8000 (LISTEN)!|
+\end{cmdout}
+
+\begin{insight}{Everything is an open file}
+\name{lsof} lists what each process holds open, and Unix counts network sockets among a process's open files. A \textbf{listener} is a socket nobody has connected to yet: \texttt{-iTCP:8000} keeps the TCP sockets on port 8000, \texttt{-sTCP:LISTEN} keeps the waiting ones. \texttt{-n} skips the name lookup on addresses and \texttt{-P} on ports, so the output stays numbers.
+\end{insight}
+
+\subsection*{Step 3: everything this Mac listens to}
+
+Drop the port filter and you see every listener at once. Here \texttt{-nP} is left off deliberately:
+
+\begin{pane}
+$ lsof -iTCP -sTCP:LISTEN    # every process waiting on a TCP port
+\end{pane}
+\begin{cmdout}
+|~COMMAND     PID   USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME~|
+|~ControlCe   748 atcold    9u  IPv4  0x17f72b47385311e      0t0  TCP *:afs3-fileserver (LISTEN)~|
+|~ControlCe   748 atcold   11u  IPv4 0x68998f56a0122264      0t0  TCP *:commplex-main (LISTEN)~|
+|~rapportd    778 atcold    8u  IPv4 0x94eb3a3e372fceb8      0t0  TCP *:52899 (LISTEN)~|
+|~Adobe\x20  1359 atcold   31u  IPv4 0x9077d616e443e0b3      0t0  TCP localhost:15292 (LISTEN)~|
+|~Google    14116 atcold   31u  IPv6 0x82e14f3e0745626b      0t0  TCP localhost:7679 (LISTEN)~|
+|~python3.1 63445 atcold    3u  IPv4 0x2553a09cccacb0c5      0t0  TCP localhost:distinct (LISTEN)~|
+|!ssh       93184 atcold    6u  IPv4  0xe608f4303ed842d      0t0  TCP localhost:irdmi (LISTEN)!|
+|~Dropbox   95079 atcold  193u  IPv4 0x72e4aed110606afa      0t0  TCP localhost:17600 (LISTEN)~|
+\end{cmdout}
+
+The \texttt{COMMAND} column is truncated to nine characters and says little, so I take the PID from the line that puzzles me and ask \name{ps} for the process's own command line:
+
+\begin{pane}
+$ ps -o command= -p 63445    # who is the python3.1 on port 9999
+\end{pane}
+\begin{cmdout}
+|!/Users/atcold/.local/share/uv/tools/eink/bin/python /Users/atcold/.local/bin/eink --tailscale!|
+\end{cmdout}
+
+Most of these are nothing to worry about. The split that matters is in the NAME column: \texttt{localhost:} means only programs on this Mac can knock, \texttt{*} means any device on the network can. The lines, one by one:
+
+\begin{compactitemize}
+  \item \texttt{ControlCe} — macOS's \name{ControlCenter}, that is, the AirPlay Receiver: the two \texttt{*} ports, \texttt{750} and \texttt{5000}, shown by their aliases \texttt{afs3-fileserver} and \texttt{commplex-main}.
+  \item \texttt{rapportd} — macOS's Continuity: Handoff, AirDrop, Instant Hotspot; also on \texttt{*}, over a few high ephemeral ports.
+  \item \texttt{Adobe} — a \name{Creative Cloud} component, port 15292, loopback only.
+  \item \texttt{Google} — the \name{Google Drive} desktop app: a \name{Chromium}-based binary, hence the name and port 7679, \name{Chromium}'s cast debug channel; loopback only.
+  \item \texttt{python3.1} — my own \name{eink} tool, port 9999 (\texttt{distinct} in the listing), loopback only, found with \name{ps} just above.
+  \item \texttt{ssh} — the tunnel to \name{AlfSPARK}, loopback only.
+  \item \texttt{Dropbox} — the desktop app's local API, ports 17600 and 17603, loopback only.
+\end{compactitemize}
+
+So only the two macOS system services are exposed beyond the machine itself; everything I put in service myself, the tunnel included, binds loopback.
+
+\begin{insight}{Why the ports read like words}
+Without \texttt{-P}, the NAME column prints each low port's registered name from \texttt{/etc/services}: \texttt{irdmi} is port 8000 and \texttt{distinct} is 9999. Those names were assigned by the vendors who registered the ports decades ago, and no one remembers them at the terminal. That is exactly why \texttt{spark} passes \texttt{-nP}.
+\end{insight}
+
+\begin{result}{Checking each link where it lives}
+\name{OpenCode} on \name{AlfMAC5} knocks on the Mac's port 8000. \name{lsof} proves a listener is there, and \name{ps} proves where it forwards. A \texttt{curl} that gets an answer from \texttt{/health} proves the whole pipe carries bytes to \name{vLLM} on the Spark, and \texttt{docker inspect} over ssh proves the container is up. Each link of the chain gets checked on the machine where it lives.
+\end{result}
 
 \section{A device on the LAN: the smart plug}
 
-\here[new section] \name{AlfSPARK} draws its power through a Kasa smart plug, an HS110, on the home Wi-Fi at \texttt{192.168.4.z}. The plug can be switched off and on, and it measures the power going through it. The Kasa app on the phone controls it from anywhere, through TP-Link's servers. At home, a Mac can talk to it directly, with no server in between.
+\name{AlfSPARK} draws its power through a Kasa smart plug, an HS110, on the home Wi-Fi at \texttt{192.168.4.z}. The plug can be switched off and on, and it measures the power going through it. The Kasa app on the phone controls it from anywhere, through TP-Link's servers. At home, a Mac can talk to it directly, with no server in between.
 
 \begin{insight}{No web page, one port}
 The plug runs no web server: ports \texttt{80} and \texttt{443} are closed. It listens on port \texttt{9999} only, for Kasa's own protocol. A request is a line of JSON, such as \texttt{\{"emeter":\{"get\_realtime":\{\}\}\}} (‘give me the power meter's readings’), \textbf{scrambled}: each byte is XORed with the one before it, starting from 171. The reply comes back scrambled the same way. That is not encryption: there is no key and no login, so anything on the LAN can read the plug or switch it.
