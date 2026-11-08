@@ -50,8 +50,8 @@ Two machines and four pieces. The model server answers an OpenAI-compatible HTTP
 \begin{center}
 \begin{tikzpicture}[font=\small,
   mach/.style={draw=black!50, rounded corners=2pt, align=center, inner sep=8pt, fill=blue!6}]
-  \node[mach] (mac) at (-3.6,0) {\name{AlfMAC5}\\[2pt] \name{OpenCode}\\ \scriptsize HTTP → \texttt{127.0.0.1:8000}};
-  \node[mach] (spark) at (3.6,0) {\name{AlfSPARK}\\[2pt] \name{vLLM} serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}\\ \scriptsize container \texttt{vllm-nvidia--\ldots}, listening on \texttt{127.0.0.1:8000}};
+  \node[mach] (mac) at (-6,0) {\name{AlfMAC5}\\[2pt] \name{OpenCode}\\ \scriptsize HTTP → \texttt{127.0.0.1:8000}};
+  \node[mach] (spark) at (5,0) {\name{AlfSPARK}\\[2pt] \name{vLLM} serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}\\ \scriptsize container \texttt{vllm-nvidia--\ldots}, listening on \texttt{127.0.0.1:8000}};
   \draw[thick,->] (mac.east) -- node[above,font=\scriptsize\itshape] {tailnet, inside \texttt{ssh -L}} (spark.west);
 \end{tikzpicture}
 \end{center}
@@ -103,7 +103,7 @@ The report keeps its facts apart: the service line, the tunnel line, and the API
 
 The server is \name{vLLM}, an OpenAI-compatible inference server, serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}, NVIDIA's mixed-precision FP4 quantization of Flash-Next, about 102 GB of weights in the Hugging Face cache~\cite{nv}. The runtime is the community container \name{eugr/spark-vllm-b12x}, tag \name{nightly-20261015}: NVIDIA's own model card directs single-Spark users to community containers pending upstream support~\cite{nv}. The container was created once, from the published solo recipe's arguments (a GPU memory utilization budget of 0.8, covering the model and runtime allocations rather than only the key/value cache, a 262144-token context, multi-token prediction proposing up to 4 extra tokens per step, and 8 concurrent sequences), with the API bound to \texttt{127.0.0.1}.
 
-\here[Exact artifacts] The running model is the NVIDIA checkpoint, revision \nolinkurl{b9ce18a6887e18c089fdea8509a33e63429a3300}. The runtime was launched by immutable image digest \nolinkurl{sha256:03a956544e9f9b4b7ba91690469fbe7848bdbef29a7d2e0f5788368467bb3595}. These identify the artifacts actually selected. The earlier community-modified weights remain a separate download; they are not the weights served here.
+ The running model is the NVIDIA checkpoint, revision \nolinkurl{b9ce18a6887e18c089fdea8509a33e63429a3300}. The runtime was launched by immutable image digest \nolinkurl{sha256:03a956544e9f9b4b7ba91690469fbe7848bdbef29a7d2e0f5788368467bb3595}. These identify the artifacts actually selected. The earlier community-modified weights remain a separate download; they are not the weights served here.
 
 Three names keep to three facts. The \emph{service} is the \name{vLLM} server; the \emph{model} is \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}; the container name is derived from the pair, the slash written \texttt{--}, giving \name{vllm-nvidia--Qwen3.8-Flash-Next-FP4-Local}. The naming is not cosmetic: it makes each container's identity say which server runs which model, so a second model, or a second server for the same model, is one more row of the config rather than a new idea. And whether a container really serves the id its name claims is checkable, not folklore: \texttt{docker inspect} on its launch command (\texttt{Config.Cmd}) names the model id the server was started with.
 
@@ -189,7 +189,7 @@ $ curl -s http://127.0.0.1:8000/v1/chat/completions \
         "limit": { "context": 262144,  "output": 32768 } } } }
 \end{lstlisting}
 
-The model is named twice on purpose: \texttt{model} answers the conversation, \texttt{small\_model} the background utility calls (titles, summaries). Both select the local inference endpoint. \texttt{enabled\_providers} narrows OpenCode to the one provider, \texttt{spark}, defined beside it as an OpenAI-compatible endpoint at the tunnel's address; the key is a placeholder because the server asks for none. \here[Reasoning fields] The \texttt{interleaved} field names \texttt{reasoning}, the key under which the \name{vLLM} server streams the model's thinking; a streaming request against the running container shows that key directly. The original setting, \texttt{reasoning\_content}, was a guess from a familiar \name{vLLM} convention, and a wrong name fails silently: the interface showed only a \texttt{Thought:} timer, never the thinking text. Whether that text renders at all is a separate switch, \texttt{display\_thinking}, which has no key by default and is bound to \texttt{<leader>d} in \name{tui.json}. With both in place, the reasoning sentences appear under the timer. \texttt{autoupdate} disables automatic application updates, and \texttt{share} disables session sharing; dependency downloads and other network activity still need an offline trial. The \texttt{edit} and \texttt{bash} permissions are set to ask, subject to approvals granted during a session.
+The model is named twice on purpose: \texttt{model} answers the conversation, \texttt{small\_model} the background utility calls (titles, summaries). Both select the local inference endpoint. \texttt{enabled\_providers} narrows OpenCode to the one provider, \texttt{spark}, defined beside it as an OpenAI-compatible endpoint at the tunnel's address; the key is a placeholder because the server asks for none.  The \texttt{interleaved} field names \texttt{reasoning}, the key under which the \name{vLLM} server streams the model's thinking; a streaming request against the running container shows that key directly. The original setting, \texttt{reasoning\_content}, was a guess from a familiar \name{vLLM} convention, and a wrong name fails silently: the interface showed only a \texttt{Thought:} timer, never the thinking text. Whether that text renders at all is a separate switch, \texttt{display\_thinking}, which has no key by default and is bound to \texttt{<leader>d} in \name{tui.json}. With both in place, the reasoning sentences appear under the timer. \texttt{autoupdate} disables automatic application updates, and \texttt{share} disables session sharing; dependency downloads and other network activity still need an offline trial. The \texttt{edit} and \texttt{bash} permissions are set to ask, subject to approvals granted during a session.
 
 \section{Reading my rules}
 
@@ -206,7 +206,7 @@ OpenCode's rules system loads an \texttt{AGENTS.md} found in the project and a g
 ]
 \end{lstlisting}
 
-\here[Config provenance] Codex wrote this configuration during setup, using the same approach as its \name{AGENTS.md} adapter to point OpenCode's \texttt{instructions} list at the Claude originals.
+ Codex wrote this configuration during setup, using the same approach as its \name{AGENTS.md} adapter to point OpenCode's \texttt{instructions} list at the Claude originals.
 
 The project's own context comes in at launch, not in the shared config. \texttt{OPENCODE\_CONFIG\_CONTENT} is an environment variable holding extra config JSON, merged over the files at startup; a relative \texttt{instructions} path resolves against the launch directory. Starting from the project home therefore adds that project's \texttt{note.md}, and a different project adds its own:
 
@@ -215,7 +215,7 @@ $ p lc   # cd ~/PARA/Projects/local-coding/, where note.md lives
 $ OPENCODE_CONFIG_CONTENT='{"instructions": ["note.md"]}' ~/.opencode/bin/opencode .
 \end{pane}
 
-\here[Short launch command] The shared Bash settings now provide \texttt{oca}, beside \texttt{cca} and \texttt{cxa}. It expands to the same project-note configuration and OpenCode executable, with \texttt{--auto} added to accept permission requests automatically unless explicitly denied. Use \texttt{oca --continue} to resume the latest conversation in the current project.
+ The shared Bash settings now provide \texttt{oca}, beside \texttt{cca} and \texttt{cxa}. It expands to the same project-note configuration and OpenCode executable, with \texttt{--auto} added to accept permission requests automatically unless explicitly denied. Use \texttt{oca --continue} to resume the latest conversation in the current project.
 
 The lesson you are reading is the proof of the whole chain: it was written by the Flash-Next model on \name{AlfSPARK}, asked through the tunnel, under the rule files it lists, with \name{note.md} open as the project's context.
 
