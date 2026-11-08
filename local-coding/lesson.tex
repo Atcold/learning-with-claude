@@ -50,8 +50,8 @@ Two machines and four pieces. The model server answers an OpenAI-compatible HTTP
 \begin{center}
 \begin{tikzpicture}[font=\small,
   mach/.style={draw=black!50, rounded corners=2pt, align=center, inner sep=8pt, fill=blue!6}]
-  \node[mach] (mac) at (-6,0) {\name{AlfMAC5}\\[2pt] \name{OpenCode}\\ \scriptsize HTTP → \texttt{127.0.0.1:8000}};
-  \node[mach] (spark) at (5,0) {\name{AlfSPARK}\\[2pt] \name{vLLM} serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}\\ \scriptsize container \texttt{vllm-nvidia--\ldots}, listening on \texttt{127.0.0.1:8000}};
+  \node[mach] (mac) at (-5.8,0) {\name{AlfMAC5}\\[2pt] \name{OpenCode}\\ \scriptsize HTTP → \texttt{127.0.0.1:8000}};
+  \node[mach] (spark) at (4.5,0) {\name{AlfSPARK}\\[2pt] \name{vLLM} serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}\\ \scriptsize container \texttt{vllm-nvidia--\ldots}, listening on \texttt{127.0.0.1:8000}};
   \draw[thick,->] (mac.east) -- node[above,font=\scriptsize\itshape] {tailnet, inside \texttt{ssh -L}} (spark.west);
 \end{tikzpicture}
 \end{center}
