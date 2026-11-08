@@ -1,0 +1,105 @@
+% Lesson: what is WhisperDictation.app, and why must macOS re-approve it after every rebuild?
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{lesson}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{newunicodechar}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{🔴}{\emo{red circle}}
+
+\newunicodechar{🎤}{\emo{microphone}}
+\usepackage{menukeys}
+\newfontface\glyphSF{SFNS}[Path=/System/Library/Fonts/,Extension=.ttf,UprightFont=*]
+\newcommand{\chord}{\keys{{\glyphSF\symbol{"2303}},{\glyphSF\symbol{"2325}},D}}  % the ctrl+option+D keycaps
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\renewcommand{\panetitle}{My pane on \name{AlfMAC5}}
+\newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\title{\emo{studio microphone}\ What is \name{Whisper Dictation}?\\[0.3em]
+  \large The pieces of a menu-bar helper, and the identity that lets macOS trust it}
+\author{Lesson for Alfredo Canziani, written by \name{OpenCode} (\name{Qwen3.8 Flash-Next}, local)}
+\date{Sat 7 Nov 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Why we asked}
+
+Today I fixed \name{Whisper Dictation}, the little helper that types my speech into the app I am focused on: I press \chord, speak, press it again, and the transcript lands in the input line as if I had typed it myself (\name{OpenCode}'s Home-key scroll theft, paste collapsing, and a blank-rendering emoji stood between me and that sentence; each got its own fix). Midway through I noticed an entry named \name{WhisperDictation.app} in System Settings, and I could not say what it was, where it came from, or why its stamp read ``created at 3 pm''. That entry is the helper's public face, and this lesson explains the body behind it: the three pieces that make the helper, why they arrive on my Mac as an app bundle rather than a script, and why every rebuild makes macOS treat it as a stranger.
+
+\section{The three pieces, from source to running}
+
+The helper lives as three reviewed files in the \name{codex-ui} repository, under \name{whisper-dictation/}:
+
+\begin{itemize}[leftmargin=2em]
+  \item \name{main.swift}: the menu-bar recorder. It owns the icon, starts and stops the microphone, injects keystrokes into the focused app, and cancels on Escape.
+  \item \name{worker.py}: the transcriber. A Python program that keeps the \name{MLX Whisper} model loaded, checks with voice activity detection that real speech arrived, and answers with JSON text over a pipe.
+  \item \name{install.sh}: the build-and-install script that turns the first two into the running thing.
+\end{itemize}
+
+\name{install.sh} does four things in order. It adds the \name{webrtcvad-wheels} speech detector into the existing \name{mlx-whisper} \name{uv} tool environment, so the model stays shared. It compiles \name{main.swift} with \name{swiftc}, which turns the source into a machine-code binary: from here on, nothing runs the Swift text itself. It writes an \name{Info.plist}, the bundle's identity card holding the name, the microphone permission sentence macOS shows me, and \name{LSUIElement} so no Dock icon appears. And it signs the result with \texttt{codesign --sign -}, which we come back to in the last section.
+
+The install location follows the XDG convention we met in the \name{XDG-base-dirs} lesson: data under \home/.local/share, out of the home folder's dot-file crowd.
+
+\begin{pane}
+$ ls ~/.local/share/whisper-dictation/    # the whole installed helper
+\end{pane}
+\begin{cmdout}
+Whisper Dictation.app
+worker.log
+worker.py
+\end{cmdout}
+
+The app runs from that folder and starts \name{worker.py} with the python of the \name{mlx-whisper} \name{uv} tool, so the model loads once and stays warm between recordings; \name{worker.log} is where the worker's errors would appear.
+
+\section{Why an app and not a script}
+
+My habit for small tools is a script in \home/.local/bin, and a script is what the transcriber is. The recorder is not, because it needs two privileges macOS hands out per app: the microphone itself, and the right to inject keystrokes into other apps --- the panel now called Device Control and Data Access, Accessibility on older macOS.
+
+macOS records those grants in a database Apple calls \name{TCC} (Transparency, Consent, and Control), and a grant attaches to an \emph{identity}: a bundle identifier (\texttt{local.whisper-dictation}), a path, and a code signature. A script loose in \home/.local/bin has none of the three, so there is nothing for the grant to stick to. The app bundle --- a folder macOS recognises, with \name{Info.plist} under \name{Contents/} and the binary under \name{Contents/MacOS/} --- exists only to give the script a face the database can remember. The script is the work; the bundle is the passport.
+
+\section{Re-signing, and the entry stamped 3 pm}
+
+\name{install.sh} ends with \texttt{codesign --force --sign -}, where the \texttt{-} means an \emph{ad-hoc} signature: no developer certificate from Apple is involved. The command computes a cryptographic fingerprint of the binary's bytes (the CDHash) and seals it into the bundle, and \texttt{codesign -dv} lets me read it back.
+
+\begin{pane}
+$ codesign -dv ~/.local/share/whisper-dictation/"Whisper Dictation.app" 2>&1 | head -4
+\end{pane}
+\begin{cmdout}
+Executable=/Users/atcold/.local/share/whisper-dictation/Whisper Dictation.app/Contents/MacOS/WhisperDictation
+Identifier=local.whisper-dictation
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20400 size=624 flags=0x2(adhoc) hashes=13+3 location=embedded
+\end{cmdout}
+
+For an app like this, the signature's job is not security: nobody verifies a chain back to Apple. Its job is identity. \name{TCC} stores the grant against bundle identifier, path \emph{and} fingerprint, so the moment the bytes change --- a recompilation, even one that only edits a comment --- the fingerprint changes, and the entry I approved points at bytes that no longer exist. That is the whole 3 pm puzzle: today's rebuilds (a new marker emoji, then one space fewer, then the About dialog) each produced a new fingerprint, and the entry I ticked at 3 pm was the moment \name{TCC} wrote a fresh approval for a fresh version of the same path. The old rows cannot be re-ticked, which is why the working procedure was to delete the stale entry and drag the app back in. A self-signed certificate of my own, used instead of the ad-hoc dash, would carry the same fingerprint across rebuilds and spare me the re-approval.
+
+\section{What you see, and what you press}
+
+Everything visible is a status item: the small icon at the right end of the menu bar, beside the clock, which is what \name{NSStatusItem} in \name{main.swift} creates. It says what it is doing --- \emph{Loading…} while the model warms up, a microphone once ready, red while recording, a waveform while finishing, a warning triangle if the worker died. Hovering it now reads ``Whisper Dictation --- \chord or F16 records'' (until today it said nothing, unlike \name{Caffeine}, my one other talking menu-bar item), and clicking opens its whole menu: Record / stop, About Whisper Dictation --- which explains the helper in its own words --- and Quit.
+
+The keys are \chord: \name{Karabiner-Elements} turns that chord into the F16 key the helper's launcher expects, since the laptop keyboard has no F16 of its own. One press records, the same press finishes and submits with Return, and Escape cancels and erases what was inserted. While recording, the helper marks its own text with a \emo{red circle} and a space at the start of the input line, replaces that text as partial transcripts arrive, and removes the marker when the final transcript lands. The circle is deliberately a single-code-point emoji: sequences that need an emoji presentation selector, such as \emo{studio microphone} (U+1F399 plus U+FE0F), render as blank cells inside terminal interfaces under \name{tmux} --- a bug the \name{OpenCode} project tracks as issue 54931 --- while single code points like 🔴 or 🎤 draw correctly.
+
+\begin{result}{\name{Whisper Dictation} on \name{AlfMAC5}}
+F16 and \chord record and submit, the red circle marker and its text survive long transcripts, the menu-bar icon identifies itself on hover and explains itself from its About item, and re-approval after a rebuild is now understood rather than mysterious.
+\end{result}
+
+\end{document}

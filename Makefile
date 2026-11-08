@@ -9,14 +9,14 @@ KEYS    = $(shell awk '{print $$1}' .keys)
 # after a command, it does nothing.
 WORD   := $(firstword $(filter $(LESSONS) $(KEYS),$(MAKECMDGOALS)))
 LESSON := $(or $(filter $(WORD),$(LESSONS)),$(shell awk -v k='$(WORD)' '$$1 == k {print $$2}' .keys))
-ifeq ($(filter build open clean list help,$(MAKECMDGOALS)),)
+ifeq ($(filter build open clean send list help,$(MAKECMDGOALS)),)
 $(LESSONS) $(KEYS): build
 else
 $(LESSONS) $(KEYS): ; @:
 endif
 
 # A word that is neither a command nor a lesson is a mistyped lesson.
-UNKNOWN = $(filter-out build open clean list help $(LESSONS) $(KEYS),$(MAKECMDGOALS))
+UNKNOWN = $(filter-out build open clean send list help $(LESSONS) $(KEYS),$(MAKECMDGOALS))
 ifneq ($(UNKNOWN),)
   $(error No lesson called $(UNKNOWN): it is one of: $(LESSONS))
 endif
@@ -34,6 +34,10 @@ build:
 open: build
 	open -a Skim $(LESSON)/build/$(LESSON).pdf
 
+# The Boox reads from Dropbox: Review/ is what I am still annotating.
+send: build
+	cp $(LESSON)/build/$(LESSON).pdf ~/Dropbox/Boox/Review/$(LESSON)-lesson.pdf
+
 clean:
 	cd $(LESSON) && latexmk -C
 
@@ -49,6 +53,7 @@ help:
 	printf "$${c}make build$${n} $${b}<lesson>$${n}       build the PDF, <lesson>/build/<lesson>.pdf\n"; \
 	printf "$${c}make$${n} $${b}<lesson>$${n}             the same\n"; \
 	printf "$${c}make open$${n} $${b}<lesson>$${n}        build it, then open it in Skim\n"; \
+	printf "$${c}make send$${n} $${b}<lesson>$${n}        build it, then copy it to Dropbox Boox Review\n"; \
 	printf "$${c}make clean$${n} $${b}<lesson>$${n}       remove its build/ files\n\n"; \
 	printf "$${c}make list$${n}                 the lessons\n"; \
 	printf "$${c}make help$${n}                 this list; also plain make\n"
