@@ -68,7 +68,7 @@
 
 \section*{Why this exists}
 
-\here[the two reasons: backup and privacy]This project is both a backup and a private solution: it takes over when I cannot use \name{Claude Code} or \name{Codex}, and my code and conversations live only on machines I own, the Mac and \name{AlfSPARK}. \name{Claude Code} and \name{Codex} normally do their work through cloud services, and they stop when the Internet is down, when the service has an outage, or when my tokens run out. The \name{local-coding} project replaces them locally: the model runs on \name{AlfSPARK}, my \name{DGX Spark} (built on the NVIDIA \name{GB10 Grace Blackwell} chip: a 64-bit Arm CPU of twenty cores, ten fast \name{Cortex-X925} for the heavy work and ten power-saving \name{Cortex-A725} for the rest, 128 GB of unified memory, and a 4 TB self-encrypting solid-state drive~\cite{dgx}), and a coding harness on the Mac talks to it over the tailnet, so the work continues from inside my apartment. A \emph{harness} is the program that turns a model into an assistant: it hands the model tools to read files, edit them and run commands, and it carries out the model's instructions step by step~\cite{wwc}.
+This project is both a backup and a private solution: it takes over when I cannot use \name{Claude Code} or \name{Codex}, and my code and conversations live only on machines I own, the Mac and \name{AlfSPARK}. \name{Claude Code} and \name{Codex} normally do their work through cloud services, and they stop when the Internet is down, when the service has an outage, or when my tokens run out. The \name{local-coding} project replaces them locally: the model runs on \name{AlfSPARK}, my \name{DGX Spark} (built on the NVIDIA \name{GB10 Grace Blackwell} chip: a 64-bit Arm CPU of twenty cores, ten fast \name{Cortex-X925} for the heavy work and ten power-saving \name{Cortex-A725} for the rest, 128 GB of unified memory, and a 4 TB self-encrypting solid-state drive~\cite{dgx}), and a coding harness on the Mac talks to it over the tailnet, so the work continues from inside my apartment. A \emph{harness} is the program that turns a model into an assistant: it hands the model tools to read files, edit them and run commands, and it carries out the model's instructions step by step~\cite{wwc}.
 
 The design follows one rule: every assistant reads my instructions from the files I wrote for \name{Claude Code}, the global \name{CLAUDE.md} and the rule files. \name{Codex} already works this way: its \name{AGENTS.md} points at the same Claude files, and the OpenCode config was set up the same way (\S\ref{sec:rules}).
 
@@ -76,7 +76,7 @@ This lesson is the setup as it ran on Sat 7 Nov, when the model answered for the
 
 \section{The picture}
 
-\here[machines and pieces labelled]Two machines: (a) \name{AlfSPARK}, the Spark that holds the model, and (b) \name{AlfMAC5}, the laptop I work on. Four pieces connect them, and the diagram repeats the labels.
+Two machines: (a) \name{AlfSPARK}, the Spark that holds the model, and (b) \name{AlfMAC5}, the laptop I work on. Four pieces connect them, and the diagram repeats the labels.
 
 \begin{enumerate}[leftmargin=2.2em,itemsep=2pt]
 \item \textbf{the model server}: \name{vLLM} on (a) answers an OpenAI-compatible HTTP API on the Spark's own loopback address, so no machine, on the tailnet or anywhere else, can reach its port directly;
@@ -96,7 +96,7 @@ This lesson is the setup as it ran on Sat 7 Nov, when the model answered for the
 
 \section{The operating cycle}
 
-Day to day the setup is five verbs of one tool, \texttt{spark} (its source is \name{\home/.settings/Scripts/spark.py}, installed as \name{\home/.local/bin/spark}). \here[the cycle now starts from off]The normal round trip begins with the machine off and works outward; each command is followed by its own output, as walked through on Sun 8 Nov. If \texttt{spark serve} finds the machine powered off, it first asks whether to turn it on, waits for the boot, and proceeds.
+Day to day the setup is five verbs of one tool, \texttt{spark} (its source is \name{\home/.settings/Scripts/spark.py}, installed as \name{\home/.local/bin/spark}). The normal round trip begins with the machine off and works outward; each command is followed by its own output, as walked through on Sun 8 Nov. If \texttt{spark serve} finds the machine powered off, it first asks whether to turn it on, waits for the boot, and proceeds.
 
 \begin{pane}
 $ spark on --wait  # power on, block until SSH answers, print the boot time
@@ -124,7 +124,7 @@ $ spark serve      # serve the config default: vLLM with the Qwen model, open it
 ^\tick^ API ready after 3 min 55 s
 \end{cmdouttight}
 
-The block-art banner is \name{vLLM}'s own opening lines, which \texttt{spark serve} shows as they land in the container's log. \here[idempotent, said plainly]Asked twice, \texttt{spark serve} changes nothing: when the model already answers, it reports both facts as already true and waits nobody. The loading display reads the container's own log, one line kept on screen per completed phase, and the serve finishes when \texttt{http://127.0.0.1:8000/health} answers empty with HTTP 200.
+The block-art banner is \name{vLLM}'s own opening lines, which \texttt{spark serve} shows as they land in the container's log. Asked twice, \texttt{spark serve} changes nothing: when the model already answers, it reports both facts as already true and waits nobody. The loading display reads the container's own log, one line kept on screen per completed phase, and the serve finishes when \texttt{http://127.0.0.1:8000/health} answers empty with HTTP 200.
 
 \begin{pane}
 $ spark s          # the five-line report (spark status)
@@ -145,7 +145,7 @@ $ spark models     # the model store on the Spark
   nvidia/Qwen3.8-Flash-Next-FP4-Local           102.3G  10 hours ago  ← served
 \end{cmdout}
 
-\here[status and models, said plainly]The status report keeps one fact per line. The model list is produced on the Spark by the \texttt{hf} command-line tool (Hugging Face's downloader), which reads the Hugging Face cache at \name{\home/.cache/\allowbreak huggingface/\allowbreak hub} from the path the config's \texttt{hf} key names.
+The status report keeps one fact per line. The model list is produced on the Spark by the \texttt{hf} command-line tool (Hugging Face's downloader), which reads the Hugging Face cache at \name{\home/.cache/\allowbreak huggingface/\allowbreak hub} from the path the config's \texttt{hf} key names.
 
 \begin{pane}
 $ spark unserve    # stop the vLLM service, close the tunnel it owns
