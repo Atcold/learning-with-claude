@@ -13,9 +13,40 @@
 \usepackage{enumitem}
 \usepackage{booktabs}
 \usepackage{needspace}
-\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage[colorlinks=true,linkcolor=linkblue!55!black,urlcolor=linkblue!55!black]{hyperref}
 \usepackage{newunicodechar}
 \newunicodechar{→}{\ensuremath{\rightarrow}}
+
+% Recorded output is terminal output: Menlo keeps the look honest and carries the
+% glyphs Latin Modern Mono lacks (✓ U+2713, the block art U+2580/84/88, ← and …).
+\newfontface\termfont{Menlo}[Scale=MatchLowercase]
+% ✓ must arrive through literate: listings defers unknown Unicode characters, which
+% emitted every tick at the end of the previous line instead of its own.
+\newcommand{\tick}{\hbox{\termfont ✓\char32}}
+\lstdefinestyle{out}{
+  basicstyle=\termfont\scriptsize\color{black!80}, columns=fullflexible, keepspaces=true,
+  breaklines=true, breakatwhitespace=false, showstringspaces=false,
+  moredelim=[is][\color{red!80!black}]{|!}{!|},
+  moredelim=[is][\color{black!35}]{|~}{~|},
+  literate={×}{{$\times$}}1 {→}{{$\rightarrow$}}1, escapechar=^
+}
+% The block-art banner stacks as a drawing: one block per text line, so its leading
+% must close up. listings stacks each row as its own box: with lineskiplimit above the
+% box height, TeX uses \lineskip for the row pitch, which is what actually lands.
+% Menlo's box is 9.5pt tall against 6.3pt of block ink, so -3.2pt closes the gap to zero.
+\lstdefinestyle{outtight}{
+  basicstyle=\termfont\scriptsize\color{black!80}%
+    \setlength{\baselineskip}{5pt}\setlength{\lineskiplimit}{20pt}\setlength{\lineskip}{-3.2pt}\selectfont,
+  columns=fullflexible, keepspaces=true,
+  breaklines=true, breakatwhitespace=false, showstringspaces=false,
+  moredelim=[is][\color{red!80!black}]{|!}{!|},
+  moredelim=[is][\color{black!35}]{|~}{~|},
+  literate={×}{{$\times$}}1 {→}{{$\rightarrow$}}1, escapechar=^
+}
+\newtcblisting{cmdouttight}{listing engine=listings, listing only, enhanced, breakable,
+  colback=white, colframe=black!25, boxrule=0.4pt, arc=1pt, left=4pt,
+  title={Output}, fonttitle=\scriptsize, coltitle=black!70, colbacktitle=black!6,
+  listing options={style=outtight}}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.6em}
@@ -35,56 +66,68 @@
 \begin{document}
 \maketitle
 
-\section*{Why we asked}
+\section*{Why this exists}
 
-My coding assistants normally call a cloud API: no Internet, no assistant. The \name{local-coding} project builds the fallback: the model runs on \name{AlfSPARK}, my \name{DGX Spark} (a GB10 with 128 GB of unified memory), and a coding harness on the Mac reaches it over the tailnet. A harness is the program that gives the model its tools, the read, edit and shell loop around a bare completion endpoint~\cite{wwc}.
+\here[the two reasons: backup and privacy]This project is both a backup and a private solution: it takes over when I cannot use \name{Claude Code} or \name{Codex}, and my code and conversations live only on machines I own, the Mac and \name{AlfSPARK}. \name{Claude Code} and \name{Codex} normally do their work through cloud services, and they stop when the Internet is down, when the service has an outage, or when my tokens run out. The \name{local-coding} project replaces them locally: the model runs on \name{AlfSPARK}, my \name{DGX Spark} (built on the NVIDIA \name{GB10 Grace Blackwell} chip: a 64-bit Arm CPU of twenty cores, ten fast \name{Cortex-X925} for the heavy work and ten power-saving \name{Cortex-A725} for the rest, 128 GB of unified memory, and a 4 TB self-encrypting solid-state drive~\cite{dgx}), and a coding harness on the Mac talks to it over the tailnet, so the work continues from inside my apartment. A \emph{harness} is the program that turns a model into an assistant: it hands the model tools to read files, edit them and run commands, and it carries out the model's instructions step by step~\cite{wwc}.
 
-The second goal matters as much as the first: the harness must read the instructions I already wrote for \name{Claude Code}, the global \name{CLAUDE.md} and the rule files, not a second copy of them to maintain. One source of instructions, either assistant.
+The design follows one rule: every assistant reads my instructions from the files I wrote for \name{Claude Code}, the global \name{CLAUDE.md} and the rule files. \name{Codex} already works this way: its \name{AGENTS.md} points at the same Claude files, and the OpenCode config was set up the same way (\S\ref{sec:rules}).
 
 This lesson is the setup as it ran on Sat 7 Nov, when the model answered for the first time: four pieces, each with the command that starts it and the output that proves it is up.
 
 \section{The picture}
 
-Two machines and four pieces. The model server answers an OpenAI-compatible HTTP API on the Spark's own loopback address; the model API is reachable through SSH rather than directly over the network. The tunnel makes the Mac's \texttt{127.0.0.1:8000} the Spark's \texttt{127.0.0.1:8000}; the config names the model and its address; the harness runs in the project home with my rules loaded.
+\here[machines and pieces labelled]Two machines: (a) \name{AlfSPARK}, the Spark that holds the model, and (b) \name{AlfMAC5}, the laptop I work on. Four pieces connect them, and the diagram repeats the labels.
+
+\begin{enumerate}[leftmargin=2.2em,itemsep=2pt]
+\item \textbf{the model server}: \name{vLLM} on (a) answers an OpenAI-compatible HTTP API on the Spark's own loopback address, so no machine, on the tailnet or anywhere else, can reach its port directly;
+\item \textbf{the tunnel}: an \texttt{ssh -L} forward makes the Mac's \texttt{127.0.0.1:8000} the Spark's \texttt{127.0.0.1:8000}. SSH does travel over a network: the tailnet, the private one. The tunnel is the only door to the API, and \S\ref{sec:path} shows how it is built;
+\item \textbf{the config}: one TOML file names the model, its server, and the two ports;
+\item \textbf{the harness}: \name{OpenCode} on (b), running in the project home with my rules loaded.
+\end{enumerate}
 
 \begin{center}
 \begin{tikzpicture}[font=\small,
   mach/.style={draw=black!50, rounded corners=2pt, align=center, inner sep=8pt, fill=blue!6}]
-  \node[mach] (mac) at (-5.8,0) {\name{AlfMAC5}\\[2pt] \name{OpenCode}\\ \scriptsize HTTP → \texttt{127.0.0.1:8000}};
-  \node[mach] (spark) at (4.5,0) {\name{AlfSPARK}\\[2pt] \name{vLLM} serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}\\ \scriptsize container \texttt{vllm-nvidia--\ldots}, listening on \texttt{127.0.0.1:8000}};
-  \draw[thick,->] (mac.east) -- node[above,font=\scriptsize\itshape] {tailnet, inside \texttt{ssh -L}} (spark.west);
+  \node[mach] (mac) at (-5.8,0) {(b) \name{AlfMAC5}\\[2pt] \name{OpenCode}\\ \scriptsize HTTP → \texttt{127.0.0.1:8000}};
+  \node[mach] (spark) at (4.5,0) {(a) \name{AlfSPARK}\\[2pt] \name{vLLM} serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}\\ \scriptsize container \texttt{vllm-nvidia--\ldots}, listening on \texttt{127.0.0.1:8000}};
+  \draw[thick,->] (mac.east) -- node[above,font=\scriptsize\itshape] {\texttt{ssh -L}, over the tailnet} (spark.west);
 \end{tikzpicture}
 \end{center}
 
 \section{The operating cycle}
 
-Day to day the setup is five verbs of one tool, \texttt{spark} (its source is \name{\home/.settings/Scripts/spark.py}, installed as \name{\home/.local/bin/spark}). From the Mac shell, the round trip that puts the machine away and brings it back, walked through on Sun 8 Nov:
+Day to day the setup is five verbs of one tool, \texttt{spark} (its source is \name{\home/.settings/Scripts/spark.py}, installed as \name{\home/.local/bin/spark}). \here[the cycle now starts from off]The normal round trip begins with the machine off and works outward; each command is followed by its own output, as walked through on Sun 8 Nov. If \texttt{spark serve} finds the machine powered off, it first asks whether to turn it on, waits for the boot, and proceeds.
 
 \begin{pane}
-$ spark unserve    # stop the vLLM service, close the tunnel it owns
-$ spark off        # power AlfSPARK off at the plug
 $ spark on --wait  # power on, block until SSH answers, print the boot time
-$ spark serve      # serve the config default: vLLM with the Qwen model
 \end{pane}
 \begin{cmdout}
-✓ vllm-nvidia--Qwen3.8-Flash-Next-FP4-Local: stopped
-✓ tunnel :8000 closed
-
-✓ vllm-nvidia--Qwen3.8-Flash-Next-FP4-Local: started
-✓ tunnel :8000 open
-  (vLLM's block-art banner, with its version and model name, prints first)
-✓ routing shards 21/21, 71.74 GB  3 min 18 s
-✓ routing shards 3/3, 4.14 GB  3 min 56 s
-✓ compiling decode CUDA graphs  4 min 17 s
-✓ compiling prefill CUDA graphs  4 min 20 s
-✓ API ready after 4 min 20 s
+^\tick^ plug AlfSPARK: on
+waiting for ssh alfspark…
+^\tick^ alfspark up after 32 s
 \end{cmdout}
 
-\texttt{spark serve} is idempotent: asked when the model already answers, it reports both facts as already true and waits nobody. Its loading display reads the container's own log, so the lines above are \name{vLLM}'s words about its own stages, not spark's guesses, and one line stays on screen per completed phase. The tool checks the same endpoint a browser can: \texttt{http://127.0.0.1:8000/health} answers empty with HTTP 200 once the server is up, and \texttt{/v1/models} lists the served id.
+\begin{pane}
+$ spark serve      # serve the config default: vLLM with the Qwen model, open its tunnel, wait for its API
+\end{pane}
+\begin{cmdouttight}
+^\tick^ vllm-nvidia--Qwen3.8-Flash-Next-FP4-Local: started
+^\tick^ tunnel :8000 open
+       █     █     █▄   ▄█
+ ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.1.dev21830+g8244d1c44.d20261015
+  █▄█▀ █     █     █     █  model   nvidia/Qwen3.8-Flash-Next-FP4-Local
+   ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+^\tick^ routing shards 21/21, 71.74 GB  2 min 53 s
+^\tick^ routing shards 3/3, 4.14 GB  3 min 29 s
+^\tick^ compiling decode CUDA graphs  3 min 51 s
+^\tick^ compiling prefill CUDA graphs  3 min 55 s
+^\tick^ API ready after 3 min 55 s
+\end{cmdouttight}
+
+The block-art banner is \name{vLLM}'s own opening lines, which \texttt{spark serve} shows as they land in the container's log. \here[idempotent, said plainly]Asked twice, \texttt{spark serve} changes nothing: when the model already answers, it reports both facts as already true and waits nobody. The loading display reads the container's own log, one line kept on screen per completed phase, and the serve finishes when \texttt{http://127.0.0.1:8000/health} answers empty with HTTP 200.
 
 \begin{pane}
-$ spark s        # the five-line report (spark status)
-$ spark models   # the model store on the Spark
+$ spark s          # the five-line report (spark status)
 \end{pane}
 \begin{cmdout}
 plug    AlfSPARK: on, 45.7 W -> alfspark running
@@ -92,14 +135,43 @@ tailnet alfspark: active; relay "nyc", tx 713174220 rx 223502956
 service vllm (model nvidia/Qwen3.8-Flash-Next-FP4-Local): running 0 h 32 m
 tunnel  AlfMAC5:8000 → alfspark:8000 open
 api     AlfMAC5:8000: ready
+\end{cmdout}
 
+\begin{pane}
+$ spark models     # the model store on the Spark
+\end{pane}
+\begin{cmdout}
   model                                           size  last access
   nvidia/Qwen3.8-Flash-Next-FP4-Local           102.3G  10 hours ago  ← served
 \end{cmdout}
 
-The report keeps its facts apart: the service line, the tunnel line, and the API line each answer one question, and when no service runs the last three all read \texttt{none}. The inventory comes from the \texttt{hf} CLI on the Spark (the \texttt{hf} key of the config), reading the Hugging Face cache at \name{\home/.cache/huggingface/hub}; its sizes are decimal gigabytes, so the same bytes read smaller under \texttt{du}, which counts binary GiB (102.3 GB is 95.3 GiB). Neither the \texttt{← served} mark nor the loading progress is folklore: spark reads what each running container was launched to serve (\texttt{docker inspect}, \texttt{Config.Cmd}) and what it is doing now (\texttt{docker logs}), so a mismatch between name and reality shows up instead of hiding.
+\here[status and models, said plainly]The status report keeps one fact per line. The model list is produced on the Spark by the \texttt{hf} command-line tool (Hugging Face's downloader), which reads the Hugging Face cache at \name{\home/.cache/\allowbreak huggingface/\allowbreak hub} from the path the config's \texttt{hf} key names.
+
+\begin{pane}
+$ spark unserve    # stop the vLLM service, close the tunnel it owns
+\end{pane}
+\begin{cmdout}
+^\tick^ vllm-nvidia--Qwen3.8-Flash-Next-FP4-Local: stopped
+^\tick^ tunnel :8000 closed
+\end{cmdout}
+
+\begin{pane}
+$ spark off        # clean shutdown over ssh, then the plug
+\end{pane}
+\begin{cmdout}
+shutting down alfspark (sudo asks for its password)
+[sudo] password for atcold:
+Connection to alfspark closed.
+waiting for the draw to drop to standby…
+^\tick^ alfspark shut down after 10 s
+^\tick^ plug AlfSPARK: off
+\end{cmdout}
 
 \section{The model server, on \name{AlfSPARK}}
+
+\begin{insight}{What vLLM is, and what else is out there}
+\name{vLLM}~\cite{vllm} is an open-source inference server: it loads a model once, answers behind the OpenAI API, and keeps many requests flowing at once. It is one choice among several. \name{llama.cpp}~\cite{llama} is the C++ engine that runs quantized models on everything from a GPU to a phone; \name{Ollama}~\cite{oll} wraps it with model download and management, and \name{LM Studio}~\cite{lms} gives the same engine a desktop app. All of them can answer an OpenAI-compatible endpoint; \name{vLLM} was chosen because the community container built for the Spark runs on it~\cite{eug}.
+\end{insight}
 
 The server is \name{vLLM}, an OpenAI-compatible inference server, serving \name{nvidia/Qwen3.8-Flash-Next-FP4-Local}, NVIDIA's mixed-precision FP4 quantization of Flash-Next, about 102 GB of weights in the Hugging Face cache~\cite{nv}. The runtime is the community container \name{eugr/spark-vllm-b12x}, tag \name{nightly-20261015}: NVIDIA's own model card directs single-Spark users to community containers pending upstream support~\cite{nv}. The container was created once, from the published solo recipe's arguments (a GPU memory utilization budget of 0.8, covering the model and runtime allocations rather than only the key/value cache, a 262144-token context, multi-token prediction proposing up to 4 extra tokens per step, and 8 concurrent sequences), with the API bound to \texttt{127.0.0.1}.
 
@@ -131,6 +203,7 @@ $ curl -s http://127.0.0.1:8000/health   # empty body, exit 0, once served
 \end{tcolorbox}
 
 \section{The path}
+\label{sec:path}
 
 On the Mac, one \texttt{ssh} puts a listener on the Mac's port 8000 and forwards every connection to the Spark's port 8000, over the tailnet. \texttt{-f} sends \texttt{ssh} to the background once connected, \texttt{-N} asks for no shell, only forwarding, \texttt{ExitOnForwardFailure=yes} makes \texttt{ssh} fail loudly instead of claiming success with the tunnel unmade (a port already taken by an old tunnel, say), and \texttt{ServerAliveInterval=30} sends a probe every 30 seconds so an idle tunnel is not dropped. In daily use \texttt{spark} opens this tunnel for the model it serves and closes it again on \texttt{unserve}, touching the listener only when it recognises its own \texttt{ssh} there; \texttt{spark status} then reports the tunnel and the API as two facts on two lines, since an open pipe and a ready server are different claims.
 
@@ -172,6 +245,10 @@ $ curl -s http://127.0.0.1:8000/v1/chat/completions \
 
 \section{The harness, on \name{AlfMAC5}}
 
+\begin{insight}{What OpenCode offers}
+\name{OpenCode}~\cite{ocd} is an open-source coding agent: in a terminal (it also has desktop and editor faces) it runs the loop of read, edit, and shell against whichever model its config selects, with sessions that resume, per-command permission asks, and per-project configuration. It talks to any provider through a small adapter, which is exactly the seam the \texttt{spark} provider below sits in.
+\end{insight}
+
 \name{OpenCode} 1.19.5 is installed at \name{\home/\lk{.opencode}/bin/opencode}, not yet on \texttt{PATH}, so its full path is the command. Its config is one JSON file, \name{\home/Dropbox/Apps/\lk{opencode}/opencode.json}, linked at \name{\home/.config/\lk{opencode}/opencode.json}, the location OpenCode reads for every project~\cite{cfg}. The shared JSON is in Dropbox; the executable and configuration link have been installed on \name{AlfMAC5}. The key lines:
 
 \begin{lstlisting}[style=out]
@@ -192,6 +269,7 @@ $ curl -s http://127.0.0.1:8000/v1/chat/completions \
 The model is named twice on purpose: \texttt{model} answers the conversation, \texttt{small\_model} the background utility calls (titles, summaries). Both select the local inference endpoint. \texttt{enabled\_providers} narrows OpenCode to the one provider, \texttt{spark}, defined beside it as an OpenAI-compatible endpoint at the tunnel's address; the key is a placeholder because the server asks for none.  The \texttt{interleaved} field names \texttt{reasoning}, the key under which the \name{vLLM} server streams the model's thinking; a streaming request against the running container shows that key directly. The original setting, \texttt{reasoning\_content}, was a guess from a familiar \name{vLLM} convention, and a wrong name fails silently: the interface showed only a \texttt{Thought:} timer, never the thinking text. Whether that text renders at all is a separate switch, \texttt{display\_thinking}, which has no key by default and is bound to \texttt{<leader>d} in \name{tui.json}. With both in place, the reasoning sentences appear under the timer. \texttt{autoupdate} disables automatic application updates, and \texttt{share} disables session sharing; dependency downloads and other network activity still need an offline trial. The \texttt{edit} and \texttt{bash} permissions are set to ask, subject to approvals granted during a session.
 
 \section{Reading my rules}
+\label{sec:rules}
 
 \begin{insight}{How OpenCode gets my instructions}
 OpenCode's rules system loads an \texttt{AGENTS.md} found in the project and a global file, and the \texttt{instructions} field of the config names further files, read at startup and combined with them~\cite{rules}. It also reads \name{\home/.claude/CLAUDE.md} as a compatibility fallback when no global \texttt{AGENTS.md} exists. Our config lists the Claude originals by path, so the rules stay exactly where they are, one copy for both assistants:
@@ -247,6 +325,12 @@ $ spark off       # optionally shut down AlfSPARK and switch off its plug
   \bibitem[Eug]{eug} \textit{spark-vllm-docker}, community containers for the DGX Spark. \url{https://github.com/eugr/spark-vllm-docker}
   \bibitem[OCc]{cfg} OpenCode, \textit{Config} documentation. \url{https://opencode.ai/docs/config/}
   \bibitem[OCr]{rules} OpenCode, \textit{Rules} documentation. \url{https://opencode.ai/docs/rules/}
+  \bibitem[DGX]{dgx} NVIDIA, \textit{DGX Spark} product page and specifications. \url{https://www.nvidia.com/en-us/products/workstations/dgx-spark/}
+  \bibitem[vLLM]{vllm} The \name{vLLM} project. \url{https://docs.vllm.ai/}
+  \bibitem[LLa]{llama} \textit{llama.cpp}, C++ inference for large language models. \url{https://github.com/ggerganov/llama.cpp}
+  \bibitem[Oll]{oll} \name{Ollama}, run large language models locally. \url{https://ollama.com/}
+  \bibitem[LMS]{lms} \name{LM Studio}, desktop app for local models. \url{https://lmstudio.ai/}
+  \bibitem[OCt]{ocd} OpenCode, \textit{Introduction} documentation. \url{https://opencode.ai/docs/}
 \end{thebibliography}
 
 \end{document}
