@@ -1,7 +1,7 @@
-% Shared style for every lesson: colours, names, listings, and the boxes all lessons use.
-% Lessons find it through their .latexmkrc:  ensure_path('TEXINPUTS', '../style//');
+% Shared style for every lesson and every document of mine: colours, names, listings, review marks, and the lesson boxes.
+% Lessons find it through their .latexmkrc (ensure_path TEXINPUTS ../style//); other documents through ~/Library/texmf, which links here.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{lesson}
+\ProvidesPackage{alfdoc}
 
 \RequirePackage{fontspec}
 \setsansfont{Latin Modern Sans}  % the default, named through fontspec so \name can switch its ligatures off

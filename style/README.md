@@ -1,6 +1,6 @@
-# Lesson style
+# alfdoc style
 
-`lesson.sty` holds what every lesson shares: the [Set3](https://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12) and tone colours, `\name`, the `shell`, `out` and `python` listings, and the `insight`, `pane` and `cmdout` boxes. A lesson loads it with `\usepackage{lesson}`; its `.latexmkrc` adds `ensure_path('TEXINPUTS', '../style//');`. Boxes only one lesson uses stay in that lesson.
+`alfdoc.sty` holds what every lesson and every other document of mine shares: the [Set3](https://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12) and tone colours, `\name`, the `shell`, `out` and `python` listings, and the `insight`, `pane` and `cmdout` boxes. A lesson loads it with `\usepackage{alfdoc}`; its `.latexmkrc` adds `ensure_path('TEXINPUTS', '../style//');`. Boxes only one lesson uses stay in that lesson. Documents outside this repo load the same file through a link, `~/Library/texmf/tex/latex/alfdoc/alfdoc.sty` → `style/alfdoc.sty` in this repo, on each Mac.
 
 Rules the package cannot enforce:
 
