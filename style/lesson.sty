@@ -126,16 +126,13 @@
 % otherkeywords would fight the quote as a string delimiter); the trailing colon is
 % part of each pattern, so a value repeating a key's word stays plain. Patterns that
 % share a prefix list the longer first, since the first match in the list wins.
-% References as two narrow columns: a list of links, not prose
+% References: LaTeX's own list, label column included, in a smaller font and two columns
 \RequirePackage{multicol}
 \renewenvironment{thebibliography}[1]{%
   \footnotesize\section*{\refname}%
   \begin{multicols}{2}%
-  % The [NV]-style tags stay in the source as citation keys; the printed list
-  % shows no index column, so the label of each item is dropped here and restored after
-  \let\lesson@savedbibitem\bibitem
-  \renewcommand{\bibitem}[2][]{\lesson@savedbibitem{##2}}%
-  \list{}{\leftmargin 0pt \labelsep 0pt \labelwidth 0pt \@openbib@code
+  \list{\@biblabel{\@arabic\c@enumiv}}{\settowidth\labelwidth{\@biblabel{#1}}%
+     \leftmargin\labelwidth \advance\leftmargin\labelsep \@openbib@code
      \usecounter{enumiv}\let\p@enumiv\@empty \renewcommand\theenumiv{\@arabic\c@enumiv}}%
   \sloppy \clubpenalty4000 \@clubpenalty\clubpenalty \widowpenalty10000%
   \sfcode`\.\@m}%
