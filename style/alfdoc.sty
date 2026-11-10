@@ -95,6 +95,12 @@
 \newcommand{\lk}[1]{{\color{black!50}\underline{#1}}}
 \newcommand{\emo}[1]{\texttwemoji{#1}}
 
+% Links, URLs and citations in one strong cyan: hyperref's default green barely shows on a white
+% screen, and blue reads as black text.
+\definecolor{link}{HTML}{0099CC}
+\AtBeginDocument{\@ifpackageloaded{hyperref}{%
+  \hypersetup{linkcolor=link, urlcolor=link, filecolor=link, citecolor=link}}{}}
+
 % Code listings
 \lstdefinestyle{shell}{
   language=bash, moredelim=[is][\color{red!85!black}]{|!}{!|},
