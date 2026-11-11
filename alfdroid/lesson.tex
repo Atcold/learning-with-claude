@@ -16,6 +16,20 @@
 \usetikzlibrary{positioning}
 \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
 
+% Recorded output is terminal output: Menlo keeps the look honest and carries the
+% glyphs Latin Modern Mono lacks (✓ U+2713, the block art U+2580/84/88, ← and …).
+\newfontface\termfont{Menlo}[Scale=MatchLowercase]
+% ✓ must arrive through literate: listings defers unknown Unicode characters, which
+% emitted every tick at the end of the previous line instead of its own.
+\newcommand{\tick}{\hbox{\termfont ✓\char32}}
+\lstdefinestyle{out}{
+  basicstyle=\termfont\scriptsize\color{black!80}, columns=fullflexible, keepspaces=true,
+  breaklines=true, breakatwhitespace=false, showstringspaces=false,
+  moredelim=[is][\color{red!80!black}]{|!}{!|},
+  moredelim=[is][\color{black!35}]{|~}{~|},
+  literate={×}{{$\times$}}1 {→}{{$\rightarrow$}}1, escapechar=^
+}
+
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.6em}
 \setlength{\emergencystretch}{3em}
@@ -152,7 +166,20 @@ Performing Streamed Install
 Success
 \end{cmdout}
 
-Android warned that the app was built for an older version of Android. \name{Termux} declares an older version on purpose, because that is what lets it run the programs it downloads, and newer versions block that for apps declaring a recent one. Its add-ons, such as \name{Termux:Boot}, work only with a \name{Termux} from the same source, so they come from GitHub too. \here[why same source] Android lets two apps share their files only when the same key signed both, and each source signs its builds with its own key.
+Android warned that the app was built for an older version of Android. \name{Termux} declares an older version on purpose, because that is what lets it run the programs it downloads, and newer versions block that for apps declaring a recent one. Its add-ons, such as \name{Termux:Boot}, work only with a \name{Termux} from the same source, so they come from GitHub too. \here[why same source] Android lets two apps share their files only when the same key signed both, and each source signs its builds with its own key. The GitHub builds of the whole \name{Termux} project carry one shared CI debug key, and it is the key my \name{Termux} and \name{Termux:Boot} have; the same add-on from F-Droid is signed elsewhere and Android refuses it for the mismatch.
+
+\name{Termux:API}~\cite{tapi} is the add-on that lets a program inside \name{Termux} ask Android what the sandbox keeps from an app: the battery charge, the sensors, a raw USB device~\cite{tusb}. The Mac installs it the same way as the app itself, and the phone asks for the install by hand:
+
+\begin{pane}
+$ adb install termux-api-app_v0.53.0+github.debug.apk  # Termux:API, from GitHub
+\end{pane}
+\begin{cmdout}
+adb: failed to install ...: Failure [INSTALL_FAILED_VERIFICATION_FAILURE]
+Performing Streamed Install
+Success
+\end{cmdout}
+
+The first line is \name{OxygenOS} checking an app that did not arrive through the \name{Play Store}: it installs such an app only once I tap to approve it on the phone. Its answer to a battery question, \texttt{termux-battery-status}, prints the charge as JSON, and my \name{tmux} status bar below draws it as a bar of squares.
 
 \here[htop rewritten] To watch the whole phone, \name{htop} runs through \name{adb} rather than inside \name{Termux}. \name{Termux} is an Android app, also when I reach it over SSH, and Android hides two things from apps: \begin{enumerate*}[label=(\arabic*)] \item the other apps' processes, so \name{htop} lists only \name{Termux}'s own, and \item \texttt{/proc/stat}, the kernel's file of per-core time counters from which \name{htop} works out the load, which answers \texttt{Permission denied}, so \name{htop} draws every core as offline.\end{enumerate*} Root lifts both limits. \name{adb}'s shell sees all the processes and may read the counters, and it may run programs from \texttt{/data/local/tmp}. \here[XDG] That folder belongs to Android and lies outside the XDG base directories of my lesson on where an app keeps its files, which sit in a user's home: Android sets it aside as the one place where the \name{adb} shell may write files and run them. The project's repository, \name{alfdroid}, holds this as its first tool, a script called \texttt{htop}. On its first run it copies \name{Termux}'s \name{htop} and the three libraries it needs to \texttt{/data/local/tmp/htop}, and from then on it starts \name{htop} there through \name{adb}. That folder is also \name{htop}'s home, where it saves its settings, because the shell user's own home is \texttt{/}, which it may not write.
 
@@ -165,6 +192,25 @@ $ ./htop  # in the alfdroid repository: all cores, all processes; q quits
 The phone carries the same settings as my Macs. \texttt{pkg install git}, then a clone of my settings repository into \texttt{\textasciitilde/.settings}, and \texttt{./install.sh} in its \texttt{Termux} folder sets up the rest. The installer adds the command-line tools with \texttt{pkg}, \name{Termux}'s package manager, links my \texttt{bashrc}, Git, and Neovim settings, gives \name{Termux} the colours of my Mac's \name{Monokai} profile, and builds the terminal font, Cascadia's ExtraLight face with my pinyin patch, as on the Mac. One more setting keeps the on-screen keyboard closed until I tap the screen.
 
 My prompt shows a user and a machine name. On the phone, \name{Termux}'s user is the app's own account, \texttt{u0\_a1}, which only root could rename, and Android keeps its device name where the prompt cannot read it. Two lines in \texttt{\$PREFIX/etc/machine-info} on the phone, \texttt{PRETTY\_HOSTNAME=AlfDROID} and \texttt{PRETTY\_USERNAME=atcold}, give the prompt its names, so it reads \texttt{atcold@AlfDROID}, as on the Macs. \here[user name over SSH] SSH logs in all the same, because \name{Termux}'s \name{sshd} serves its one user under any user name, so \texttt{ssh alfdroid} sends my Mac's name, \texttt{atcold}, and lands in \texttt{u0\_a1}.
+
+\name{tmux} installs from the same repository: \texttt{bash \textasciitilde/.settings/Tmux/install.sh} compiles the terminal description and links the shared configuration, and under \name{Termux} it also links the phone's own status line and battery script. The bottom status row then reads its name from \texttt{machine-info}, the same file as the prompt, because Android answers \texttt{hostname} with \texttt{localhost}, and draws the charge from \name{Termux:API}; the script asks it under a two-second timeout, because the question is a broadcast to the add-on app and waits forever when no app is there to answer. Bare \texttt{tmux} opens the machine's own session, named after the display name with its \texttt{Alf} dropped, so the phone's session is \texttt{Droid} and the bar's right end reads \texttt{Droid:1.1}.
+
+\begin{pane}
+$ tmux       # into the machine's own session, Droid on this phone
+\end{pane}
+\begin{cmdout}
+                                                   1:.settings•
+AlfDROID :: ◼◼◼◼◼◼◼◼◼◼ 96% ↑                                       Droid:1.1 :: 11 Nov 2026 :: 16:01
+\end{cmdout}
+
+The phone also dials out, and its SSH client settings follow the Mac's split. The shared \texttt{ssh\_config} loads \texttt{\textasciitilde/.ssh/config.local} above its \texttt{Host} lines, because OpenSSH reads no \texttt{Host} entry from a file included inside one, and the options only \name{macOS} understands live on the Mac's own side of that split. The phone's copy of the file holds its one machine:
+
+\begin{lstlisting}[style=out]
+Host alfspark
+    User atcold
+\end{lstlisting}
+
+The Spark's \name{sshd} must see a user name it accepts, and the phone's key sits in the Spark's \texttt{authorized\_keys}. With that entry, the \texttt{spark} tool of my lesson on local coding runs unchanged on the phone: \texttt{spark serve tunnel} opens the phone's own pipe to a serving Spark, and the plug account's password, which on the Mac lives in the Keychain, sits here in \texttt{\textasciitilde/.config/spark/credentials.toml} under mode 600.
 
 \section*{Reaching it from anywhere}
 
@@ -218,6 +264,7 @@ The first service is a web server on the tailnet, for a landing page or an API. 
   \bibitem[9to5]{nine} 9to5Google, \textit{OnePlus officially ends software support for OnePlus 6/6T series}, 17 Jan 2022. \url{https://9to5google.com/2022/01/17/oneplus-officially-ends-software-support-for-oneplus-6-6t-series/}
   \bibitem[Tx]{termux} Termux, \textit{Installation}. \url{https://github.com/termux/termux-app#installation}
   \bibitem[TxUSB]{tusb} Termux wiki, \textit{Termux-usb}. \url{https://wiki.termux.com/wiki/Termux-usb}
+  \bibitem[TxAPI]{tapi} Termux, \textit{Termux:API}. \url{https://github.com/termux/termux-api}
   \bibitem[Qcom]{qcom} Qualcomm, \textit{Snapdragon 845 Mobile Platform}, product brief, May 2018. \url{https://www.qualcomm.com/content/dam/qcomm-martech/dm-assets/documents/qcomm_4743_845productbrief_may2018.pdf}
   \bibitem[DTS]{dts} Linux kernel, \textit{sdm845-oneplus-enchilada.dts} and \textit{sdm845-oneplus-common.dtsi}, the OnePlus 6 device tree. \url{https://github.com/torvalds/linux/blob/master/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi}
   \bibitem[Boot]{boot} Termux, \textit{Termux:Boot}. \url{https://github.com/termux/termux-boot}
