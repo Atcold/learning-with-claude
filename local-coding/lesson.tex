@@ -147,6 +147,24 @@ $ spark models     # the model store on the Spark
 
 The status report keeps one fact per line. The model list is produced on the Spark by the \texttt{hf} command-line tool (Hugging Face's downloader), which reads the Hugging Face cache at \name{\home/.cache/\allowbreak huggingface/\allowbreak hub} from the path the config's \texttt{hf} key names.
 
+Several machines reach the same service. Once one machine has served the model, another machine joins with \texttt{spark serve tunnel}: the command opens this machine's local listener and its \texttt{ssh -L} tunnel, checks that the container is running, and waits for the API, while the plug and the container keep the state the first machine left them in. \texttt{spark unserve tunnel} closes this machine's tunnel and leaves the service running for whoever keeps it alive. \texttt{spark} runs on any machine that has the tailnet name of the Spark and an ssh key the Spark accepts, including the phone \name{AlfDROID} under \name{Termux}, the terminal app on Android. Both blocks below were recorded there, on Wed 11 Nov.
+
+\begin{pane}
+$ spark serve tunnel   # join a service another machine started: open this machine's tunnel
+\end{pane}
+\begin{cmdout}
+^\tick^ vllm-nvidia--Qwen3.8-Flash-Next-FP4-Local already running
+^\tick^ tunnel :8000 open
+^\tick^ vllm-nvidia--Qwen3.8-Flash-Next-FP4-Local serving on :8000, api ready
+\end{cmdout}
+
+\begin{pane}
+$ spark unserve tunnel # close this machine's tunnel; the service keeps serving
+\end{pane}
+\begin{cmdout}
+^\tick^ tunnel :8000 closed
+\end{cmdout}
+
 \begin{pane}
 $ spark unserve    # stop the vLLM service, close the tunnel it owns
 \end{pane}
