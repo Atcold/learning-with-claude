@@ -1,0 +1,197 @@
+% Lesson: AlfDROID, an old OnePlus 6 turned into an always-on server on the tailnet.
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{alfdoc}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\title{\emo{mobile phone}\ \name{AlfDROID}\\[0.3em]
+  \large A OnePlus 6 from the drawer as an always-on server on the tailnet}
+\author{Lesson for Alf, written by Claude}
+\date{Tue 10 Nov 2026}
+
+\begin{document}
+\maketitle
+
+\section*{The phone}
+
+\name{AlfDROID} is the OnePlus 6 I bought on 31 Jul 2018, in Silk White, with 8 GB of RAM and 128 GB of storage~\cite{gsm}. It sits plugged in behind the router with the screen off and joins the tailnet, so every machine of mine reaches it by name while the router keeps all its ports closed. During a power cut it keeps running on its own battery, so its programs carry on where they were. The router goes down with the power, though, so for that time the phone is unreachable and its services are offline; they answer again as soon as the router is back.
+
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Chip & \name{Snapdragon 845}: 8 cores, 4 at 2.8 GHz and 4 at 1.7 GHz, 64-bit Arm \\
+Memory, storage & 8 GB LPDDR4X, 128 GB UFS 2.1 \\
+Network & Wi-Fi 5 (802.11ac, 2$\times$2), Bluetooth 5.0 \\
+Power & 3300 mAh battery; Dash Charge at 5 V, 4 A \\
+Port & USB-C 2.0, which can host a USB drive or an Ethernet adapter \\
+Software & last official release \name{OxygenOS} 11.1.2.2 (Android 11, Nov 2021)~\cite{nine} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The phone's storage is UFS 2.1 (Universal Flash Storage), the flash memory built into the phone, which reads and writes like a small SSD.
+
+A \name{Raspberry Pi 4} is the usual small home server. The model with the phone's 8 GB of memory launched at \$75, and on 1 Apr 2026 its price rose by \$50 because memory chips became more expensive~\cite{rpi}, so the board alone now costs over \$120, before a power supply, a case, and storage. The phone is free, since it was in a drawer, and it brings more memory, storage that is much faster than a Pi's SD card, a battery, and a case. The Pi is the better choice when a project needs its GPIO pins, the header for wiring sensors and switches, or its built-in Ethernet port.
+
+\section*{The setup}
+
+Android is itself built on Linux. At the bottom, the Linux kernel drives the hardware and runs every program. Android's apps and services are programs on top of that kernel. A Debian program, such as \texttt{apt} or \texttt{sshd}, needs two things to run: a Linux kernel, which the phone already has, and Debian's own files, its libraries, settings, and other programs, which the phone lacks. So Debian can run beside Android, on the same kernel, once its files are on the phone and its programs can find them.
+
+Android gives every app a private folder, and \name{Termux}, a terminal app for Android~\cite{termux}, installs \name{proot-distro}, which downloads a complete Debian into a folder inside its own~\cite{proot}. Deleting \name{Termux} deletes that folder, and Debian with it.
+
+A Debian program looks for its files at fixed paths, such as \texttt{/etc/apt}, but on the phone they sit at \texttt{\ldots/debian/etc/apt}. Linux solves this with \name{chroot} (change root), a command that starts a program with a chosen folder as its \texttt{/}, so \texttt{/etc/apt} means the Debian folder's \texttt{etc/apt}. Android lets only the root user, the administrator account, run \name{chroot}, and a normal phone keeps root locked away. \name{proot} imitates \name{chroot} without root: it sits between each Debian program and the kernel, and rewrites every path the program asks for before passing the request on. That rewriting happens on every request, which makes programs under \name{proot} slower than under a real \name{chroot}.
+
+\begin{center}
+\begin{tikzpicture}[font=\small,
+  layer/.style={draw=black!50, rounded corners=2pt, minimum height=0.8cm, align=center, fill=blue!6},
+  deb/.style={layer, fill=green!15}]
+  \node[layer, minimum width=11cm] (hw) {phone hardware: \name{Snapdragon 845}, memory, storage, Wi-Fi};
+  \node[layer, minimum width=11cm, above=1pt of hw] (k) {Linux kernel};
+  \node[layer, minimum width=4cm, above=1pt of k.north west, anchor=south west] (and) {Android and its apps};
+  \node[layer, minimum width=6.9cm, above=1pt of k.north east, anchor=south east] (tx) {\name{Termux} app, with \name{proot}};
+  \node[deb, minimum width=6.9cm, above=1pt of tx] (d) {Debian programs: \texttt{apt}, \texttt{sshd}, a web server};
+  \node[font=\scriptsize, right=2pt of tx, align=left] {rewrites\\every path};
+\end{tikzpicture}
+\end{center}
+
+Rooting the phone with \name{Magisk} gives three advantages. A real \name{chroot} runs Debian programs at full speed, talking to the kernel directly. A root-only module, \name{ACC}, can hold the battery's charge below full, as the box below explains. And services can use the standard ports below 1024, which Linux reserves for root: a web server on 80 or 443, and \name{Pi-hole} on 53, the port every device asks for DNS. The cost is that rooting needs an unlocked bootloader, and unlocking it erases the phone. Unlocking it right after the factory reset in the next steps loses only what the reset has already cleared.
+
+A heavier path is open for later. \name{postmarketOS} replaces Android with a Linux system built on the mainline kernel, the one maintained at kernel.org, and the OnePlus 6 (codename \name{enchilada}) runs it well~\cite{pmos}.
+
+\begin{insight}{The battery}
+\name{OxygenOS} 11 charges the battery to 100\% and holds it there while the phone stays plugged in, and a battery kept full for months wears out faster and can swell. Stopping the charge earlier needs root. \name{ACC} (Advanced Charging Controller), a \name{Magisk} module, stops charging at a level I choose, such as 80\%, and starts again below a lower one; on kernels that support it, it can also run the phone straight from the charger and leave the battery alone~\cite{acc}. Whether the limit holds depends on the kernel, so the next steps check it. The generic USB-A to C cable charges slowly, which keeps the phone cool all day; the Warp cable is for a quick top-up.
+\end{insight}
+
+\section*{Reaching the phone from the Mac}
+
+On Tue 10 Nov the phone was plugged into \name{AlfMAC4} with a USB cable, and the Mac drove it with \name{adb}, the Android Debug Bridge, a command-line tool that runs commands on a phone over USB. \name{adb} works only after the phone allows it. Tapping Build number seven times, under Settings, About phone, Version, turns on Developer options, and USB debugging inside them lets \name{adb} in. The phone then asks once whether to trust this computer.
+
+\begin{pane}
+$ adb shell getprop ro.build.display.id  # which software the phone runs
+\end{pane}
+\begin{cmdout}
+ONEPLUS A6003_22_211125
+\end{cmdout}
+
+The build ends in 211125, 25 Nov 2021, so the phone already ran the final \name{OxygenOS} 11.1.2.2, and the update step was already done. \texttt{adb shell top} showed the phone's load: 8 cores, mostly idle, and 7.4 of 7.8 GB of memory in use, which is normal on Android, because it keeps recent apps in memory.
+
+\section*{What is inside}
+
+OnePlus keeps the phone's datasheet and schematics internal, so three sources together say what it is made of. The phone reports its own parts over \name{adb}, through \texttt{getprop}, \texttt{/proc/cpuinfo}, and \texttt{dumpsys}. Qualcomm's product brief describes the chip~\cite{qcom}. And the mainline Linux kernel, the one postmarketOS runs, describes the whole board in a device tree, a text file that names each chip on the board, the bus it sits on, and the power supply that feeds it~\cite{dts}. The device tree is the open counterpart of a schematic, written by the people who traced the board to make Linux run on it. The opening table gives the phone's headline figures, and this one names the chips around the processor, as these sources report them.
+
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Part & Chip \\
+\midrule
+Model & \name{ONEPLUS A6003} (\name{enchilada}), the version for Europe and North America \\
+Processor & Qualcomm \name{SDM845}, with \name{Kryo} 385 cores, made at 10 nm \\
+Graphics & \name{Adreno} 630, OpenGL ES 3.2 \\
+Signal processors & \name{Hexagon} 685 DSP, \name{Spectra} 280 camera processor \\
+Display & Samsung AMOLED, \name{sofef00} (\name{AMS628NW01}), 1080 $\times$ 2280 \\
+Touch & Synaptics \name{S3706B} \\
+Modem & Qualcomm \name{X20} LTE \\
+Wi-Fi and Bluetooth & Qualcomm \name{WCN3990} \\
+NFC & NXP \name{PN553} \\
+Power and charging & Qualcomm \name{PM8998} and \name{PMI8998} \\
+Battery gauge & Texas Instruments \name{BQ27411} \\
+Speaker amplifier & Maxim \name{MAX98927} \\
+Kernel & Linux 4.9.227, security patch 1 Nov 2021 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two lines of the device tree matter for a server. Under mainline Linux the USB-C port works only as a device, the role it plays when plugged into a computer, so an SSD or an Ethernet adapter on that port needs Android, whose kernel switches the port to host, the role in which the phone powers and drives what is plugged into it. And mainline limits charging to 1.8 A, because the phone has a single charger chip. The Dash Charge circuit, which charges faster through the adapter, still waits for a mainline driver.
+
+\section*{Termux}
+
+The phone already had \name{Termux} 0.101, installed from the Play Store in Sep 2018, and it no longer started: its shell stopped with \texttt{CANNOT LINK EXECUTABLE \ldots{} library "libandroid-support.so" not found}. \name{Termux} stopped publishing to the Play Store years ago, so that copy cannot be repaired. Its current builds are on GitHub~\cite{termux}, and the Mac installed one after the old app was removed:
+
+\begin{pane}
+$ adb install termux-app_v0.118.3+github-debug_arm64-v8a.apk  # current Termux, from GitHub
+\end{pane}
+\begin{cmdout}
+Performing Streamed Install
+Success
+\end{cmdout}
+
+Android warned that the app was built for an older version of Android. \name{Termux} declares an older version on purpose, because that is what lets it run the programs it downloads, and newer versions block that for apps declaring a recent one. Its add-ons, such as \name{Termux:Boot}, work only with a \name{Termux} from the same source, so they come from GitHub too.
+
+To watch the whole phone, \name{htop} runs through \name{adb} rather than inside \name{Termux}. Android keeps two things from apps, and \name{Termux} is an app, also when I reach it over SSH. Other apps' processes are hidden, so \name{htop} lists only \name{Termux}'s own. And \texttt{/proc/stat}, the kernel's file of per-core time counters from which \name{htop} works out the load, answers \texttt{Permission denied}, so \name{htop} draws every core as offline. Root lifts both limits. \name{adb}'s shell sees all the processes and may read the counters, and it may run programs from \texttt{/data/local/tmp}. The project's repository, \name{alfdroid}, holds this as its first tool, a script called \texttt{htop}. On its first run it copies \name{Termux}'s \name{htop} and the three libraries it needs to \texttt{/data/local/tmp/htop}, and from then on it starts \name{htop} there through \name{adb}. That folder is also \name{htop}'s home, where it saves its settings, because the shell user's own home is \texttt{/}, which it may not write.
+
+\begin{pane}
+$ ./htop  # in the alfdroid repository: all cores, all processes; q quits
+\end{pane}
+
+\section*{My settings on the phone}
+
+The phone carries the same settings as my Macs. \texttt{pkg install git}, then a clone of my settings repository into \texttt{\textasciitilde/.settings}, and \texttt{./install.sh} in its \texttt{Termux} folder sets up the rest. The installer adds the command-line tools with \texttt{pkg}, \name{Termux}'s package manager, links my \texttt{bashrc}, Git, and Neovim settings, gives \name{Termux} the colours of my Mac's \name{Monokai} profile, and builds the terminal font, Cascadia's ExtraLight face with my pinyin patch, as on the Mac. One more setting keeps the on-screen keyboard closed until I tap the screen.
+
+My prompt shows a user and a machine name. On the phone, \name{Termux}'s user is the app's own account, \texttt{u0\_a1}, which only root could rename, and Android keeps its device name where the prompt cannot read it. Two lines in \texttt{\$PREFIX/etc/machine-info} on the phone, \texttt{PRETTY\_HOSTNAME=AlfDROID} and \texttt{PRETTY\_USERNAME=atcold}, give the prompt its names, so it reads \texttt{atcold@AlfDROID}, as on the Macs.
+
+\section*{Reaching it from anywhere}
+
+The \name{Tailscale} app joined the phone to the tailnet as \texttt{oneplus-6}, the name it took at its first login, and the admin console renamed it \texttt{alfdroid}. \name{Termux}'s SSH server, \name{sshd}, listens on port 8022, because without root it may use only ports above 1024. Two lines in my Mac's SSH settings, \texttt{Host alfdroid} and \texttt{Port 8022}, make \texttt{ssh alfdroid} work like \texttt{ssh alfspark}.
+
+After a reboot three things have to come back by themselves. \name{Termux:Boot}~\cite{boot} runs the scripts in \texttt{\textasciitilde/.termux/boot} when the phone starts, and mine runs \texttt{termux-wake-lock}, which keeps the processor awake, and then \texttt{sshd}. Android lets it do that only after the app has been opened once. \name{Tailscale} has to be the always-on VPN, which Android starts at boot. Both apps also have to be exempt from battery optimisation. Android, and OnePlus's own battery manager on top of it, holds back the apps that are not exempt while the phone sits idle after a boot. Before the exemption, \name{Tailscale} stayed offline after a reboot until something woke the phone, and every \name{adb} command did. \name{adb} sets all of it:
+
+\begin{pane}
+$ adb shell settings put secure always_on_vpn_app com.tailscale.ipn  # Tailscale starts at every boot
+$ adb shell dumpsys deviceidle whitelist +com.tailscale.ipn  # exempt Tailscale from battery optimisation
+$ adb shell dumpsys deviceidle whitelist +com.termux  # and Termux
+$ adb shell settings put global auto_time 1  # set the clock from the network
+\end{pane}
+
+The last line came from a commit that \texttt{git lg} on the phone listed as made ‘in the future’. The phone's automatic time was off, and its clock ran half a minute behind the Mac's, so a commit made on the Mac seconds earlier was still ahead of the phone's clock. With network time on, both clocks read the same.
+
+The third is the screen lock. With a PIN, Android keeps every app's data encrypted after a reboot until someone types the PIN, and both \name{Termux} and \name{Tailscale} keep their data there, so neither can start. With the lock set to None, the data unlocks itself at boot. That also lets anyone holding the phone into it, so the personal accounts have to leave the phone first. With the lock still on, a reboot followed by an unlock and nothing else brought \name{Tailscale} up, and \texttt{ssh alfdroid} answered two minutes after the restart.
+
+\section*{The USB-C port}
+
+The cable goes into the phone at a slant, with one side deeper than the other, and holds loosely, while the same cable clicks into the Mac. The port looks clean, so its metal shell or the contact tongue inside is probably bent. \name{adb} still sees the phone through it. A server needs a reliable connection, and the port sits on a small board at the bottom of the phone, which can be replaced from the back in about 40 minutes~\cite{ifixit}.
+
+\section*{Next steps}
+
+\begin{enumerate}[leftmargin=2em,itemsep=1pt]
+\item Look at the USB-C port under the microscope, and replace it if the tongue or the shell is bent.
+\item Sign out of LastPass and the other personal apps, then set the screen lock to None, so a reboot needs no one.
+\item Decide on rooting. Unlocking the bootloader erases the phone, as the factory reset does. Afterwards \texttt{./install.sh} restores my settings, the three \name{adb} commands above restore the always-on VPN and the exemptions, and \name{Termux:Boot} needs opening once.
+\item After rooting, install \name{Magisk} and add the \name{ACC} module with a charge limit of 80\%. Leave the phone plugged in for a day and check that the charge stays there.
+\item Run \texttt{proot-distro install debian}, then \texttt{proot-distro login debian}, which opens a Debian shell with \texttt{apt}.
+\end{enumerate}
+
+\section*{What it can run}
+
+The first service is a web server on the tailnet, for a landing page or an API. \name{Home Assistant}, a home-automation hub, can switch the Wi-Fi plugs over the LAN. With an SSD on the USB-C port, \name{Nextcloud} or a plain file share turns the phone into a NAS, a file server for the house. \name{Pi-hole} or \name{AdGuard Home} answers the network's DNS lookups and blocks the ones that go to ad servers, for every device at once. \name{AlfBOT} can run here too, so it answers even when both Macs sleep.
+
+\begin{thebibliography}{pmOS}
+  \bibitem[RPi]{rpi} Raspberry Pi, \textit{A new 3GB Raspberry Pi 4 for \$83.75, and more memory-driven price increases}, 1 Apr 2026. \url{https://www.raspberrypi.com/news/a-new-3gb-raspberry-pi-4-for-83-75-and-more-memory-driven-price-increases/}
+  \bibitem[ACC]{acc} VR-25, \textit{Advanced Charging Controller}. \url{https://github.com/VR-25/acc}
+  \bibitem[GSM]{gsm} GSMArena, \textit{OnePlus 6}, full specifications. \url{https://www.gsmarena.com/oneplus_6-9109.php}
+  \bibitem[9to5]{nine} 9to5Google, \textit{OnePlus officially ends software support for OnePlus 6/6T series}, 17 Jan 2022. \url{https://9to5google.com/2022/01/17/oneplus-officially-ends-software-support-for-oneplus-6-6t-series/}
+  \bibitem[Tx]{termux} Termux, \textit{Installation}. \url{https://github.com/termux/termux-app#installation}
+  \bibitem[Qcom]{qcom} Qualcomm, \textit{Snapdragon 845 Mobile Platform}, product brief, May 2018. \url{https://www.qualcomm.com/content/dam/qcomm-martech/dm-assets/documents/qcomm_4743_845productbrief_may2018.pdf}
+  \bibitem[DTS]{dts} Linux kernel, \textit{sdm845-oneplus-enchilada.dts} and \textit{sdm845-oneplus-common.dtsi}, the OnePlus 6 device tree. \url{https://github.com/torvalds/linux/blob/master/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi}
+  \bibitem[Boot]{boot} Termux, \textit{Termux:Boot}. \url{https://github.com/termux/termux-boot}
+  \bibitem[iFixit]{ifixit} iFixit, \textit{OnePlus 6 Charging Port Replacement}. \url{https://www.ifixit.com/Guide/OnePlus+6+Charging+Port+Replacement/145810}
+  \bibitem[PD]{proot} Termux, \textit{proot-distro}. \url{https://github.com/termux/proot-distro}
+  \bibitem[pmOS]{pmos} postmarketOS wiki, \textit{OnePlus 6 (oneplus-enchilada)}. \url{https://wiki.postmarketos.org/wiki/OnePlus_6_(oneplus-enchilada)}
+\end{thebibliography}
+
+\end{document}

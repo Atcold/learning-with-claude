@@ -12,6 +12,7 @@ Each folder is one lesson.
 - [One figure file, several cached pictures](tikz-externalisation/): TikZ caches by name and source text, not by flag, so each variant needs its own name.
 - [Two names for one file](links/): hard links and symbolic links, `du` and how `uv` shares packages between environments.
 - [Local coding: OpenCode on the Mac, the model on AlfSPARK](local-coding/): vLLM in a container on the Spark, an SSH tunnel over the tailnet, OpenCode reading the same Claude rules.
+- [AlfDROID](alfdroid/): a OnePlus 6 as an always-on server on the tailnet, Debian in Termux.
 
 ## Building
 
