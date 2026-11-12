@@ -10,6 +10,7 @@
 \usepackage{listings}
 \usepackage{twemojis}
 \usepackage{alfdoc}
+\usepackage{simpleicons}  % the stack's logos
 \usepackage[inline]{enumitem}
 \usepackage{booktabs}
 \usepackage{array}
@@ -47,9 +48,9 @@
 
 \name{AlfDROID} is the OnePlus 6 I bought on 31 Jul 2018, in Silk White, with 8 GB of RAM and 128 GB of storage~\cite{gsm}. Its model number is \name{A6003}, the version for Europe and North America. It sits plugged in behind the router with the screen off and joins the tailnet, so every machine of mine reaches it by name while the router keeps all its ports closed.
 
-\here[split, shorter] In a power cut the phone keeps running on its battery, but the router goes down, so the phone is offline until the power comes back. A SIM card keeps it online, because \name{Tailscale} also works over mobile data.
+ In a power cut the phone keeps running on its battery, but the router goes down, so the phone is offline until the power comes back. A SIM card keeps it online, because \name{Tailscale} also works over mobile data.
 
-\here[T-Mobile] The phone takes two physical nano-SIM cards and has no eSIM chip, so the iPhone's eSIM cannot move to it. On T-Mobile each SIM belongs to its own line, so a second SIM is a second line on my account, billed on top of my plan; the cheapest kind is a data-only line.
+ The phone takes two physical nano-SIM cards and has no eSIM chip, so the iPhone's eSIM cannot move to it. On T-Mobile each SIM belongs to its own line, so a second SIM is a second line on my account, billed on top of my plan; the cheapest kind is a data-only line.
 
 \begin{center}\small
 \begin{tabular}{@{}ll@{}}
@@ -64,50 +65,60 @@ Software & last official release \name{OxygenOS} 11.1.2.2 (Android 11, Nov 2021)
 \end{tabular}
 \end{center}
 
-The phone's memory is LPDDR4X (Low-Power Double Data Rate 4X), the kind of RAM phones use because it draws little power. Its storage is UFS 2.1 (Universal Flash Storage), the flash memory built into the phone, which reads and writes like a small SSD. \here[2×2 is Wi-Fi only] The 2$\times$2 of its Wi-Fi means two antennas in the phone talking to two in the router: they carry two streams of data at once over the one Wi-Fi link, and so double the speed of one stream.
+The phone's memory is LPDDR4X (Low-Power Double Data Rate 4X), the kind of RAM phones use because it draws little power. Its storage is UFS 2.1 (Universal Flash Storage), the flash memory built into the phone, which reads and writes like a small SSD.  The 2$\times$2 of its Wi-Fi means two antennas in the phone talking to two in the router: they carry two streams of data at once over the one Wi-Fi link, and so double the speed of one stream.
 
-\here[Google speaker] Bluetooth lets the server play music at home through the Google speaker, which pairs with the phone as an ordinary Bluetooth speaker. The JBL I switch on at its button when I am home.
+ Bluetooth lets the server play music at home through the Google speaker, which pairs with the phone as an ordinary Bluetooth speaker. The JBL I switch on at its button when I am home.
 
-A \name{Raspberry Pi 4} is the usual small home server. \here[launch date] The model with the phone's 8 GB of memory launched on 28 May 2020 at \$75, and on 1 Apr 2026 its price rose by \$50 because memory chips became more expensive~\cite{rpi}, so the board alone now costs over \$120, before a power supply, a case, and storage. The phone is free, since it was in a drawer, and it brings more memory, storage that is much faster than a Pi's SD card, a battery, and a case. The Pi is the better choice when a project needs its GPIO pins, the header for wiring sensors and switches, or its built-in Ethernet port.
+A \name{Raspberry Pi 4} is the usual small home server.  The model with the phone's 8 GB of memory launched on 28 May 2020 at \$75, and on 1 Apr 2026 its price rose by \$50 because memory chips became more expensive~\cite{rpi}, so the board alone now costs over \$120, before a power supply, a case, and storage. The phone is free, since it was in a drawer, and it brings more memory, storage that is much faster than a Pi's SD card, a battery, and a case. The Pi is the better choice when a project needs its GPIO pins, the header for wiring sensors and switches, or its built-in Ethernet port.
 
-\here[drive, not FPGA] The phone's USB-C port can also be a host, the role a computer plays: the phone powers what is plugged into it and drives it. Android itself drives USB drives, keyboards, Ethernet adapters, and sound cards. With an SSD on the port, the phone becomes a small private cloud, a file server for my machines, as the last section explains. A device on the port draws its power from the phone's battery, so a server with one plugged in needs a powered USB-C hub that charges the phone at the same time.
+ The phone's USB-C port can also be a host, the role a computer plays: the phone powers what is plugged into it and drives it. Android itself drives USB drives, keyboards, Ethernet adapters, and sound cards. With an SSD on the port, the phone becomes a small private cloud, a file server for my machines, as the last section explains. A device on the port draws its power from the phone's battery, so a server with one plugged in needs a powered USB-C hub that charges the phone at the same time.
 
 \section*{The setup}
 
-\here[order: Termux, Debian, proot] Android is itself built on Linux. At the bottom, the Linux kernel drives the hardware and runs every program. Android's system and its apps are programs on top of that kernel. \name{Termux}~\cite{termux} is one of those apps: a terminal for Android, with its own shell and its own packages, which \texttt{pkg} installs and which are rebuilt for Android. Its \texttt{bash}, \texttt{git}, and \texttt{sshd}, the SSH server, already run on the phone, directly on Android, like any other app.
+ Android is itself built on Linux. At the bottom, the Linux kernel drives the hardware and runs every program. Android's system and its apps are programs on top of that kernel. \name{Termux}~\cite{termux} is one of those apps: a terminal for Android, with its own shell and its own packages, which \texttt{pkg} installs and which are rebuilt for Android. Its \texttt{bash}, \texttt{git}, and \texttt{sshd}, the SSH server, already run on the phone, directly on Android, like any other app.
 
 Many server programs are missing from \name{Termux}'s packages. Debian, a Linux distribution, carries the full set, built for 64-bit Arm. A Debian program, such as \texttt{apt}, which installs Debian's software, needs two things to run: a Linux kernel, which the phone already has, and Debian's own files, its libraries, settings, and other programs, which the phone lacks. So Debian can run beside Android, on the same kernel, once its files are on the phone and its programs can find them.
 
-\here[proot defined first] A Debian program looks for its files at fixed paths, such as \texttt{/etc/apt}, but on the phone they sit in a folder inside \name{Termux}'s own, at \texttt{\ldots/debian/etc/apt}. Linux solves this with \name{chroot} (change root), a command that starts a program with a chosen folder as its \texttt{/}, so \texttt{/etc/apt} means the Debian folder's \texttt{etc/apt}. Android lets only the root user, the administrator account, run \name{chroot}, and a normal phone keeps root locked away. \name{proot} imitates \name{chroot} without root: it sits between each Debian program and the kernel, and rewrites every path the program asks for before passing the request on. That rewriting happens on every request, which makes programs under \name{proot} slower than under a real \name{chroot}. \name{proot} serves only the Debian programs, while \name{Termux}'s own programs keep running directly, as they do today.
+ A Debian program looks for its files at fixed paths, such as \texttt{/etc/apt}, but on the phone they sit in a folder inside \name{Termux}'s own, at \texttt{\ldots/debian/etc/apt}. Linux solves this with \name{chroot} (change root), a command that starts a program with a chosen folder as its \texttt{/}, so \texttt{/etc/apt} means the Debian folder's \texttt{etc/apt}. Android lets only the root user, the administrator account, run \name{chroot}, and a normal phone keeps root locked away. \name{proot} imitates \name{chroot} without root: it sits between each Debian program and the kernel, and rewrites every path the program asks for before passing the request on. That rewriting happens on every request, which makes programs under \name{proot} slower than under a real \name{chroot}. \name{proot} serves only the Debian programs, while \name{Termux}'s own programs keep running directly, as they do today.
 
-\here[proot-distro] \name{proot-distro}, a \name{Termux} tool, puts the two pieces together~\cite{proot}. It downloads every file of a distribution except the kernel into a folder inside \name{Termux}'s private folder, the one Android gives every app, and starts the distribution's programs under \name{proot}. Deleting \name{Termux} deletes that folder, and the distribution with it.
+ \name{proot-distro}, a \name{Termux} tool, puts the two pieces together~\cite{proot}. It downloads every file of a distribution except the kernel into a folder inside \name{Termux}'s private folder, the one Android gives every app, and starts the distribution's programs under \name{proot}. Deleting \name{Termux} deletes that folder, and the distribution with it.
 
-\here[Ubuntu and Debian] \name{proot-distro} offers Debian, Ubuntu, Arch, Alpine, and Fedora, and choosing Debian is a decision. Ubuntu is built from Debian: it takes Debian's packages, rebuilds them on its own release schedule, and adds its own, so at the command line the two work alike, with the same \texttt{apt}. The desktop, with its windows and menus, is one more set of packages on top, and \name{proot-distro} installs only the command line of either system. At that level Debian matches the Ubuntu on \name{AlfSPARK}, and \name{Pi-hole} and \name{Home Assistant} both list Debian as a supported system.
+ \name{proot-distro} offers Debian, Ubuntu, Arch, Alpine, and Fedora, and choosing Debian is a decision. Ubuntu is built from Debian: it takes Debian's packages, rebuilds them on its own release schedule, and adds its own, so at the command line the two work alike, with the same \texttt{apt}. The desktop, with its windows and menus, is one more set of packages on top, and \name{proot-distro} installs only the command line of either system. At that level Debian matches the Ubuntu on \name{AlfSPARK}, and \name{Pi-hole} and \name{Home Assistant} both list Debian as a supported system.
 
 \begin{center}
 \begin{tikzpicture}[font=\small,
-  layer/.style={draw=black!50, rounded corners=2pt, minimum height=0.8cm, align=center, fill=blue!6},
-  deb/.style={layer, fill=green!15}]
-  \node[layer, minimum width=11cm] (hw) {phone hardware: \name{Snapdragon 845}, memory, storage, Wi-Fi};
-  \node[layer, minimum width=11cm, above=1pt of hw] (k) {Linux kernel};
-  \node[layer, minimum width=11cm, above=1pt of k] (os) {Android};
-  \node[layer, minimum width=4cm, above=1pt of os.north west, anchor=south west] (and) {other apps};
-  \node[layer, minimum width=6.9cm, above=1pt of os.north east, anchor=south east] (tx) {\name{Termux} app, with \name{proot}};
-  \node[deb, minimum width=6.9cm, above=1pt of tx] (d) {Debian programs: \texttt{apt}, a web server, \name{Pi-hole}};
+  layer/.style={draw=blue, very thick, rounded corners=3pt, minimum height=0.8cm, align=center},
+  logo/.style={fill=white, inner sep=1pt}]
+  \node[layer, draw=grey!80!black, minimum width=11cm] (hw) {phone hardware: \name{Snapdragon 845}, memory, storage, Wi-Fi};
+  \node[layer, draw=orange, minimum width=11cm, above=5pt of hw] (k) {Linux kernel};
+  \node[layer, draw=green, minimum width=11cm, above=5pt of k] (os) {Android};
+  \node[layer, draw=lavender, minimum width=3cm, above=5pt of os.north west, anchor=south west] (and) {other apps};
+  \node[layer, draw=aqua, minimum width=7.8cm, above=5pt of os.north east, anchor=south east] (tx) {\name{Termux} app, with \name{proot}};
+  \node[layer, draw=red, minimum width=7.8cm, above=5pt of tx.north east, anchor=south east] (d) {Debian programs: \texttt{apt}, a web server, \name{Pi-hole}};
   \node[font=\scriptsize, right=2pt of tx, align=left] {rewrites\\every path};
+  % Each layer's logo on its bottom border, at the right, in the layer's colour
+  \node[logo] at ([xshift=-4mm]hw.south east) {\textcolor{grey!80!black}{\scriptsize\simpleicon{qualcomm}}};
+  \node[logo] at ([xshift=-4mm]k.south east) {\textcolor{orange}{\scriptsize\makebox[0.7\width]{\raisebox{1pt}[\height][\depth]{\simpleicon{linux}}}}};  % Tux is narrower than its glyph's box
+  \node[logo] at ([xshift=-4mm]os.south east) {\textcolor{green}{\scriptsize\raisebox{1pt}[\height][\depth]{\simpleicon{android}}}};
+  \node[logo] at ([xshift=-4mm]tx.south east) {\textcolor{aqua}{\scriptsize\svglogo{termux}}};
+  \node[logo] at ([xshift=-4mm]d.south east) {\textcolor{red}{\scriptsize\simpleicon{debian}}};
 \end{tikzpicture}
 \end{center}
 
-\here[diagram caption] The diagram puts \name{Termux} on Android because Android decides what an app may do, \name{Termux} included. \name{proot} still passes each Debian program's requests to the kernel itself.
+ The diagram puts \name{Termux} on Android because Android decides what an app may do, \name{Termux} included. \name{proot} still passes each Debian program's requests to the kernel itself.
 
-\here[root: the second way] With root, Debian runs under a real \name{chroot} instead, still on Android, at full speed. Rooting a phone gives its apps the right to act as root. \name{Magisk} is the usual tool for it: it patches the boot image, the part of the phone's storage that starts the kernel, so that root goes only to the apps I allow, and it loads add-ons, called modules~\cite{magisk}. Rooting gives three advantages. A real \name{chroot} runs Debian programs at full speed, talking to the kernel directly. A root-only module, \name{ACC}, can hold the battery's charge below full, as the box below explains. And services can use the standard ports below 1024, which Linux reserves for root: a web server on 80 or 443, and \name{Pi-hole} on 53, the port every device asks for DNS. \name{Pi-hole} is one of the services I want, so I will root the phone.
+ With root, Debian runs under a real \name{chroot} instead, still on Android, at full speed. Rooting a phone gives its apps the right to act as root. \name{Magisk} is the usual tool for it: it patches the boot image, the part of the phone's storage that starts the kernel, so that root goes only to the apps I allow, and it loads add-ons, called modules~\cite{magisk}. Rooting gives three advantages. A real \name{chroot} runs Debian programs at full speed, talking to the kernel directly. A root-only module, \name{ACC}, can hold the battery's charge below full, as the box below explains. And services can use the standard ports below 1024, which Linux reserves for root: a web server on 80 or 443, and \name{Pi-hole} on 53, the port every device asks for DNS. \name{Pi-hole} is one of the services I want, so I will root the phone.
 
-\here[why it erases] Rooting needs an unlocked bootloader, the program that starts the phone, and unlocking it erases the phone. Android requires the erase: an unlocked bootloader starts whatever system it is given, so a thief who unlocked a stolen phone could start a modified system and read the owner's data, and the phone deletes that data first~\cite{aosp}. The phone held only a few old apps and photos, which the next steps check before the erase. The erase also clears today's setup, which \texttt{install.sh} restores.
+ Rooting needs an unlocked bootloader, the program that starts the phone, and unlocking it erases the phone. Android requires the erase: an unlocked bootloader starts whatever system it is given, so a thief who unlocked a stolen phone could start a modified system and read the owner's data, and the phone deletes that data first~\cite{aosp}. The phone held only a few old apps and photos, which the next steps check before the erase. The erase also clears today's setup, which \texttt{install.sh} restores.
 
-\here[mainline: the term] The kernel under Android is OnePlus's own copy of Linux, version 4.9.227, from the kernel line of Dec 2016, to which OnePlus and Qualcomm added the drivers for this phone's chips. Those drivers live only in that copy. Linux developers call the official Linux, the one Linus Torvalds releases at kernel.org, the mainline: the main line of development, from which every distribution's kernel and every vendor's copy branch off. Volunteers of \name{postmarketOS} have since written open drivers for most of the OnePlus 6 and added them to mainline, so mainline runs on the phone today.
+ The kernel under Android is OnePlus's own copy of Linux, version 4.9.227, from the kernel line of Dec 2016, to which OnePlus and Qualcomm added the drivers for this phone's chips. Those drivers live only in that copy. Linux developers call the official Linux, the one Linus Torvalds releases at kernel.org, the mainline: the main line of development, from which every distribution's kernel and every vendor's copy branch off. Volunteers of \name{postmarketOS} have since written open drivers for most of the OnePlus 6 and added them to mainline, so mainline runs on the phone today.
 
-\here[postmarketOS: left out] \name{postmarketOS}, a Linux distribution for phones built on mainline, replaces Android altogether, and the OnePlus 6 (codename \name{enchilada}) runs it well~\cite{pmos}. It brings a current kernel, with its security fixes, and a phone with no Android underneath. It takes away every Android app with it, such as the \name{Play Store}, LastPass, and \name{Tailscale}'s Android app, which \name{Tailscale} for Linux would replace, and mainline lacks the USB host mode, as the next section shows. Staying on Android is a decision: a phone that only serves gains little from a new operating system, and it would lose the port for the SSD.
+ \name{postmarketOS}, a Linux distribution for phones built on mainline, replaces Android altogether, and the OnePlus 6 (codename \name{enchilada}) runs it well~\cite{pmos}. It brings a current kernel, with its security fixes, and a phone with no Android underneath. It takes away every Android app with it, such as the \name{Play Store}, LastPass, and \name{Tailscale}'s Android app, which \name{Tailscale} for Linux would replace, and mainline lacks the USB host mode, as the next section shows. Staying on Android is a decision: a phone that only serves gains little from a new operating system, and it would lose the port for the SSD.
 
+% Review: “We can add Android, Linux, and whatnot to the stack, bottom labels.” “Debian and Termux do
+% not align. Shrink other apps.” “Termux has no icon.” “Add some space, so those icons don't
+% overlap.” “Not sure why there's filling. Use our style.” “Why everything the same colour?” “Linux has too much white space on
+% the side.” “Linux sits too low.” “Same Android.”
 \begin{insight}{The battery}
 \name{OxygenOS} 11 charges the battery to 100\% and holds it there while the phone stays plugged in, and a battery kept full for months wears out faster and can swell. Stopping the charge earlier needs root. \name{ACC} (Advanced Charging Controller), a \name{Magisk} module, stops charging at a level I choose, such as 80\%, and starts again below a lower one. It can also cap the charging current, and on kernels that support it, it runs the phone straight from the charger and leaves the battery alone~\cite{acc}. Whether these hold depends on the kernel, so the next steps check them. A server wants slow charging, because it keeps the phone cool, and the generic USB-A to C cable already charges slowly; the Warp cable is for a quick top-up.
 \end{insight}
@@ -131,7 +142,7 @@ This table names the chips around the processor and what each one does. The phon
 
 \begin{center}\small
 
-\here[ragged right]
+
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{6.2cm}@{}}
 \toprule
 Part & Chip & What it does \\
@@ -169,7 +180,7 @@ Success
 
 Android warned that the app was built for an older version of Android. \name{Termux} declares an older version on purpose, because that is what lets it run the programs it downloads, and newer versions block that for apps declaring a recent one. Its add-ons, such as \name{Termux:Boot}, work only with a \name{Termux} from the same source, so they come from GitHub too. Android lets two apps share their files only when the same key signed both, and each source signs its builds with its own key. The GitHub builds of the whole \name{Termux} project carry one shared CI debug key, and it is the key my \name{Termux} and \name{Termux:Boot} have; the same add-on from F-Droid is signed elsewhere and Android refuses it for the mismatch.
 
-\here[why an add-on] \name{Termux:API}~\cite{tapi} is the add-on that lets a program inside \name{Termux} ask Android for what Android gives out only through its app interfaces: the battery charge, the sensors, the camera, a raw USB device~\cite{tusb}. It is a separate app because Android grants permissions per app, such as the camera, location, and SMS, and keeping them in the add-on leaves \name{Termux} itself without any of them until I install it. The Mac installs it the same way as the app itself, and the phone asks for the install by hand:
+ \name{Termux:API}~\cite{tapi} is the add-on that lets a program inside \name{Termux} ask Android for what Android gives out only through its app interfaces: the battery charge, the sensors, the camera, a raw USB device~\cite{tusb}. It is a separate app because Android grants permissions per app, such as the camera, location, and SMS, and keeping them in the add-on leaves \name{Termux} itself without any of them until I install it. The Mac installs it the same way as the app itself, and the phone asks for the install by hand:
 
 \begin{pane}
 $ adb install termux-api-app_v0.53.0+github.debug.apk # Termux:API, from GitHub
@@ -182,7 +193,7 @@ Success
 
 The first line is \name{OxygenOS} checking an app that did not arrive through the \name{Play Store}: it installs such an app only once I tap to approve it on the phone. Its answer to a battery question, \texttt{termux-battery-status}, prints the charge as JSON, and my \name{tmux} status bar below draws it as a bar of squares.
 
-To watch the whole phone, \name{htop} runs through \name{adb} rather than inside \name{Termux}. \name{Termux} is an Android app, also when I reach it over SSH, and Android hides two things from apps: \begin{enumerate*}[label=(\arabic*)] \item the other apps' processes, so \name{htop} lists only \name{Termux}'s own, and \item \texttt{/proc/stat}, the kernel's file of per-core time counters from which \name{htop} works out the load, which answers \texttt{Permission denied}, so \name{htop} draws every core as offline.\end{enumerate*} \here[why not Termux:API] \name{Termux:API} cannot fill the gap, because it passes on only what Android offers apps, and Android offers no app the other apps' processes or the per-core counters. Root lifts both limits. \name{adb}'s shell sees all the processes and may read the counters, and it may run programs from \texttt{/data/local/tmp}. That folder belongs to Android and lies outside the XDG base directories of my lesson on where an app keeps its files, which sit in a user's home: Android sets it aside as the one place where the \name{adb} shell may write files and run them. The project's repository, \name{alfdroid}, holds this as its first tool, a script called \texttt{htop}. On its first run it copies \name{Termux}'s \name{htop} and the three libraries it needs to \texttt{/data/local/tmp/htop}, and from then on it starts \name{htop} there through \name{adb}. That folder is also \name{htop}'s home, where it saves its settings, because the shell user's own home is \texttt{/}, which it may not write.
+To watch the whole phone, \name{htop} runs through \name{adb} rather than inside \name{Termux}. \name{Termux} is an Android app, also when I reach it over SSH, and Android hides two things from apps: \begin{enumerate*}[label=(\arabic*)] \item the other apps' processes, so \name{htop} lists only \name{Termux}'s own, and \item \texttt{/proc/stat}, the kernel's file of per-core time counters from which \name{htop} works out the load, which answers \texttt{Permission denied}, so \name{htop} draws every core as offline.\end{enumerate*}  \name{Termux:API} cannot fill the gap, because it passes on only what Android offers apps, and Android offers no app the other apps' processes or the per-core counters. Root lifts both limits. \name{adb}'s shell sees all the processes and may read the counters, and it may run programs from \texttt{/data/local/tmp}. That folder belongs to Android and lies outside the XDG base directories of my lesson on where an app keeps its files, which sit in a user's home: Android sets it aside as the one place where the \name{adb} shell may write files and run them. The project's repository, \name{alfdroid}, holds this as its first tool, a script called \texttt{htop}. On its first run it copies \name{Termux}'s \name{htop} and the three libraries it needs to \texttt{/data/local/tmp/htop}, and from then on it starts \name{htop} there through \name{adb}. That folder is also \name{htop}'s home, where it saves its settings, because the shell user's own home is \texttt{/}, which it may not write.
 
 \begin{pane}
 $ ./htop # in the alfdroid repository: all cores, all processes; q quits
@@ -215,7 +226,7 @@ The Spark's \name{sshd} must see a user name it accepts, and the phone's key sit
 
 \section*{Reaching it from anywhere}
 
-\here[rename dropped] The \name{Tailscale} app joined the phone to the tailnet as \texttt{alfdroid}. \name{Termux}'s SSH server, \name{sshd}, listens on port 8022, because without root it may use only ports above 1024. Two lines in my Mac's SSH settings, \texttt{Host alfdroid} and \texttt{Port 8022}, make \texttt{ssh alfdroid} work like \texttt{ssh alfspark}.
+ The \name{Tailscale} app joined the phone to the tailnet as \texttt{alfdroid}. \name{Termux}'s SSH server, \name{sshd}, listens on port 8022, because without root it may use only ports above 1024. Two lines in my Mac's SSH settings, \texttt{Host alfdroid} and \texttt{Port 8022}, make \texttt{ssh alfdroid} work like \texttt{ssh alfspark}.
 
 After a reboot three things have to come back by themselves.
 \begin{enumerate}[leftmargin=2em,itemsep=1pt]
@@ -233,7 +244,7 @@ $ adb shell dumpsys deviceidle whitelist +com.termux # and Termux
 $ adb shell settings put global auto_time 1 # set the clock from the network
 \end{pane}
 
-\here[still on the Mac] These four settings still run from the Mac. Once the phone is rooted, \texttt{install.sh} can run them on the phone itself through \texttt{su} whenever \texttt{su} works, so a fresh install needs no Mac.
+ These four settings still run from the Mac. Once the phone is rooted, \texttt{install.sh} can run them on the phone itself through \texttt{su} whenever \texttt{su} works, so a fresh install needs no Mac.
 
 The last line came from a commit that \texttt{git lg} on the phone listed as made ‘in the future’. The phone's automatic time was off, and its clock ran half a minute behind the Mac's, so a commit made on the Mac seconds earlier was still ahead of the phone's clock. With network time on, both clocks read the same.
 
@@ -246,25 +257,25 @@ The cable goes into the phone at a slant, with one side deeper than the other, a
 
 \begin{enumerate}[leftmargin=2em,itemsep=1pt]
 \item Look at the USB-C port under the microscope, and replace its board if the tongue or the shell is bent.
-\here[SIM; JBL dropped]
+
 \item Ask T-Mobile what a data-only line with a physical nano-SIM costs per month, so the phone stays online over mobile data in a power cut.
 \item Note the apps still on the phone and check that its photos are backed up.
 \item Unlock the bootloader, which erases the phone, install \name{Magisk}, and add the \name{ACC} module with a charge limit of 80\% and a low charging current. Leave the phone plugged in for a day and check that the charge stays there.
-\here[su in install.sh] \item Move the four settings above into \texttt{install.sh}, run through \texttt{su} when the phone is rooted, then restore the setup: \texttt{./install.sh}, and \name{Termux:Boot} opened once.
+ \item Move the four settings above into \texttt{install.sh}, run through \texttt{su} when the phone is rooted, then restore the setup: \texttt{./install.sh}, and \name{Termux:Boot} opened once.
 \item Run \texttt{proot-distro install debian}, then \texttt{proot-distro login debian}, which opens a Debian shell with \texttt{apt}.
 \end{enumerate}
 
 \section*{What it can run}
 
-The first service is a web server on the tailnet, for a landing page or an API. \name{Home Assistant}, a home-automation hub, can switch the Wi-Fi plugs over the LAN. \name{Pi-hole} or \name{AdGuard Home} answers the network's DNS lookups and blocks the ones that go to ad servers, for every device at once. \name{AlfBOT} can run here too, so it answers even when both Macs sleep. \here[music] And the phone can play music through the Google speaker.
+The first service is a web server on the tailnet, for a landing page or an API. \name{Home Assistant}, a home-automation hub, can switch the Wi-Fi plugs over the LAN. \name{Pi-hole} or \name{AdGuard Home} answers the network's DNS lookups and blocks the ones that go to ad servers, for every device at once. \name{AlfBOT} can run here too, so it answers even when both Macs sleep.  And the phone can play music through the Google speaker.
 
-\here[SSD] With an SSD on the USB-C port, \name{Nextcloud} or a plain file share turns the phone into a NAS (Network-Attached Storage), a file server for my machines. The port is USB 2.0, which moves at most about 40 MB/s, so a portable SSD and a portable hard drive, which manages about 100 MB/s on its own, both run at the port's speed. The SSD wins on power: a hard drive spins a motor, and as it spins up it can draw more current than the phone's port supplies, while an SSD draws little and has no moving parts. Android drives either one the same way, because both present themselves as a USB storage device, a plain disk. A 1 TB SSD, such as the Samsung \name{T7}, holds my 14 GB \texttt{\textasciitilde/NYU} folder many times over.
+ With an SSD on the USB-C port, \name{Nextcloud} or a plain file share turns the phone into a NAS (Network-Attached Storage), a file server for my machines. The port is USB 2.0, which moves at most about 40 MB/s, so a portable SSD and a portable hard drive, which manages about 100 MB/s on its own, both run at the port's speed. The SSD wins on power: a hard drive spins a motor, and as it spins up it can draw more current than the phone's port supplies, while an SSD draws little and has no moving parts. Android drives either one the same way, because both present themselves as a USB storage device, a plain disk. A 1 TB SSD, such as the Samsung \name{T7}, holds my 14 GB \texttt{\textasciitilde/NYU} folder many times over.
 
-\here[which files go there] The SSD can hold the files I open only on the Macs, such as my course folders, while Dropbox keeps the PDFs I read on the Boox and the phone, and the settings both Macs share.
+ The SSD can hold the files I open only on the Macs, such as my course folders, while Dropbox keeps the PDFs I read on the Boox and the phone, and the settings both Macs share.
 
-\here[network share explained] A network share is a folder on the phone that each Mac opens in Finder like a disk, plugged in over the tailnet. It keeps a single copy of each file, on the SSD, so a file I save from a Mac is saved on the phone, and two machines never hold two versions of it to conflict. The Mac then keeps no copy, so the SSD needs a backup of its own, such as a nightly copy to \name{AlfSPARK}, and the files open only while the Mac reaches the phone.
+ A network share is a folder on the phone that each Mac opens in Finder like a disk, plugged in over the tailnet. It keeps a single copy of each file, on the SSD, so a file I save from a Mac is saved on the phone, and two machines never hold two versions of it to conflict. The Mac then keeps no copy, so the SSD needs a backup of its own, such as a nightly copy to \name{AlfSPARK}, and the files open only while the Mac reaches the phone.
 
-\here[sync: conflicts flagged] A sync service of my own, such as \name{Syncthing}, keeps a full copy on every machine instead, so each copy is also a backup, and it copies each change across. Two machines that change the same file before either sees the other's change still produce a conflict, which \name{Syncthing} keeps as a second file whose name holds \texttt{.sync-conflict}~\cite{sync}. A short script can look for those files and warn me as soon as one appears, so each conflict gets settled while it is fresh.
+ A sync service of my own, such as \name{Syncthing}, keeps a full copy on every machine instead, so each copy is also a backup, and it copies each change across. Two machines that change the same file before either sees the other's change still produce a conflict, which \name{Syncthing} keeps as a second file whose name holds \texttt{.sync-conflict}~\cite{sync}. A short script can look for those files and warn me as soon as one appears, so each conflict gets settled while it is fresh.
 
 \begin{thebibliography}{iFixit}
   \bibitem[RPi]{rpi} Raspberry Pi, \textit{A new 3GB Raspberry Pi 4 for \$83.75, and more memory-driven price increases}, 1 Apr 2026. \url{https://www.raspberrypi.com/news/a-new-3gb-raspberry-pi-4-for-83-75-and-more-memory-driven-price-increases/}
