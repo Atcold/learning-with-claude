@@ -1,0 +1,62 @@
+% Brief: the setup of the lesson next to it, as steps for another person's Claude.
+% Compile with:  latexmk -jobname=working-with-claude-brief brief.tex
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{alfdoc}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[colorlinks=true]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\setlength{\emergencystretch}{3em}
+\newcommand{\home}{\textasciitilde}
+
+\title{\emo{file folder}\ Tidying a setup with Claude\\[0.3em]
+  \large A brief for your Claude, from any starting point to one home per project}
+\author{Alf}
+\date{Thu 12 Nov 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.5em}
+
+This brief is for Claude, working with someone whose files and habits make things hard to find. The starting point can be any of the usual ones: everything saved in \name{Downloads/}, a desktop covered in files, one huge folder with no structure, the same project spread across \name{Dropbox}, \name{Google Drive}, and email, notes in several apps or none, or every Claude session started from the home folder, so that all projects share one memory. My lesson \emph{How I work with Claude}~\cite{wwc} describes the setup I ended up with: one home per project, rules in one place, and a notes vault for what spans projects. That lesson is the shape to aim for. This brief is the way to get there, one step at a time, with the owner deciding at every step.
+
+\subsection*{1.\ Look before touching anything}
+
+Find where the person actually keeps things: the folders they save into (often \name{Downloads/}, \name{Desktop/}, and \name{Documents/}), the cloud services they use, and where their notes and repositories live. Survey those places without changing them. Group the files by kind (papers, slides, code, datasets, installers, images, archives), by age, and by size, and find exact duplicates by their checksum. Show the owner a short summary: how many files of each kind and where, the largest ones, the duplicates, and the installers (\texttt{.dmg}, \texttt{.pkg}) that have already done their job.
+
+\subsection*{2.\ Ask what the work is}
+
+Ask the owner what they are working on now (courses, research projects, applications), what they look after over time (teaching, health, finances), and what they keep only as reference. These answers become the folders, so the layout follows their work and the files are sorted into it.
+
+\subsection*{3.\ Propose a layout and wait for an answer}
+
+Propose a small layout following PARA, Tiago Forte's Projects, Areas, Resources, and Archive~\cite{para}: \name{\home/PARA/Projects/<name>/} for work with an end, \name{\home/PARA/Areas/} for what continues, \name{\home/PARA/Resources/} for reference, and \name{\home/PARA/Archive/} for what is finished. Git repositories go in one folder outside any cloud-synced folder, such as \name{\home/Work/GitHub/}, and temporary files go in \name{\home/Work/Scratch/}. Show the layout as a short nested list, and create it only after the owner agrees.
+
+\subsection*{4.\ Move files in small batches}
+
+Move one group at a time, for example all the papers, after showing the owner which file goes where. Write every move to a log, \name{\home/PARA/moves.tsv}, with the old path and the new one, so any batch can be undone. Put duplicates and spent installers in \name{\home/PARA/To delete/}, where the owner empties them after a look. The folder the owner habitually saves into, usually \name{Downloads/}, becomes an inbox: anything new lands there and gets sorted the same way.
+
+\subsection*{5.\ Give each project its own home}
+
+Start each Claude session from the project's folder, so that Claude's memory for that project stays with it, and keep a short \name{note.md} there with the goal, the next action, and a dated log. Write the owner's global rules in \name{\home/.claude/CLAUDE.md} last, once a few weeks of work show how they actually like to work.
+
+\begin{thebibliography}{PARA}
+\bibitem[WwC]{wwc} Alf, \textit{How I work with Claude}.
+  \url{https://github.com/Atcold/learning-with-claude/tree/master/working-with-claude}
+\bibitem[PARA]{para} Tiago Forte, \textit{The PARA method}, Forte Labs.
+  \url{https://fortelabs.com/blog/para/}
+\end{thebibliography}
+
+\revisiontable
+
+\end{document}

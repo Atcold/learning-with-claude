@@ -5,4 +5,4 @@ After a restructure of my notes, projects and Dropbox, Claude and I agreed on ho
 The lesson also covers using Codex with the same instructions, skills, project memories, and shared conversation state; the local XDG installation of codex-ui; and the start of the local-coding fallback.
 
 - `lesson.tex`: the lesson.
-- `brief-for-a-new-setup.md`: the same setup as steps for another person's Claude, starting from any messy setup.
+- `brief.tex`: the same setup as steps for another person's agent, starting from any messy setup; build with `latexmk -jobname=working-with-claude-brief brief.tex`.
