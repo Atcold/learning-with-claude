@@ -40,11 +40,11 @@ This brief is for you, my student, and your AI agent, such as Claude Code or Cod
 % Review: “The project home is where I start my assistant, for memory hygiene.” “That lesson? Which one?”
 % “We already said that.” “Why are we talking about the setup in two different parts in the same
 % paragraph?” “The first paragraph says exactly the same. Why are we repeating ourselves?”
-My lesson \emph{How I work with Claude}~\cite{wwc} describes that setup. Its centre is a knowledge base, a folder of Markdown notes linked to each other, and next to it is a folder for each project, its home, that gathers the project's files from wherever they are stored. The project's home is also where I start the agent, so that each project keeps its own memory, apart from the others. The agent's behaviour comes from rules I wrote down once and keep in a public repository~\cite{dots}.
+My lesson \emph{How I work with Claude}~\cite{wwc} describes that setup. Its centre is a knowledge base of Markdown notes, and next to it each project has a home folder, where I also start the agent, so that each project keeps its own memory. The agent follows rules I keep in a public repository~\cite{dots}.
 
 \subsection*{1.\ Look before touching anything}
 
-The agent finds where you actually keep things: the folders you save into (often \name{Downloads/}, \name{Desktop/}, and \name{Documents/}), the cloud services you use, and where your notes and repositories live. It surveys those places without changing them, groups the files by kind (papers, slides, code, datasets, installers, images, archives), by age, and by size, and finds exact duplicates by their checksum. Then it shows you a short summary: how many files of each kind and where, the largest ones, the duplicates, and the installers (\texttt{.dmg}, \texttt{.pkg}) that have already done their job.
+The agent finds where you actually keep things: the folders you save into, the cloud services you use, and where your notes and repositories live. It surveys those places without changing them, groups the files by kind, age, and size, finds exact duplicates, and shows you a short summary.
 
 \subsection*{2.\ Ask what the work is}
 
@@ -53,7 +53,7 @@ The agent asks what you are working on now (courses, research projects, applicat
 \subsection*{3.\ Start the knowledge base}
 
 Everything starts as a note. The knowledge base, sometimes called a second brain, is one folder of plain Markdown files that you and the agent both read and write. Mine is \name{\home/md-Wiki/}, which I open in \name{Obsidian}, an editor that shows the links between notes, % Review: “Sometimes open in Obsidian or Neovim (with my plugin, same link as Rules).”
-or in \name{Neovim} with my configuration for it~\cite{dots}. The notes are organised following PARA~\cite{para}, Tiago Forte's Projects, Areas, Resources, and Archive: \name{Projects/} holds one note per piece of work with an end, such as a course this semester, \name{Areas/} holds what continues, such as health or finances, \name{Resources/} holds reference, such as people and guides, and \name{Archive/} holds what is finished. A project's note is named after the project, as in \name{Projects/fall26-deep-learning.md}, and holds its goal, its next action, and a dated log of what happened. The agent proposes this layout as a short nested list and creates it only after you agree.
+or in \name{Neovim} with my configuration for it~\cite{dots}. The notes are organised following PARA~\cite{para}, Tiago Forte's Projects, Areas, Resources, and Archive: \name{Projects/} holds one note per piece of work with an end, such as a course this semester, \name{Areas/} holds what continues, such as health or finances, \name{Resources/} holds reference, such as people and guides, and \name{Archive/} holds what is finished. A project's note is named after the project, as in \name{Projects/fall26-deep-learning.md}, and holds its goal, its next action, and a dated log of what happened.
 
 \subsection*{4.\ Give the files the same shape}
 
@@ -84,8 +84,7 @@ Here is one of my projects, the deep learning course I teach this autumn, in bot
 
 % Review: “Links have an underline. Underlines go in the prose, not in the code output.”
 % “local description is wrong.” “Pretend we have a network mounted folder there.”
-The link \name{\lk{note.md}} points to the project's note in the knowledge base, \name{fall26-deep-learning.md}, so the note keeps the project's name and every project folder opens its note the same way. \name{\lk{repo}} points to the course's Git repository, \name{\lk{local}} to this edition's folder in Dropbox, \name{\lk{g-drive}} to the shared Google Drive folder, and \name{\lk{cims}} to the course website's folder on the department's server, mounted over the network, so opening the project's folder shows everything the course uses, wherever it is stored. % Review: “Git repos go… that's for me. They can move anything wherever they want.”
-Links are one way to do this, and you may instead move the files themselves into the project's folder.
+The link \name{\lk{note.md}} points to the project's note in the knowledge base, \name{fall26-deep-learning.md}, so the note keeps the project's name and every project folder opens its note the same way. \name{\lk{repo}} points to the course's Git repository, \name{\lk{local}} to this edition's folder in Dropbox, \name{\lk{g-drive}} to the shared Google Drive folder, and \name{\lk{cims}} to the course website's folder on the department's server, mounted over the network.
 
 \subsection*{5.\ Move or link}
 
@@ -96,8 +95,8 @@ Files with no structure are moved into the new folders, one group at a time, wit
 
 \subsection*{6.\ Work from the project's home, with written rules}
 
-Start each agent session from the project's folder, so that the agent's memory for that project stays with it, and have the agent keep the project's note up to date: what it did, what is next, and what is waiting for you.
-The agent's behaviour comes from your rules, written in plain files the agent loads at the start of every session: for Claude Code \name{\home/.claude\slash CLAUDE.md} and the files in \name{\home/.claude\slash rules/}, for Codex \name{\home/.codex\slash AGENTS.md}. Mine are public~\cite{dots}, one file per topic: how to talk to me, how to write, how to use Git, where files go, how to work in the terminal, and how to write LaTeX. Start from them, read each one, and keep only what fits. Then add a rule each time you correct the agent, so the correction holds in every later session.
+The agent keeps the project's note up to date: what it did, what is next, and what is waiting for you.
+The agent's behaviour comes from your rules, written in plain files the agent loads at the start of every session: for Claude Code \name{\home/.claude\slash CLAUDE.md} and the files in \name{\home/.claude\slash rules/}, for Codex \name{\home/.codex\slash AGENTS.md}. Mine are public~\cite{dots}, one file per topic: how to talk to me, how to write, how to use Git, where files go, how to work in the terminal, and how to write \LaTeX. Start from them, read each one, and keep only what fits. Then add a rule each time you correct the agent, so the correction holds in every later session.
 
 \begin{thebibliography}{PARA}
 \bibitem[WwC]{wwc} Alf, \textit{How I work with Claude}.
