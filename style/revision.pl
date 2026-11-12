@@ -2,13 +2,13 @@
 #   do '../style/revision.pl';
 # and any other document's with
 #   do "$ENV{HOME}/Library/texmf/tex/latex/alfdoc/revision.pl";
-# after setting $out_dir and $jobname. It writes <out_dir>/<jobname>.rev for the main document, from
-# every commit that touched the folder. Another document in the same folder, X.tex, is built with
-#   latexmk -jobname=<folder>-X X.tex
-# and gets <folder>-X.rev from the commits that touched X.tex alone, so its history starts where
-# it does. Each .rev holds the revision number, the date and short hash of the last commit, and
-# one row per commit, each hash with its GitHub link. Uncommitted changes make the next revision,
-# a draft dated today on top of that commit.
+# (or the copy a public repo ships next to its alfdoc.sty) after setting $out_dir.
+# With $jobname set, as in a lesson, the main document's <jobname>.rev comes from every commit that
+# touched the folder, and another document X.tex there, built with -jobname=<folder>-X, gets
+# <folder>-X.rev from the commits that touched X.tex alone. Without $jobname, as in a folder of
+# reports, every document X.tex gets X.rev from its own commits. Each .rev holds the revision
+# number, the date and short hash of the last commit, and one row per commit, each hash with its
+# GitHub link. Uncommitted changes make the next revision, a draft dated today on top of it.
 use Cwd ();
 
 my $folder = (split m{/}, Cwd::getcwd())[-1];
@@ -60,7 +60,8 @@ sub alfdoc_rev {
     my ($h, $d, $s) = split /\|/, $_, 3;
     # Review: “It's useless having working-with-claude: in the subject. I already commit one
     # lesson at a time, so it's just wasting space.”
-    $s =~ s/^\Q$folder\E: //;  # the table is this folder's already
+    $s =~ s/^\Q$folder\E: //i;  # the table is this folder's already
+    $s =~ s/^\Q$name\E: //i;    # or this document's
     $s =~ s/([\\{}])/\\char`\\$1/g;  # backslash and braces first, as characters
     $s =~ s/([&%\$#_])/\\$1/g;
     $s =~ s/~/\\textasciitilde{}/g;
@@ -73,15 +74,19 @@ sub alfdoc_rev {
   close $fh;
 }
 
-# The main document: the whole folder
-my $main = $jobname || ($default_files[0] // '') =~ s/\.tex$//r;
-alfdoc_rev($main, '.') if $main ne '';
-# Every other document in the folder: its own file
-my %is_main = map { $_ => 1 } @default_files;
+# Every document in the folder: a file whose source starts a LaTeX document
+my @docs;
 for my $tex (glob '*.tex') {
-  next if $is_main{$tex};
   my $source = do { local $/; open my $in, '<', $tex or next; <$in> };  # $/ local to this read
-  next unless $source =~ /^\\documentclass/m;
-  alfdoc_rev("$folder-" . ($tex =~ s/\.tex$//r), $tex);
+  push @docs, $tex if $source =~ /^\\documentclass/m;
+}
+if ($jobname) {
+  # A lesson: the main document has the whole folder, every other one its own file
+  my %is_main = map { $_ => 1 } @default_files;
+  alfdoc_rev($jobname, '.');
+  alfdoc_rev("$folder-" . ($_ =~ s/\.tex$//r), $_) for grep { !$is_main{$_} } @docs;
+} else {
+  # A folder of reports: each its own file
+  alfdoc_rev($_ =~ s/\.tex$//r, $_) for @docs;
 }
 1;
