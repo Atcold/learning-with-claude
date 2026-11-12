@@ -44,8 +44,8 @@
 \RequirePackage{booktabs}
 \RequirePackage{array}
 \newcommand{\alfdoc@revision}[4]{\gdef\alfdoc@revnum{#1}%
-  \gdef\revisionline{Revision #1\ifnum#4=1\ draft\fi\ \textperiodcentered\ #2\ \textperiodcentered\ %
-    \ifnum#4=1 after \fi\texttt{#3}}}
+  \gdef\revisionline{Revision #1\ifnum#4=1\ draft\fi\ \textperiodcentered\ #2%
+    \if\relax\detokenize{#3}\relax\else\ \textperiodcentered\ \ifnum#4=1 after \fi\texttt{#3}\fi}}
 \newcommand{\revisionline}{}
 \newcommand{\alfdoc@rows}{}
 % Review: “Do we want to repeat all identical values? Maybe they can also go 25% grey.”
@@ -81,7 +81,7 @@
   \begin{list}{\textbf{\color{red!85!black}\arabic{enumi}}}{\usecounter{enumi}%
     \setlength{\leftmargin}{1.5em}\setlength{\itemsep}{0pt}\setlength{\topsep}{0pt}}}
   {\end{list}\smallskip
-  Earlier revisions are in the project note's log and in \texttt{git log} of this lesson's folder.
+  Earlier revisions are in the table at the end, and each round's details in the project note's log.
   \end{alfdoc@changesbox}\fi}
 
 % Diff marks: + added, ± edited, − removed, in the left margin level with the line, each with an
