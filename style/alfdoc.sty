@@ -40,6 +40,15 @@
   \else\ifdim\lastskip>\z@\let\here@next\ignorespaces\else\let\here@next\xspace\fi\fi
   \here@hand{#1}\ifreview\protected@write\@auxout{}{\string\alfdoc@change{\detokenize{#2}}}\fi
   \here@next}
+% A long caption is typeset twice, once to measure it: the hands it holds count only once
+\newcounter{alfdoc@heresaved}
+\AtBeginDocument{\@ifundefined{@makecaption}{}{%
+  \long\def\@makecaption#1#2{\vskip\abovecaptionskip
+    \setcounter{alfdoc@heresaved}{\value{here}}%
+    \sbox\@tempboxa{#1: #2}%
+    \ifdim\wd\@tempboxa>\hsize \setcounter{here}{\value{alfdoc@heresaved}}#1: #2\par
+    \else\global\@minipagefalse\hb@xt@\hsize{\hfil\box\@tempboxa\hfil}\fi
+    \vskip\belowcaptionskip}}}
 % The changes of this revision, read back from the .aux file on the next run
 \newcommand{\alfdoc@changelist}{}
 \newcommand{\alfdoc@change}[1]{\ifalfdoc@collect\g@addto@macro\alfdoc@changelist{\item #1}\fi}
