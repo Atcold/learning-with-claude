@@ -21,11 +21,9 @@
 \newcommand{\home}{\textasciitilde}
 \renewcommand{\slash}{/\allowbreak}  % paths break at their slashes
 
-% Review: “Not just Claude (any agent work, but yes, Claude is my default agent).”
 \title{\emo{file folder}\ Tidying a setup with an agent\\[0.3em]
   \large A brief for your agent, from any starting point to one home per project}
-% Review: “Let's keep the written by X for Y, where Y is my student.”
-\author{\here[for whom]Brief for my student, written by Claude}
+\author{Brief for my student, written by Claude}
 \date{Thu 12 Nov 2026}
 
 \begin{document}
@@ -33,17 +31,20 @@
 \vspace{-1.5em}
 
 \begin{changes}
-  \item It says who wrote it and for whom.
-  \item The brief is for any agent, and Claude is mine.
-  \item Paths break at their slashes.
-  \item What a project folder holds: its note and links to its files.
-  \item \name{To-delete/} is one word.
-  \item The inbox is whatever folder the owner saves into.
-  \item The knowledge base, and links that gather scattered places.
+  \item The knowledge base and my public rules, from the start.
+  \item Notes come first, in a knowledge base of Markdown files.
+  \item The notes and the files share one shape.
+  \item One of my projects, drawn in both places.
+  \item \name{note.md} is a link to a note with the project's name.
+  \item \name{Work/} or \name{School/}.
+  \item My rules, which are public, as a starting point.
 \end{changes}
 
-% Review: “Not just Claude (any agent work, but yes, Claude is my default agent).”
-\here[any agent]This brief is for an AI agent, such as Claude Code or Codex, working with someone whose files and habits make things hard to find. Claude is my default agent. The starting point can be any of the usual ones: everything saved in \name{Downloads/}, a desktop covered in files, one huge folder with no structure, the same project spread across \name{Dropbox}, \name{Google Drive}, and email, notes in several apps or none, or every agent session started from the home folder, so that all projects share one memory. My lesson \emph{How I work with Claude}~\cite{wwc} describes the setup I ended up with: one home per project, rules in one place, and a notes vault for what spans projects. That lesson is the shape to aim for. This brief is the way to get there, one step at a time, with the owner deciding at every step.
+This brief is for an AI agent, such as Claude Code or Codex, working with someone whose files and habits make things hard to find. Claude is my default agent. The starting point can be any of the usual ones: everything saved in \name{Downloads/}, a desktop covered in files, one huge folder with no structure, the same project spread across \name{Dropbox}, \name{Google Drive}, and email, notes in several apps or none, or every agent session started from the home folder, so that all projects share one memory.
+
+% Review: “You mention note but not the knowledge base. The whole second brain with Markdown files
+% is of paramount importance.” “It doesn't even mention my rules, which are public.”
+\here[base and rules]My lesson \emph{How I work with Claude}~\cite{wwc} describes the setup I ended up with. Its centre is a knowledge base, a folder of Markdown notes linked to each other, and next to it is a folder for each project that gathers the project's files from wherever they are stored. The agent's behaviour comes from rules I wrote down once and keep in a public repository~\cite{rules}. That lesson is the shape to aim for. This brief is the way to get there, one step at a time, with the owner deciding at every step.
 
 \subsection*{1.\ Look before touching anything}
 
@@ -53,28 +54,67 @@ Find where the person actually keeps things: the folders they save into (often \
 
 Ask the owner what they are working on now (courses, research projects, applications), what they look after over time (teaching, health, finances), and what they keep only as reference. These answers become the folders, so the layout follows their work and the files are sorted into it.
 
-\subsection*{3.\ Propose a layout and wait for an answer}
+\subsection*{3.\ Start the knowledge base}
 
-% Review: “Sec 3 has bad spacing (needs breakable file paths).”
-\here[breakable paths]Propose a small layout following PARA~\cite{para}, Tiago Forte's Projects, Areas, Resources, and Archive: \name{\home/PARA\slash Projects\slash <name>/} for work with an end, \name{\home/PARA\slash Areas/} for what continues, \name{\home/PARA\slash Resources/} for reference, and \name{\home/PARA\slash Archive/} for what is finished. Git repositories go in one folder outside any cloud-synced folder, such as \name{\home/Work\slash GitHub/}, and temporary files go in \name{\home/Work\slash Scratch/}. Show the layout as a short nested list, and create it only after the owner agrees.
+% Review: “The whole second brain with Markdown files is of paramount importance.”
+\here[notes first]Everything starts as a note. The knowledge base, sometimes called a second brain, is one folder of plain Markdown files that the owner and the agent both read and write. Mine is \name{\home/md-Wiki/}, which I open in \name{Obsidian}, an editor that shows the links between notes. The notes are organised following PARA~\cite{para}, Tiago Forte's Projects, Areas, Resources, and Archive: \name{Projects/} holds one note per piece of work with an end, such as a course this semester, \name{Areas/} holds what continues, such as health or finances, \name{Resources/} holds reference, such as people and guides, and \name{Archive/} holds what is finished. A project's note is named after the project, as in \name{Projects/fall26-deep-learning.md}, and holds its goal, its next action, and a dated log of what happened. Propose this layout as a short nested list, and create it only after the owner agrees.
 
-% Review: “I'm not sure it explains what Projects contains.”
-% Review: “There is no mention of md-Wiki nor the file tree of links. That's how I go around having
-% things that were and are scattered in multiple locations under the same header.”
-\here[a project's folder]A project's files often live in several places at once: a repository, a data folder, a shared cloud folder, and a note. Each folder in \name{Projects/} gathers them under one name as a folder of links. In mine, \name{repo} links to the repository in \name{\home/Work\slash GitHub/}, \name{local} to the data folder, \name{g-drive} to the shared Google Drive folder, and \name{note.md} to the project's note, so opening the project's folder shows everything it uses, wherever it is stored. Links are one way to do this, and the owner may instead move the files themselves into the project's folder.
+\subsection*{4.\ Give the files the same shape}
 
-\subsection*{4.\ Move files in small batches}
+% Review: “The notes org and file system mirror each other. The second, for when we have assets.”
+\here[one shape]The file system mirrors the knowledge base. \name{\home/PARA/} has the same four folders, and a project gets a folder in \name{\home/PARA/Projects/}, with the same name as its note, once it has files of its own: code, data, slides, or recordings. A project's files often live in several places at once, so its folder gathers them under one name as a folder of links. Here is one of my projects, the deep learning course I teach this autumn, in both places:
 
-% Review: “No spaces in To delete. Also, usually Downloads is not what we opened with.”
-Move one group at a time, for example all the papers, after showing the owner which file goes where. Write every move to a log, \name{\home/PARA\slash moves.tsv}, with the old path and the new one, so any batch can be undone. Put duplicates and spent installers in \here[no space]\name{\home/PARA\slash To-delete/}, where the owner empties them after a look. \here[the owner's folder]The folder the owner habitually saves into becomes an inbox: anything new lands there and gets sorted the same way.
+% Review: “It would help so much to have a small example of my own project. A small TikZ diagram
+% would help, to see both systems side by side.”
+\here[an example]\begin{center}
+\begin{tikzpicture}[font=\small, every node/.style={anchor=west, inner sep=1pt}, y=0.52cm]
+  % the knowledge base
+  \node at (0, 0) {\textbf{knowledge base}};
+  \node at (0, -1) {\name{\home/md-Wiki/}};
+  \node at (0.4, -2) {\name{Projects/}};
+  \node (vnote) at (0.8, -4) {\name{fall26-deep-learning.md}};
+  \node at (0.4, -8) {\name{Areas/}, \name{Resources/}, \name{Archive/}};
+  % the files
+  \node at (6.6, 0) {\textbf{files}};
+  \node at (6.6, -1) {\name{\home/PARA/}};
+  \node at (7.0, -2) {\name{Projects/}};
+  \node at (7.4, -3) {\name{fall26-deep-learning/}};
+  \node (note) at (7.8, -4) {\name{\lk{note.md}}};
+  \node (repo) at (7.8, -5) {\name{\lk{repo}}};
+  \node (local) at (7.8, -6) {\name{\lk{local}}};
+  \node (gdrive) at (7.8, -7) {\name{\lk{g-drive}}};
+  \node at (7.0, -8) {\name{Areas/}, \name{Resources/}, \name{Archive/}};
+  % where the links point
+  \node (trepo) at (10.6, -5) {\name{\home/Work/GitHub/NYU-Deep-Learning/}};
+  \node (tlocal) at (10.6, -6) {\name{\home/NYU/Teaching/…/DLFL26/}};
+  \node (tgdrive) at (10.6, -7) {\name{Google Drive/…/DLFL26/}};
+  \draw[->] (note) -- (vnote);
+  \draw[->] (repo) -- (trepo);
+  \draw[->] (local) -- (tlocal);
+  \draw[->] (gdrive) -- (tgdrive);
+\end{tikzpicture}
+\end{center}
 
-\subsection*{5.\ Give each project its own home}
+% Review: “note.md in sec 5 has no name. That's a link to the vault project note, which has a name!”
+\here[named note]The link \name{note.md} points to the project's note in the knowledge base, \name{fall26-deep-learning.md}, so the note keeps the project's name and every project folder opens its note the same way. \name{repo} points to the course's Git repository, \name{local} to the data folder for this edition, and \name{g-drive} to the shared Google Drive folder, so opening the project's folder shows everything the course uses, wherever it is stored. Links are one way to do this, and the owner may instead move the files themselves into the project's folder.
 
-Start each agent session from the project's folder, so that the agent's memory for that project stays with it, and keep a short \name{note.md} there with the goal, the next action, and a dated log. \here[knowledge base]The notes themselves live together in one knowledge base, a folder of Markdown notes linked to each other; mine is called \name{md-Wiki/}. Each project's \name{note.md} is a link to its note there, so the knowledge base holds what spans projects, such as people, tools, and ideas, next to every project's note. Write the owner's global rules for the agent last, once a few weeks of work show how they actually like to work: for Claude Code they go in \name{\home/.claude\slash CLAUDE.md}, for Codex in \name{\home/.codex\slash AGENTS.md}.
+% Review: “Work or School (since they are students).”
+\here[Work or School]Git repositories go in one folder outside any cloud-synced folder, such as \name{\home/Work\slash GitHub/}, or \name{\home/School\slash GitHub/} for a student, and temporary files go in \name{\home/Work\slash Scratch/}.
 
-\begin{thebibliography}{PARA}
+\subsection*{5.\ Move files in small batches}
+
+Move one group at a time, for example all the papers, after showing the owner which file goes where. Write every move to a log, \name{\home/PARA\slash moves.tsv}, with the old path and the new one, so any batch can be undone. Put duplicates and spent installers in \name{\home/PARA\slash To-delete/}, where the owner empties them after a look. The folder the owner habitually saves into becomes an inbox: anything new lands there and gets sorted the same way.
+
+\subsection*{6.\ Work from the project's home, with written rules}
+
+Start each agent session from the project's folder, so that the agent's memory for that project stays with it, and have the agent keep the project's note up to date: what it did, what is next, and what is waiting for the owner. % Review: “It doesn't even mention my rules, which are public.”
+\here[the public rules]The agent's behaviour comes from the owner's rules, written in plain files the agent loads at the start of every session: for Claude Code \name{\home/.claude\slash CLAUDE.md} and the files in \name{\home/.claude\slash rules/}, for Codex \name{\home/.codex\slash AGENTS.md}. Mine are public~\cite{rules}, one file per topic: how to talk to me, how to write, how to use Git, where files go, how to work in the terminal, and how to write LaTeX. Start from them, show the owner each one, and keep only what fits. Then add a rule each time the owner corrects the agent, so the correction holds in every later session.
+
+\begin{thebibliography}{Rules}
 \bibitem[WwC]{wwc} Alf, \textit{How I work with Claude}.
   \url{https://github.com/Atcold/learning-with-claude/tree/master/working-with-claude}
+\bibitem[Rules]{rules} Alf, \textit{Claude rules}, in \textit{Unix-dot-files}.
+  \url{https://github.com/Atcold/Unix-dot-files/tree/master/Claude}
 \bibitem[PARA]{para} Tiago Forte, \textit{The PARA method}, Forte Labs.
   \url{https://fortelabs.com/blog/para/}
 \end{thebibliography}
