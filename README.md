@@ -16,4 +16,4 @@ Each folder is one lesson.
 
 ## Building
 
-Lessons are LaTeX. From the root, `make build networking` runs `latexmk` in that lesson's folder; the PDF lands in its `build/`, named after the folder (`networking/build/networking.pdf`). A lesson also answers to its short key in `.keys` (`make build net`, or just `make net`). `make list` names the lessons with their keys, `make help` the commands. Shared colours, boxes and rules live in [`style/`](style/).
+Lessons are LaTeX. From the root, `make build networking` runs `latexmk` in that lesson's folder; the PDF lands in its `build/`, named after the folder (`networking/build/networking.pdf`). A lesson also answers to its short key in `.keys` (`make build net`, or just `make net`). `make list` names the lessons with their keys, `make help` the commands. Shared colours, boxes and rules come from [alfdoc](https://github.com/Atcold/alfdoc), which `alfdoc.pl` finds or fetches.

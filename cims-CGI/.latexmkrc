@@ -2,5 +2,4 @@ $pdf_mode = 4;                                   # lualatex
 $out_dir = 'build';
 @default_files = ('lesson.tex');
 $jobname = 'cims-CGI';                          # PDF named after the lesson
-ensure_path('TEXINPUTS', '../style//');         # the shared alfdoc.sty
-do '../style/revision.pl';                       # the revision line, from git
+do '../alfdoc.pl';                               # the shared style and the revision line
