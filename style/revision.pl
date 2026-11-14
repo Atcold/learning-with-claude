@@ -75,18 +75,44 @@ sub alfdoc_rev {
 }
 
 # Every document in the folder: a file whose source starts a LaTeX document
-my @docs;
+my (@docs, %has_table);
 for my $tex (glob '*.tex') {
   my $source = do { local $/; open my $in, '<', $tex or next; <$in> };  # $/ local to this read
   push @docs, $tex if $source =~ /^\\documentclass/m;
+  $has_table{$tex} = 1 if $source =~ /^\\revisiontable/m;  # a document under review
 }
+my %review_name;  # each built PDF's name in the e-reader's Review folder
 if ($jobname) {
   # A lesson: the main document has the whole folder, every other one its own file
   my %is_main = map { $_ => 1 } @default_files;
   alfdoc_rev($jobname, '.');
-  alfdoc_rev("$folder-" . ($_ =~ s/\.tex$//r), $_) for grep { !$is_main{$_} } @docs;
+  $review_name{$jobname} = "$jobname-lesson" if grep { $has_table{$_} } @default_files;
+  for (grep { !$is_main{$_} } @docs) {
+    my $name = "$folder-" . s/\.tex$//r;
+    alfdoc_rev($name, $_);
+    $review_name{$name} = $name if $has_table{$_};
+  }
 } else {
   # A folder of reports: each its own file
-  alfdoc_rev($_ =~ s/\.tex$//r, $_) for @docs;
+  for (@docs) {
+    my $name = s/\.tex$//r;
+    alfdoc_rev($name, $_);
+    $review_name{$name} = $name if $has_table{$_};
+  }
+}
+
+# With $alfdoc_boox set, in ~/.latexmkrc, to the e-reader's synced folder, every successful
+# build goes to its Review folder through boox-review.py, which holds it while notes are waiting.
+if ($alfdoc_boox) {
+  my $here = (Cwd::abs_path(__FILE__) =~ s{/[^/]*$}{}r);
+  my $script = -e "$here/boox-review.py" ? "$here/boox-review.py"
+    : "$ENV{HOME}/Library/texmf/tex/latex/alfdoc/boox-review.py";
+  add_hook('compile_end', sub {
+    our ($compile_status, $root_filename);
+    return if $compile_status > 1;  # 0 clean, 1 with warnings
+    my $name = $review_name{$root_filename} or return;
+    system('uv', 'run', '-q', '--with', 'pymupdf', 'python', $script,
+      "$dir/$root_filename.pdf", $name, $alfdoc_boox);
+  });
 }
 1;
