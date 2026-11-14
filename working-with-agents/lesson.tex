@@ -1,0 +1,127 @@
+% Lesson: working with the three harnesses. One rule source, three readers, the habits per harness.
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{twemojis}
+\usepackage{alfdoc}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{needspace}
+\usepackage{fancyvrb}   % the tree keeps its box-drawing characters
+\usepackage{microtype}  % font expansion, so lines full of unbreakable paths keep even spacing
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage{newunicodechar}
+\newfontfamily\symfont{Apple Symbols}
+\newunicodechar{⌃}{{\symfont ⌃}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+\newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
+\renewcommand{\slash}{/\allowbreak}  % paths break at their slashes
+\newfontfamily\treefont{Menlo}  % has the box-drawing characters of a tree
+% The tree is centred as one block: measure its widest line, and split the leftover width evenly.
+\newsavebox{\treeexample}
+\newlength{\treewidth}
+\AtBeginDocument{%
+  \begin{lrbox}{\treeexample}%
+    {\fontsize{7}{8.4}\selectfont\treefont └── config.toml  (accepts CLAUDE.md as a project instruction file)}%
+  \end{lrbox}%
+  \settowidth{\treewidth}{\usebox{\treeexample}}%
+}
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\title{\emo{gear}\ Three harnesses, one set of rules\\[0.3em]
+  \large What \name{Codex} and \name{OpenCode} read from Claude's files, and the habits each asks for}
+\author{Lesson for Alf, written by OpenCode}
+\date{Sat 14 Nov 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Why we asked}
+
+Three harnesses work on my projects: \name{Claude Code} from Anthropic, \name{Codex} from OpenAI, and \name{OpenCode}, which drives the local model on \name{AlfSPARK}. A harness is the program that gives a model access to files and tools. Each vendor ships its own way of finding instructions, its own transcript layout, and its own idea of when a session is over, so the standing risk is three assistants each obeying a different Alf.
+
+The setup answers that risk by keeping the rules in one place and letting every harness read them there. This lesson records who reads what, where the three still differ, and the short list of habits that keeps them on the same rails. The full history of the agreement is the lesson \emph{How I work with Claude}~\cite{wwc}, and the local-model side is \emph{Local coding}~\cite{lc}.
+
+\section{How each harness reads the rules}
+
+The rules themselves live once, in the \name{Unix-dot-files} checkout at \name{\home/\lk{.settings}/}: \name{Claude/CLAUDE.md} and the six files of \name{Claude/rules/}, one per topic~\cite{dots}. The other two harnesses reach those same files through small adapters of their own language.
+
+\begin{Verbatim}[fontsize=\fontsize{7}{8.4}, formatcom=\treefont, commandchars=\\\{\}, xleftmargin=\dimexpr(\textwidth-\treewidth)/2\relax]
+\textbf{Claude Code}
+~/.claude/  \textcolor{black!25}{→ ~/Dropbox/Apps/claude/}
+├── CLAUDE.md  \textcolor{black!25}{→ ~/.settings/Claude/CLAUDE.md}
+└── rules/     \textcolor{black!25}{→ ~/.settings/Claude/rules/}
+
+\textbf{Codex}
+~/.codex/  \textcolor{black!25}{→ ~/Dropbox/Apps/codex/}
+├── AGENTS.md  \textcolor{black!25}{→ ~/.settings/Codex/AGENTS.md}
+└── config.toml  \textcolor{black!25}{(accepts CLAUDE.md as a project instruction file)}
+
+\textbf{OpenCode}
+~/.config/opencode/
+└── opencode.json  \textcolor{black!25}{→ ~/Dropbox/Apps/opencode/opencode.json}
+    \textcolor{black!25}{(its "instructions" list names the Claude files)}
+\end{Verbatim}
+
+\begin{itemize}[leftmargin=1.2em]
+  \item \textbf{Claude Code} reads the files directly: at every session start it loads its \name{CLAUDE.md} and everything in \name{rules/}, and the chain of links delivers the committed text with no copying.
+  \item \textbf{Codex} reads its own instruction file, \name{AGENTS.md}. Mine is an adapter: it opens by telling Codex to read \name{\home/.claude/CLAUDE.md} and the files in \name{\home/.claude/rules/}, and to treat mentions of Claude as mentions of itself. The adapter carries pointers only, so rule text stays in one place. In \name{config.toml}, \nolinkurl{project_doc_fallback_filenames} adds \name{CLAUDE.md} to the names Codex accepts as a project instruction file, so project-level files written for Claude work there too.
+  \item \textbf{OpenCode} reads a JSON list: its \texttt{instructions} field names \name{CLAUDE.md} and each of the six rule files by path, and the service loads the same text at the start of every session~\cite{occonfig}.
+\end{itemize}
+
+The assistants also share their task instructions, the skills, which are files of instructions for one task. \name{Codex} looks for them in \name{\home/.agents/skills/}, a link into \name{\home/.claude/skills/}, the library \name{Claude Code} reads, and \name{OpenCode} reads both folders.
+
+\section{Where the three differ}
+
+The layouts and lifecycles differ even though the rules do not. The table is the whole difference in day-to-day use. The three commands come from \name{\home/.settings/}: the short form starts a new session, and the resuming form returns to the last one.
+
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{4.1cm}>{\raggedright\arraybackslash}p{4.1cm}>{\raggedright\arraybackslash}p{4.8cm}@{}}
+  \toprule
+  & \name{Claude Code} & \name{Codex} & \name{OpenCode} \\
+  \midrule
+  Window closes & the agent stops & the agent stops & a background service carries the work on \\
+  Transcripts & one file per starting folder, under \name{\home/\lk{.claude}/projects/} & rollouts, Codex's name for its transcripts, date-folded under \name{\home/\lk{.codex}/sessions/} & one database at \name{\home/.local/share/opencode/}, with sessions grouped per git repository \\
+  Start and resume & \texttt{cca}, then \texttt{cca --continue} & \texttt{cxa}, then \texttt{cxa resume} & \texttt{oca}, then \texttt{oca --continue} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+The first row is the one that needs a habit. \name{OpenCode}'s client is a window on a shared background service, and the service is what runs the agent, so closing the window with ⌃\texttt{D} leaves a turn still generating, and reopening finds the same session mid-work. Press \texttt{escape} first to interrupt the turn, then ⌃\texttt{D}; the tab strip is switched off in \texttt{cli.json}, so a window shows one session and closing it closes just that view.
+
+\section{The agreement}
+
+\begin{result}{Working with all three}
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Start in the project home,} \name{\home/\lk{PARA}/Projects/<name>/}, whichever harness you open. The project's \name{note.md} carries progress between sessions, and a session ending mid-work leaves a bridge in it: the last thing touched, the next task, the starting state, and the questions parked.
+  \item \textbf{Edit a rule once, in \name{\home/.settings/Claude/rules/}.} The adapters and the JSON list carry pointers only, so rule text stays in one place and the copies never drift. After an edit, pull \name{.settings} on each Mac.
+  \item \textbf{One agent at a time on a repository.} Two harnesses editing the same files overwrite each other's work, so one runs at a time.
+  \item \textbf{The git and testing rules bind all three.} Pull before work, I test what I have to try, and the agent commits only after my OK, in every harness alike~\cite{wwc}.
+  \item \textbf{On \name{OpenCode}, press \texttt{escape} before ⌃\texttt{D}} while a turn is still generating. The permission prompts ask me by default; the \name{oca} alias starts it on the current project with the note open and permissions accepted, for the local-coding work where the model is mine~\cite{lc}.
+\end{enumerate}
+\end{result}
+
+\needspace{8\baselineskip}
+\begin{thebibliography}{WWC}
+  \bibitem[WwC]{wwc} Alf, \textit{How I work with Claude}, lesson in this repository. \url{https://github.com/Atcold/learning-with-claude/tree/master/working-with-claude}
+  \bibitem[Lc]{lc} Alf, \textit{Local coding: OpenCode on the Mac, the model on AlfSPARK}, lesson in this repository. \url{https://github.com/Atcold/learning-with-claude/tree/master/local-coding}
+  \bibitem[Dots]{dots} \textit{Unix-dot-files}: the Claude rules in \name{Claude/}. \url{https://github.com/Atcold/Unix-dot-files}
+  \bibitem[Ocm]{occonfig} \textit{OpenCode configuration}, OpenCode documentation. \url{https://opencode.ai/docs/config}
+\end{thebibliography}
+
+\revisiontable
+
+\end{document}

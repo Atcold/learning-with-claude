@@ -9,6 +9,7 @@ Each folder is one lesson.
 - [Networking](networking/): the tailnet, direct paths and relays, private addresses; a smart plug on the LAN. *A stub, not yet a lesson.*
 - [Where should an app keep its files?](XDG-base-dirs/): dot folders, the XDG base directories, a home for eink's data.
 - [How I work with Claude](working-with-claude/): one home per project, shared Claude and Codex instructions and memory, PARA in Dropbox, and local codex-ui builds.
+- [Three harnesses, one set of rules](working-with-agents/): what Codex and OpenCode read from Claude's files, the per-harness differences in transcripts and closing, and the minimal agreement for all three.
 - [One figure file, several cached pictures](tikz-externalisation/): TikZ caches by name and source text, not by flag, so each variant needs its own name.
 - [Two names for one file](links/): hard links and symbolic links, `du` and how `uv` shares packages between environments.
 - [Local coding: OpenCode on the Mac, the model on AlfSPARK](local-coding/): vLLM in a container on the Spark, an SSH tunnel over the tailnet, OpenCode reading the same Claude rules.
