@@ -14,6 +14,7 @@ Each folder is one lesson.
 - [Two names for one file](links/): hard links and symbolic links, `du` and how `uv` shares packages between environments.
 - [Local coding: OpenCode on the Mac, the model on AlfSPARK](local-coding/): vLLM in a container on the Spark, an SSH tunnel over the tailnet, OpenCode reading the same Claude rules.
 - [AlfDROID](alfdroid/): a OnePlus 6 as an always-on server on the tailnet, Debian in Termux.
+- [Radio](radio/): eight stations in the Mac's terminal and on the iPhone, three minutes behind live from AlfDROID's tapes over HLS.
 
 ## Building
 

@@ -1,0 +1,376 @@
+% Lesson: my radio, from the terminal player on the Macs to the buffered iPhone page on AlfDROID.
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{alfdoc}
+\usepackage[inline]{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc,fit}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage[nameinlink,capitalise]{cleveref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\title{\emo{radio}\ \name{Radio}\\[0.3em]
+  \large Eight stations in the Mac's terminal, and on the iPhone three minutes behind live}
+\author{Lesson for Alf, written by Claude}
+\date{Sat 14 Nov 2026}
+
+\begin{document}
+\maketitle
+
+\section*{What it is}
+
+I listen to eight classical and jazz stations in two places. On the Macs, \name{radio} plays them in a terminal pane through \name{mpv}, a command-line media player, with each station's name in large block letters and a line for every piece. On the iPhone, a web page served by \name{AlfDROID}, the OnePlus 6 that runs as a server at home, plays them through Safari. The phone listens three minutes behind the live broadcast, so it holds three minutes of music in its own memory, and a subway ride between stations, where the train loses the network for a minute or two, plays through without a break.
+
+Everything lives in one folder, \name{\textasciitilde/.settings/Radio}, in my settings repo, cloned on both Macs and on the droid:
+
+\begin{itemize}[nosep]
+  \item \textbf{\name{radio.m3u}}: the eight stations and their stream addresses.
+  \item \textbf{\name{radio\_core.py}}: the rules both players share for the titles the stations send.
+  \item \textbf{\name{mpv.conf}} and \textbf{\name{radio.lua}}: the terminal player, an \name{mpv} profile and its script.
+  \item \textbf{\name{radio}}: the command on the Macs. Alone it plays; its subcommands look after the droid.
+  \item \textbf{\name{radio-server.py}}: the service on the droid, with the relays, the tapes, and the page and its streams.
+  \item \textbf{\name{radio-page.html}}: the page the iPhone opens.
+  \item \textbf{\name{logos-dark}}: draws dark versions of the bright station logos.
+  \item \textbf{\name{install.sh}} and \textbf{\name{boot/radio}}: the installer for each machine, and the droid's start at boot.
+\end{itemize}
+
+\Cref{fig:parts} shows how the pieces sit on the three machines. The Mac plays the stations straight from the internet. The droid also takes them from the internet, keeps the last five minutes of each in memory, and serves them to the iPhone over the tailnet, my private network between my devices.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[font=\small,
+  box/.style={draw, thick, rounded corners=3pt, align=center, inner sep=4pt},
+  host/.style={draw, thin, rounded corners=6pt, inner sep=6pt, draw opacity=.35},
+  lab/.style={font=\scriptsize, align=center}]
+  % Positions on a grid, so no box crosses another
+  \node[box, draw=grey!80!black] (st) at (0,3) {8 stations\\ \scriptsize MP3 and AAC streams};
+  \node[box, draw=orange] (ff) at (6.2,3) {\name{ffmpeg}, one per station\\ \scriptsize re-encodes to 128 kbit/s MP3};
+  \node[box, draw=green] (ice) at (4.6,1.5) {\name{icecast}\\ \scriptsize :8001, live};
+  \node[box, draw=blue] (tape) at (7.8,1.5) {tapes in RAM\\ \scriptsize 5 min per station};
+  \node[box, draw=aqua] (srv) at (7.8,0) {\name{radio-server.py}\\ \scriptsize :8080, page, HLS, status};
+  \node[host, fit=(ff)(ice)(tape)(srv), label={[lab]above:\name{AlfDROID}: OnePlus 6, \name{Termux}}] {};
+  \node[box, draw=red] (ph) at (12.4,0) {Safari\\ \scriptsize the page, the HLS player};
+  \node[host, fit=(ph), label={[lab]above:\name{AlfPHONE}: iPhone 13}] {};
+  \node[box, draw=lavender] (mpv) at (0,-2) {\name{mpv} and \name{radio.lua}\\ \scriptsize with \name{radio\_core.py}};
+  \node[box, draw=violet] (cmd) at (7.8,-2) {the \name{radio} command\\ \scriptsize status, watch, on, off, \ldots};
+  \node[host, fit=(mpv)(cmd), label={[lab]below:a Mac}] {};
+  \draw[->] (st) -- (ff);
+  \draw[->] (st) -- node[lab, left] {internet} (mpv);
+  \draw[->] (ff) -- (ice);
+  \draw[->] (ff) -- (tape);
+  \draw[->] (tape) -- (srv);
+  \draw[->] (srv) -- node[lab, above] {tailnet} (ph);
+  \draw[->] (cmd) -- node[lab, right] {tailnet: API and \name{ssh}} (srv);
+\end{tikzpicture}
+\caption{The parts and the machines they run on. Arrows follow the audio, except the \name{radio} command's, which follow its requests.}
+\label{fig:parts}
+\end{figure}
+
+\section*{Stations and their titles}
+
+\name{radio.m3u} lists the stations in the order the players number them: Classic FM, Radio Swiss Classic, Venice Classic Radio, WQXR, Rai Radio Classica, Radio Swiss Jazz, Jazz24, and Secret Agent. Each line holds a stream address, an endless MP3 or AAC file that the station's server keeps sending.
+
+A station names the piece it is playing inside the stream itself, with a scheme called icy metadata, from SHOUTcast and Icecast, the common streaming servers~\cite{icy}. A player that sends the header \texttt{Icy-MetaData: 1} gets a reply header \texttt{icy-metaint}, a byte count. After every that many bytes of audio, the station inserts one byte, a length in units of 16 bytes, then a text block of that length, such as \texttt{StreamTitle='Johannes Brahms - Hungarian Dances';}. A length of zero means no new text.
+
+The titles arrive in rough shape, and \name{radio\_core.py} holds the three rules both players apply to them, so the Mac and the droid agree on what a piece is. Some stations encode their accents twice, so \texttt{é} arrives as \texttt{Ã©}, and the first rule undoes that. A station announces itself between pieces and sends the announcement as the title, so the second rule drops a title that is only the station's own name. A player hears the same title many times while a piece plays, so the third rule writes a piece to the log once. \texttt{radio\_core.py -{}-selftest} checks these rules against titles the stations really sent, and runs at the end of every install.
+
+\subsection*{Rai's pieces}
+
+One station carries its titles outside the stream. Rai Radio Classica announces \texttt{icy-metaint: 16000} and then fills every block with an empty title. A listener left on its stream for 30 minutes on Sat 14 Nov received 414 blocks, every one of them \texttt{StreamTitle='';}. Rai's public schedule, \url{https://www.raiplaysound.it/palinsesto/onAir.json}, names only the running programme, such as \textit{Classico notturno}. Rai's own player shows the piece, because it asks a second Rai service for it, and the droid asks that service the same way, in three steps, as \cref{fig:rai} shows.
+
+\begin{enumerate}[nosep]
+  \item \textbf{A token.} The droid asks \url{https://www.raiplaysound.it/atomatic/token-service/api/jwt-ws} for a token, with a client id made from the page's address. The answer is a signed JSON Web Token that expires after an hour, together with the server to connect to and the prefix of its topics.
+  \item \textbf{A connection.} The droid connects to \name{prod.rai.harperfabric.com} with MQTT, a lightweight protocol for pushed messages, carried over a WebSocket, a two-way connection kept open over HTTPS. The token goes in the address, after \texttt{/mqtt?jwt=}.
+  \item \textbf{A subscription.} The droid subscribes to the channel's topic, the name under which the server sorts its messages, here \texttt{ws/rai-radio-3-classica}. The server keeps the newest message of every topic and hands it over at once, so the piece playing now arrives first, and one more message arrives at each change of piece.
+\end{enumerate}
+
+Each message is JSON. Its \texttt{now} object holds the piece in capitals in \texttt{caption}, such as \texttt{BEETHOVEN LUDWIG VAN QUARTETTO IN FA MIN OP. 95\ldots}, and the moment the piece ends in \texttt{expireAt}.
+
+\name{radio-server.py} keeps that subscription open in one thread, with the \name{paho-mqtt} library, and asks for a fresh token before the old one expires. Every caption goes through \texttt{caption\_case} in \name{radio\_core.py}, which turns the capitals into normal case, and then into the same path as any station's title: the page, the queue, and \name{log.tsv}. Between two captions the page shows the programme from the schedule, which stays out of the log. The droid is the only machine that talks to Rai, and the terminal player gets Rai's title from the droid's \texttt{/api/status}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[font=\small, y=0.75cm,
+  box/.style={draw, thick, rounded corners=3pt, align=center, inner sep=4pt, minimum width=3.4cm},
+  lab/.style={font=\scriptsize, above}]
+  % One lifeline per party; time runs downwards
+  \node[box, draw=aqua] (d) at (0,0) {\name{radio-server.py}\\ \scriptsize on \name{AlfDROID}};
+  \node[box, draw=orange] (t) at (5,0) {token service\\ \scriptsize \name{raiplaysound.it}};
+  \node[box, draw=red] (m) at (10,0) {MQTT server\\ \scriptsize \name{prod.rai.harperfabric.com}};
+  \foreach \x/\n in {0/d,5/t,10/m} \draw[draw opacity=.35] (\n.south) -- (\x,-7.4);
+  \draw[->] (0,-1.5) -- node[lab] {1. a token, for this client id} (5,-1.5);
+  \draw[->] (5,-2.4) -- node[lab] {token, server, topic prefix} (0,-2.4);
+  \draw[->] (0,-3.4) -- node[lab, pos=0.75] {2. connect with the token} (10,-3.4);
+  \draw[->] (0,-4.4) -- node[lab, pos=0.75] {3. subscribe to the topic} (10,-4.4);
+  \draw[->] (10,-5.4) -- node[lab, pos=0.25] {the current caption, at once} (0,-5.4);
+  \draw[->] (10,-6.4) -- node[lab, pos=0.25] {a new caption at each piece} (0,-6.4);
+\end{tikzpicture}
+\caption{How the droid gets Rai's pieces, with time running downwards: a token from Rai's token service, then a connection and a subscription on Rai's MQTT server, which sends the current caption at once and a new one at each change of piece.}
+\label{fig:rai}
+\end{figure}
+
+\section*{In the terminal}
+
+On a Mac, \texttt{radio} alone starts \name{mpv} with the \texttt{radio} profile from \name{mpv.conf}. The profile loops the playlist, hides \name{mpv}'s own messages, and loads \name{radio.lua}, the script that draws the pane. For each station, the script prints its name in block letters, in a colour of its own from the ColorBrewer Set3 palette, with the stream's format, bitrate, sample rate, and channels underneath. It then prints a line for each new piece, with the time it started.
+
+\begin{cmdout}
+5/8  ·  mp3  ·  256 kbps  ·  44.1 kHz  ·  stereo  ·  coreaudio
+\end{cmdout}
+
+The keys are \texttt{1}--\texttt{8} and letters to jump to a station, \texttt{<} and \texttt{>} to step, \texttt{9} and \texttt{0} for the volume, \texttt{c} for a menu of what every station is playing now, \texttt{space} to pause, and \texttt{q} to quit. The status line at the bottom shows the piece, the time, and the volume, and it says \texttt{paused} in orange while the player is paused, because a paused station otherwise looks like a dead one stuck at 00:00:00.
+
+A piece that has played for 30 seconds on one station goes into \name{\textasciitilde/.local/share/radio/log.tsv} as date, time, station, and piece. The 30 seconds keep out the pieces I skipped past. The droid writes its own \name{log.tsv} in the same shape, so each machine keeps its own listening history.
+
+\section*{The droid's service}
+
+\texttt{./install.sh droid} installs \name{ffmpeg}, \name{icecast}, and Python with \name{Termux}'s package manager and puts \name{radio-server.py} on the droid's \texttt{PATH}; \texttt{-{}-boot} also installs \name{boot/radio}, which \name{Termux:Boot} runs when the phone starts, so the service comes back by itself after a reboot. \texttt{./install.sh mac} links the player's files into \name{mpv}'s config folder and \name{radio} into \name{\textasciitilde/.local/bin}.
+
+\name{radio-server.py} runs one \name{ffmpeg} per station. Each \name{ffmpeg} reads the station's stream and re-encodes it to 128 kbit/s MP3, so all eight streams come out in one format whatever the station sends: Rai, for one, sends 256 kbit/s. \name{ffmpeg}'s \texttt{tee} output sends the result to two places at once: to the local \name{icecast} on port 8001, where any player on the tailnet can listen live, and to the server itself, which keeps it on a tape. A supervisor restarts an \name{ffmpeg} that stops, with a growing pause between attempts. Further threads follow each station's titles, write the log, and fetch the station logos once.
+
+The recording switch starts and stops every relay together, and a station can be muted on its own. \texttt{radio record} records every station to tape and \texttt{radio stop} stops them all; with station names, both act on those stations only, so \texttt{radio record jazz24} with the recording off records Jazz24 alone. Both are saved to \name{muted.json}, so a restart keeps them. An idle watchdog switches recording off after 15 minutes with no listener, so an evening I forget to switch it off costs the droid nothing. The watchdog starts its clock when the service starts.
+
+On the droid the relays take a measurable share of the phone. One reading of \texttt{top} on Sat 14 Nov showed each \name{ffmpeg} at 16--32\% of one core and the server at 8\%, on a phone with eight cores.
+
+\section*{Tape and buffer}
+
+The \emph{tape} is the droid's recording of one station: the last 300 seconds of its re-encoded audio, held in RAM and refilled as the station plays. It lives in memory because the phone's flash storage wears out with constant writing, and a restart of the service empties every tape. The \emph{buffer} is the audio the iPhone has already downloaded and not yet played. The page listens 180 seconds behind live, so a full buffer holds three minutes: everything from the playhead up to the live edge.
+
+The tape is measured in bytes. A 128 kbit/s MP3 carries 128k bits each second, which is 16k bytes:
+
+\[ \frac{128\,000\ \text{bit/s}}{8\ \text{bit/byte}} = 16\,000 \tag*{[byte/s]} \]
+
+So a request for three minutes behind live starts this many bytes before the end of the tape:
+
+\[ 180\ \text{s} \times 16\,000\ \text{byte/s} = 2\,880\,000 \tag*{[byte]} \]
+
+The constant matters. With 16\,384 bytes per second, which is 128 times 1024, the same request reached 2\,949\,120 bytes back, 184 seconds of audio, and the phone showed a buffer of 3:04.
+
+\Cref{fig:tape} shows the two together. The tape spans five minutes up to the live edge. The playhead sits three minutes back, and the buffer is the stretch from the playhead to live. When the network drops, the music keeps playing out of the buffer, which shrinks while the playhead and the live edge move on together. When the network returns, the phone downloads the missing stretch from the tape and the buffer is full again. A dropout longer than the buffer runs it dry: the music stops, the playhead stays where it was, and the phone resumes from that spot when the network comes back, later than three minutes behind, as long as that spot is still on the tape.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[font=\small, x=2.4cm, y=1cm]
+  % Scale: minutes behind live
+  \foreach \m/\l in {-5/{$-5$ min},-4/{$-4$},-3/{$-3$},-2/{$-2$},-1/{$-1$},0/{now}}
+    \node[font=\scriptsize] at (\m,3.35) {\l};
+  % A faint line down from each minute, through all three rows
+  \foreach \m in {-5,...,0} \draw[draw opacity=.15, very thin] (\m,3.15) -- (\m,-0.85);
+  % Row 1: playing normally
+  \node[anchor=east, font=\scriptsize, align=right] at (-5.15,2.6) {playing};
+  \draw[thick, draw=blue] (-5,2.4) rectangle (0,2.8);
+  \fill[aqua] (-3,2.43) rectangle (0,2.77);
+  \draw[very thick] (-3,2.3) -- (-3,2.9);
+  \node[font=\scriptsize] at (-4,2.1) {already heard};
+  \node[font=\scriptsize] at (-1.5,2.1) {buffer, 3:00};
+  % Row 2: after 1:50 offline
+  \node[anchor=east, font=\scriptsize, align=right] at (-5.15,1.2) {1:50 offline};
+  \draw[thick, draw=blue] (-5,1.0) rectangle (0,1.4);
+  \fill[aqua] (-3,1.03) rectangle (-1.833,1.37);
+  \draw[very thick] (-3,0.9) -- (-3,1.5);
+  \node[font=\scriptsize] at (-2.42,0.7) {buffer left, 1:10};
+  \node[font=\scriptsize] at (-0.92,0.7) {missed, on the tape};
+  \draw[->] (-0.92,0.85) -- (-0.92,1.0);
+  % Row 3: back online
+  \node[anchor=east, font=\scriptsize, align=right] at (-5.15,-0.2) {back online};
+  \draw[thick, draw=blue] (-5,-0.4) rectangle (0,0);
+  \fill[aqua] (-3,-0.37) rectangle (-1.833,-0.03);
+  \fill[green] (-1.833,-0.37) rectangle (0,-0.03);
+  \draw[very thick] (-3,-0.5) -- (-3,0.1);
+  \node[font=\scriptsize] at (-0.92,-0.7) {refilled in 3 s};
+\end{tikzpicture}
+\caption{One station's tape (the blue outline) with the playhead (the black mark) three minutes behind live, the buffer (filled), and what a dropout of 1:50 does to it. The tape runs on with the live edge, so the playhead stays at $-3$.}
+\label{fig:tape}
+\end{figure}
+
+\section*{Getting the buffer onto the iPhone}
+
+A web page plays audio either through Safari's own media player, which takes an address and fetches it by itself, or through MediaSource, a browser interface with which the page fetches the bytes and hands them to the player, so the page decides how much to hold. Chrome on the Mac has MediaSource and the page uses it there. Safari on the iPhone has no MediaSource for MP3, so on the phone the page has to give an address to Safari's player and let the player do the fetching.
+
+The first design gave Safari's player one endless stream that started three minutes back on the tape. The droid's request log showed what Safari made of it. Safari opened two or three connections for every play: one from the page, one asking for only the first two bytes (\texttt{Range: bytes=0-1}), to probe the file, and the real one. It pulled the whole three minutes, 2.9 MB, in about one second, then kept only part of it. With the page reporting Safari's own count of buffered audio every three seconds, Safari held 48 seconds ahead, steady over four minutes of play, and never more than 64. The player decides that for itself, and the page cannot change it.
+
+HLS, Apple's HTTP Live Streaming~\cite{hls}, is the format Safari's player is built for. The server cuts the stream into short files, the segments, and publishes a playlist that lists them in order. The player downloads the playlist, fetches the segments one after another, and fetches the playlist again to find new ones. On the iPhone, Safari buffered the full three minutes from such a playlist, as the next section shows, so the phone plays HLS.
+
+\subsection*{Segments and the playlist}
+
+The droid cuts each tape into segments of six seconds. A segment has to start on an MP3 frame, the smallest unit a decoder can play: a 128 kbit/s frame at 44.1 kHz is 417 or 418 bytes long and holds 1152 samples, 26 ms of sound. The server reads each frame's four-byte header as the bytes arrive, and closes a segment once its frames add up to six seconds. A relay that restarts begins a new MP3 stream in the middle of the tape, so the server skips anything that is not a frame and starts a fresh segment there.
+
+HLS requires an audio-only segment to begin with a timestamp~\cite[§3.4 \textit{Packed Audio}]{hls}, so the player can line the segments up: an ID3 tag, the same kind of tag that carries an MP3 file's artist and title, holding a private field named \texttt{com.apple.streaming.transportStreamTimestamp}, a count of 90\,kHz ticks. The server writes that tag in front of each segment's frames as it serves it.
+
+The playlist covers the whole tape, so Safari can buffer from the playhead to live, and tells Safari where to start with \texttt{EXT-X-START}~\cite[§4.3.5.2 \textit{EXT-X-START}]{hls}. Its head on the droid, with the segments that follow:
+
+\begin{pane}
+$ curl -s localhost:8080/classic-fm.m3u8 | head -n 8   # the playlist for Classic FM
+\end{pane}
+\begin{cmdout}
+#EXTM3U
+#EXT-X-VERSION:6
+#EXT-X-TARGETDURATION:6
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-START:TIME-OFFSET=-180.0,PRECISE=YES
+#EXT-X-PROGRAM-DATE-TIME:2026-11-15T01:43:41.929Z
+#EXTINF:6.008,
+/hls/classic-fm/0.mp3
+\end{cmdout}
+
+\texttt{TIME-OFFSET=-180} asks for a start 180 seconds before the end of the playlist. Each segment carries the wall-clock time it was recorded, \texttt{EXT-X-PROGRAM-DATE-TIME}, from which the page works out how far behind live the playhead is. Safari ignores a start offset that reaches further back than the playlist does and starts near live instead, which happened right after a restart, when the tape held only 96 seconds. The page therefore never asks for more than the tape holds.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[font=\scriptsize, x=0.32cm, y=1cm]
+  \foreach \i in {0,...,19} \draw[draw=grey!70!black] (\i,0) rectangle (\i+1,0.6);
+  \foreach \i in {20,...,49} \draw[draw=blue, thick] (\i,0) rectangle (\i+1,0.6);
+  \foreach \i in {0,10,20,30,40,49} \node at (\i+0.5,-0.25) {\i};
+  \draw[very thick] (20,-0.15) -- (20,0.75);
+  \node[above] at (20,0.75) {\texttt{EXT-X-START}, $-3$ min};
+  \node[above] at (50,0.75) {live};
+  \draw[<->] (20,1.25) -- node[above] {fetched at once: the buffer} (50,1.25);
+  \draw[<->] (0,1.25) -- node[above] {on the tape, not fetched} (20,1.25);
+\end{tikzpicture}
+\caption{The playlist over a full tape: 50 segments of six seconds. Safari starts 30 segments, three minutes, before live, fetches all of them at once, then one more every six seconds.}
+\label{fig:hls}
+\end{figure}
+
+\subsection*{What the phone did}
+
+The page reports Safari's own buffered range to the droid every three seconds, and the droid logs every playlist and segment request, so the request log shows exactly what the phone did. On Sat 14 Nov, Radio Swiss Jazz was tapped at 20:46:55 and Safari fetched every segment up to live, reporting 175 to 179 seconds buffered. Airplane mode then went on at 20:48:04 with 178.5 seconds buffered. The music played on from the buffer. At 20:49:54, 1:50 later, the network was back:
+
+\begin{cmdout}
+20:49:54 /radio-swiss-jazz.m3u8
+20:49:54 /hls/radio-swiss-jazz/44.mp3
+20:49:54 /hls/radio-swiss-jazz/45.mp3
+|~...~|
+20:49:57 /hls/radio-swiss-jazz/62.mp3
+20:49:58 /api/status t=192.4 b=185.6
+\end{cmdout}
+
+In three seconds Safari fetched segments 44 to 62, 19 segments or 114 seconds of audio, and reported 185.6 seconds buffered again. A plain stream would have given the phone 48 seconds to ride out the same gap.
+
+\section*{The page}
+
+\name{radio-server.py} reads \name{radio-page.html} from disk on every request, so a change to the page reaches the phone on the next reload, with no restart and with the tapes untouched. The page is laid out for the 390-point-wide screen of an iPhone 13, in a dark theme.
+
+\Cref{fig:page} shows the page on the iPhone's width, playing Radio Swiss Jazz, in normal mode and in debug mode. The bar at the top carries the title, \name{AlfDROID radio}, which also switches debug mode on and off, and the REC switch, which starts and stops the recording without playing anything. It shows a red \texttt{● REC} while the tapes are filling and a grey \texttt{○ REC} while they are off. Tapping it at home, a few minutes before leaving, gives the first station tapped on the way a full three-minute buffer at once, because its tape has been filling all along. Under it sit the station picker, with the station's logo and name, a play or pause button, and a stop button. Under those, the artist and the title of the piece take a line each, and the gauge shows the buffer: a bar in the station's colour and the time it holds, such as 2:59, which turns orange below one minute. A state that needs attention, such as \texttt{connecting…}, \texttt{offline}, or \texttt{paused}, appears in orange at the top right while it lasts, so the gauge keeps its width.
+
+Pause and stop do different things. Pause holds the spot: the music halts, the stream stays open, and play carries on from the same place, so a pause moves the playhead further behind live. Stop closes the stream, and the next play starts fresh, three minutes behind. The lock screen and the AirPods send pause and play, which go to the same two actions.
+
+Debug mode shows the tape for the current station, with a mark for each minute from $-5$ to now, the white playhead, the part already heard, and the part on the phone, and under it the droid's and the phone's numbers: the download rate, the bytes since the tap, Safari's buffer, and the HLS segment. Under them it shows what \texttt{radio watch} shows in the terminal: each station's relay, tape, and piece, the listeners, and the latest events, newest first, in the stations' colours. The droid produces that text with the same code as the \name{radio} command, at \texttt{/api/watch}, and the page refreshes it every five seconds and lets it scroll sideways, as a terminal would. At the bottom, debug mode adds four buttons: the recording switch, a reset to three minutes behind, a reload of the page, and debug off.
+
+The station logos sit on dark tiles, and several are drawn for light backgrounds. \name{logos-dark} fetches the bright ones from the droid, draws dark versions, and copies them back as \name{\textless slug\textgreater-dark.img}, which the page asks for by name: the two Swiss logos get a black ground with strokes in their own colour, Jazz24 its letters in its own gradient, Secret Agent its red ground sunk to near black, and Rai its white letters without the green box.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.42\textwidth]{page.pdf}\hspace{1.5em}%
+\includegraphics[width=0.42\textwidth]{page-debug.pdf}
+\caption{The page at the 390-point width of an iPhone 13, printed from Chrome on the Mac while it played, with each colour's lightness inverted for paper. Left, normal mode: the title and the REC switch, the station, the piece on two lines, the gauge, and the queue of pieces heard. Right, debug mode: the labelled tape, the droid's and the browser's numbers, the \texttt{radio watch} view, and the debug buttons. Chrome streams the tape directly, so its numbers count connections; on the iPhone that line names the HLS segment.}
+\label{fig:page}
+\end{figure}
+
+\section*{The radio command}
+
+\name{radio} is one command for both jobs. Alone, or as \texttt{radio mpv}, it starts the terminal player. With a subcommand it looks after the droid, through the page's API for the switches and the status, and through \name{ssh} for the service itself.
+
+The same command runs on the droid itself. \texttt{install.sh droid} links it into \name{Termux}'s \name{bin} beside \name{radio-server.py}, and there it runs the service's commands directly, without \name{ssh}. From the iPhone, \name{Termius}, an SSH client, reaches the droid at \name{alfdroid} on port 8022 as user \texttt{u0\_a1}, with the same \texttt{alfphone} key that opens the Macs and \name{AlfSPARK}, so \texttt{radio record} on the way out starts the tapes before any station is tapped. \texttt{radio mpv}, \texttt{radio deploy}, and \texttt{radio logos} belong to the Macs, and on the droid they answer with a one-line note.
+
+\begin{pane}
+$ radio help   # every subcommand
+\end{pane}
+\begin{cmdout}
+radio — my stations, in the terminal and on AlfDROID
+The player is mpv; the service runs on alfdroid, reached over the tailnet.
+
+Usage
+  radio [command] [arguments]
+
+Commands
+  mpv      [args]        Play in the terminal. What a bare radio runs; extra arguments go to mpv.
+  status                 The droid: recording, each station's relay, tape and piece, who is listening.
+  watch                  The same, live, with the event log underneath ([q] quits).
+  log      [-f]          The event log: taps, pauses, stops, offline and back, refills; -f follows it.
+  record   [station...]  Record stations on tape: all of them, or the ones named; starts the service if it is down.
+  stop     [station...]  Stop recording stations on tape: all of them, or the ones named.
+  up                     Start the service on the droid.
+  down                   Stop the service on the droid.
+  restart  [-y]          Down, then up; it asks first, because every tape empties.
+  deploy                 Copy the page and the server to the droid; a server change asks to restart.
+  logos                  Rebuild the dark logos on the droid.
+  help                   This. Also --help and -h.
+
+$RADIO_HOST names the droid; it defaults to alfdroid.
+\end{cmdout}
+
+\texttt{radio up} and \texttt{radio down} wait for the droid to settle and say where it stands:
+
+\begin{pane}
+$ radio down   # stop the service
+$ radio up     # start it; recording comes back as it was saved
+\end{pane}
+\begin{cmdout}
+service down on alfdroid  ·  radio up starts it
+service up on alfdroid  ·  pid 14827  ·  recording on  ·  8/8 relays live
+\end{cmdout}
+
+\texttt{radio status} numbers the stations, in the order \texttt{radio record} and \texttt{radio stop} take them, and shows for each whether it records to tape, with a filled circle in the station's colour, or not, with an empty one. Then come the tape's length, the piece the station is playing live, and every listener of the last ten minutes:
+
+\begin{pane}
+$ radio status   # the droid at a glance
+\end{pane}
+\begin{cmdout}
+AlfDROID radio  pid 15026 · recording on · 01:25:59
+
+ # station               rec    tape  piece (live)
+ 1 Classic FM             ●     3:37  James Horner - Braveheart - For the Love of a Princess
+ 2 Radio Swiss Classic    ●     3:27  Antonio Vivaldi - Concerto g-moll für Flöte, Oboe, Violine, V
+ 3 Venice Classic Radio   ●     3:39  Antoine Reicha (1770-1836) - Sonata per pianoforte in Mi magg
+ 4 WQXR                   ●     3:38  William Dawson - Negro Folk Symphony
+ 5 Rai Radio Classica     ●     3:48  Raff Joachim Grande Quintetto in la min op. 107, Villa Musica
+ 6 Radio Swiss Jazz       ●     3:29  Cojazz meets Bruno Spoerri - Loose Blues Booze
+ 7 Jazz24                 ●     3:54  Maria Schafer - You Don`t Know What Love Is
+ 8 Secret Agent           ●     3:39  Tape Five - Love On A Rainy Day
+
+listeners in the last 10 minutes
+  alfphone  ○ offline 0:58  Classic FM  HLS · client k9umrngq
+    paused   position   3:52   buffer —   last segment 0 (70 s ago)
+    started 180 s behind live at 00:56:19
+\end{cmdout}
+
+\texttt{radio watch} redraws the same screen every two seconds and adds the event log, newest first. The droid's request log already holds everything the log needs: a new player on the page is a tap, the page's three-second reports carry pause and resume, a silence of more than eight seconds between those reports is the phone offline, and four segments or more within two seconds of each other are Safari refilling its buffer.
+
+\begin{cmdout}
+20:49:55  alfphone  back  after 1:51, buffer 1:39
+20:49:54  alfphone  refilled  19 segments, 114 s of audio
+20:48:04  alfphone  offline  buffer 2:58
+20:46:56  alfphone  refilled  32 segments, 192 s of audio
+20:46:55  alfphone  tap Radio Swiss Jazz  HLS, starts 180 s back
+\end{cmdout}
+
+\texttt{radio deploy} copies the page, the server, and the shared rules to the droid, only the ones that changed. A new page is live at once. A new server waits for a restart, which empties the tapes, so \texttt{deploy} asks before it restarts.
+
+\section*{What is next}
+
+The piece shown on the page is the one the station is playing live, three minutes ahead of the music the phone plays. Showing the right one needs the server to keep each station's titles with the time they arrived, and the page to show the title from three minutes back.
+
+On the subway the iPhone reaches the droid through \name{Tailscale}, which needs time to reconnect after the network returns, and a stop between stations may be too short for it. A public address in front of the droid would remove that wait, so the phone would need only plain internet. \name{Tailscale Funnel} publishes such an address, but it runs on a machine that is always on and has \name{Tailscale}'s command line, and the droid's \name{Termux} has no such command, so the radio has no such machine yet. One real ride with \texttt{radio watch} running will show how long the phone takes to come back.
+
+\begin{thebibliography}{9}
+  \bibitem[HLS]{hls} R. Pantos and W. May, \textit{HTTP Live Streaming}, RFC 8216, Aug 2017. \url{https://datatracker.ietf.org/doc/html/rfc8216}
+  \bibitem[Icy]{icy} Icecast, \textit{Icecast metadata protocol}. \url{https://cast.readme.io/docs/icy}
+\end{thebibliography}
+
+\revisiontable
+
+\end{document}
