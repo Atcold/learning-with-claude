@@ -27,6 +27,12 @@
 \newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
   colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
 
+% A configuration file, titled with its name: the cmdout look, without the word Output
+\newtcblisting{config}[1]{listing engine=listings, listing only, enhanced, breakable,
+  colback=white, colframe=black!25, boxrule=0.4pt, arc=1pt, left=4pt,
+  title={#1}, fonttitle=\scriptsize, coltitle=black!70, colbacktitle=black!6,
+  listing options={style=out}}
+
 \tikzset{
   box/.style={draw=#1!70!black, fill=#1!45, very thick, rounded corners=3pt,
     minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize},
@@ -277,8 +283,181 @@ Host: 192.168.4.z
 \name{kasa} reaches it only from inside the house: from NYU, \texttt{192.168.4.z} does not exist. From outside, the Kasa app goes through TP-Link's servers instead. The tailnet does not help here, because the plug is not on it.
 \end{result}
 
+\section{A shared machine: one service for a friend}
+
+\here[new section][New section 4: sharing one machine of the tailnet with someone outside it, with a diagram]Sharing lets a person outside my tailnet reach one of my machines, and nothing else. The friend needs a \name{Tailscale} account of their own. In the admin console, Machines, the machine's menu, Share, I either type their email or copy an invite link and send it. Once they accept, the machine appears in their tailnet under its full name, \texttt{alfdroid.tailnet-x.ts.net}, and they open its services like any of their own machines \cite{tssharing}. Sharing is available on every plan, the free one included.
+
+\begin{center}
+\begin{tikzpicture}
+  \node[box=green] (droid) {\name{AlfDROID}\\Navidrome \texttt{:4533}};
+  \node[box=grey, below=0.6cm of droid] (spark) {\name{AlfSPARK}};
+  \node[box=grey, below=0.6cm of spark] (mac) {\name{AlfMAC4}};
+  \node[draw=black!40, rounded corners=4pt, inner sep=8pt,
+    label={[font=\scriptsize, black!70]below:my tailnet}, fit=(droid)(spark)(mac)] {};
+  \node[box=orange, right=5cm of spark] (friend) {the friend's laptop};
+  \node[draw=black!40, rounded corners=4pt, inner sep=8pt,
+    label={[font=\scriptsize, black!70]below:the friend's tailnet}, fit=(friend)] {};
+  \draw[flow, very thick] (friend) -- node[lbl, sloped]{1. shared: port 4533} (droid);
+  \draw[flow, dashed, red!85!black] (friend) -- node[font=\scriptsize, red!85!black, below, midway]{2. not shared} (spark);
+  \draw[flow, dashed, red!85!black] (droid.north east) to[out=30, in=90]
+    node[font=\scriptsize, red!85!black, fill=white, inner sep=1pt, pos=0.5]{3. cannot start a call} (friend.north);
+\end{tikzpicture}
+\end{center}
+
+The drawing shows the three rules a shared machine follows:
+
+\begin{compactitemize}
+  \item The friend reaches the shared machine, arrow 1. An access rule can narrow that to a single port, here \texttt{4533}, where the music server \name{Navidrome} listens.
+  \item The friend reaches none of my other machines, arrow 2. They are not in the friend's tailnet at all.
+  \item The shared machine is \textbf{quarantined}: it answers the friend's connections, but it cannot open a connection into the friend's tailnet, arrow 3. Two-way traffic needs each of us to share a machine with the other.
+\end{compactitemize}
+
+The access rule is a \textbf{grant} in the tailnet's policy file, in the admin console's Access controls. \texttt{autogroup:shared} stands for every person who accepted a shared machine, so this grant lets them reach port \texttt{4533} and no other:
+
+\begin{config}{The tailnet policy file, in the admin console}
+"grants": [
+  {"src": ["autogroup:shared"], "dst": ["*"], "ip": ["4533"]}
+]
+\end{config}
+
+\begin{insight}{Keep invite links private}
+An email invite works once. A copied link works up to 1,000 times, so anyone who gets hold of it joins as a guest, and an unused link expires after 30 days. \name{Tailscale}'s documentation says to treat the link the way you would a password \cite{tssharing}.
+\end{insight}
+
+\begin{result}{Who reaches what}
+Navidrome speaks the Subsonic protocol, an interface that many music apps understand. A friend with a shared \name{AlfDROID} gives such an app the address \texttt{http://alfdroid.tailnet-x.ts.net:4533} and listens to my music. On an iPhone or a Mac, that app is \name{Cassette}, an open-source Subsonic client with CarPlay support \cite{navapps}. Nobody else on the Internet sees the port, and the friend sees nothing else of mine.
+\end{result}
+
+\section{Funnel: a service on the open Internet}
+
+\here[new section][New section 5: Funnel, what it exposes and why a student called it unsafe, with a diagram]\name{Tailscale} Funnel publishes a service of one of my machines to the whole Internet, at \texttt{https://alfspark.tailnet-x.ts.net}. The visitors need no \name{Tailscale} account and no invite. A student told me Funnel is not safe. The diagram shows the path a visitor's request takes, and the box below it explains what that means for safety.
+
+\begin{center}
+\begin{tikzpicture}
+  \node[box=grey] (who) {anyone\\on the Internet};
+  \node[alt, right=1.8cm of who] (relay) {\name{Tailscale}'s\\funnel relay};
+  \node[box=green, right=1.8cm of relay] (spark) {\name{AlfSPARK}\\TLS ends here};
+  \node[box=blue, right=1.8cm of spark] (svc) {the service\\on \texttt{localhost}};
+  \node[box=yellow, text width=3cm, below=1.1cm of relay] (ct) {public certificate\\ledger};
+  \draw[flow] (who) -- node[lbl]{HTTPS} (relay);
+  \draw[flow] (relay) -- node[lbl]{encrypted} (spark);
+  \draw[flow] (spark) -- node[lbl]{plain HTTP} (svc);
+  \draw[flow, dashed] (spark) |- node[font=\scriptsize, black!70, pos=0.75, below]{its name} (ct);
+  \draw[flow, dashed] (ct) -| node[font=\scriptsize, black!70, pos=0.25, below]{looked up} (who);
+\end{tikzpicture}
+\end{center}
+
+The relay passes the encrypted bytes along without reading them. The encryption ends on my machine, which hands the plain request to the service on its own loopback \cite{tsfunnel}. That encryption is TLS, the same one behind every HTTPS page, so \name{Tailscale} cannot see the traffic. Funnel listens on ports \texttt{443}, \texttt{8443}, and \texttt{10000} only. It needs two tailnet settings: MagicDNS, which gives each machine its name, and HTTPS, which gives that name a certificate. The tailnet's policy also has to give the machine the \texttt{funnel} attribute. \texttt{tailscale funnel} switches all three on by itself. Funnel is still in beta, and its bandwidth has a limit that \name{Tailscale} does not state.
+
+\begin{insight}{What the student means}
+With sharing, the tailnet checks who is knocking before a single byte reaches the service. With Funnel, anyone can knock, and the service's own login is the only lock. A bug in that service, or a page left without a password, is open to everyone. The address is public too. An HTTPS certificate is recorded in a public ledger, and \name{Tailscale} warns that “the machine names are still published in the public ledger” \cite{tshttps}, so a stranger can find the address there without ever being told it.
+\end{insight}
+
+\subsection*{Step 1: what \name{AlfSPARK} publishes today}
+
+\renewcommand{\panetitle}{A shell on \name{AlfSPARK}}
+\begin{pane}
+$ tailscale funnel status    # what this machine publishes to the Internet
+\end{pane}
+\begin{cmdout}
+|!No serve config!|
+\end{cmdout}
+
+Nothing is published. The same answer comes from \texttt{tailscale serve status}, because Serve and Funnel share one configuration. Serve publishes a service to the tailnet only, and Funnel publishes it beyond the tailnet.
+
+\subsection*{Step 2: \name{AlfDROID} has no Funnel}
+
+Funnel runs only where the \name{tailscale} command runs \cite{tsfunnel}. The \name{Tailscale} app on Android has no command line, and \name{Termux} has no \name{tailscale} package:
+
+\renewcommand{\panetitle}{A shell on \name{AlfDROID}, in \name{Termux}}
+\begin{pane}
+$ pkg search '^tailscale'    # a tailscale command line for Termux
+\end{pane}
+\begin{cmdout}
+|~Sorting...~|
+|~Full Text Search...~|
+\end{cmdout}
+
+The search finds nothing, so a service on \name{AlfDROID} reaches the Internet only through another machine.
+
+\begin{result}{Which one to use}
+A service meant for people I know goes to them as a shared machine. Funnel suits a page meant for everyone, such as a landing page, and then the service behind it must be safe to show to strangers.
+\end{result}
+
+\section{Cloudflare WARP next to Tailscale: one VPN slot}
+
+\here[new section][New section 6: Cloudflare WARP as a proxy beside Tailscale on AlfDROID, with a diagram]Cloudflare's free VPN, WARP, comes in the 1.1.1.1 app. On \name{AlfDROID} it would knock \name{Tailscale} off. Android gives its VPN to one app at a time, and \name{Tailscale} holds it as the always-on VPN, so turning WARP on takes \texttt{alfdroid} off the tailnet. WARP is built on WireGuard, the VPN protocol \name{Tailscale} also uses, and WireGuard can also run inside an ordinary program, with no VPN slot:
+
+\begin{compactitemize}
+  \item \name{wgcf} registers a free WARP account and writes its WireGuard profile, \name{wgcf-profile.conf}. It runs once, on any machine.
+  \item \name{wireproxy} opens that WireGuard tunnel inside its own process and offers it on the loopback as a SOCKS5 proxy. SOCKS5 is a protocol through which a program asks a proxy to make its connections for it.
+  \item Only a program told to use the proxy goes through WARP. Here that program is \name{slskd}, the Soulseek client, and everything else keeps its normal path.
+\end{compactitemize}
+
+\begin{center}
+\begin{tikzpicture}
+  \node[box=blue] (slskd) {\name{slskd}};
+  \node[box=orange, right=1.7cm of slskd] (wp) {\name{wireproxy}\\port \texttt{25344}};
+  \node[box=yellow, right=1.7cm of wp] (warp) {Cloudflare\\WARP};
+  \node[box=grey, right=1.7cm of warp] (peers) {Soulseek\\peers};
+  \node[box=green, below=0.8cm of $(slskd)!0.5!(wp)$] (ts) {\name{Tailscale} app\\the VPN slot};
+  \node[box=grey] (tailnet) at (warp |- ts) {my tailnet};
+  \node[draw=black!40, rounded corners=4pt, inner sep=8pt,
+    label={[font=\scriptsize, black!70]below:\name{AlfDROID}}, fit=(slskd)(wp)(ts)] {};
+  \draw[flow] (slskd) -- node[lbl]{SOCKS5} (wp);
+  \draw[flow] (wp) -- node[lbl]{WireGuard} (warp);
+  \draw[flow] (warp) -- (peers);
+  \draw[flow, <->] (ts) -- (tailnet);
+  \draw[flow, dashed, red!85!black] (peers.north) .. controls +(0,1.3) and +(0,1.3) .. (slskd.north)
+    node[pos=0.5, above, font=\scriptsize, red!85!black]{a peer calling in: no open port};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Step 1: the parts on \name{AlfDROID}}
+
+\begin{pane}
+$ pkg search wireproxy    # a userspace WireGuard client, packaged for Termux
+\end{pane}
+\begin{cmdout}
+|!wireproxy/stable 1.1.3-1 aarch64!|
+  Wireguard client that exposes itself as a socks5 proxy
+\end{cmdout}
+
+\name{wireproxy} is a \name{Termux} package, so it runs alongside the \name{Tailscale} app without needing root. Its configuration names the profile and the port to listen on:
+
+\begin{config}{wireproxy.conf}
+WGConfig = ./wgcf-profile.conf
+
+[Socks5]
+BindAddress = 127.0.0.1:25344
+\end{config}
+
+\name{slskd} sends its Soulseek connections through the proxy when its own configuration says so \cite{slskdconf}:
+
+\begin{config}{slskd.yml}
+soulseek:
+  connection:
+    proxy:
+      enabled: true
+      address: 127.0.0.1
+      port: 25344
+\end{config}
+
+\begin{insight}{What WARP gives up}
+Soulseek peers see a Cloudflare address in place of my home's. WARP forwards no ports, though, so a peer cannot connect in to \name{slskd}, the red arrow in the drawing. Only one side of a pair has to accept the call, so I still reach every peer with an open port. With the rest the connection fails, and \name{slskd}'s documentation lists what that costs: “poor search results and the inability to browse or retrieve user information for some users” \cite{slskdconf}.
+\end{insight}
+
+\begin{result}{The VPN slot stays with Tailscale}
+The \name{Tailscale} app keeps the VPN slot and the tailnet. \name{wireproxy} carries only \name{slskd}'s traffic to Cloudflare, as a proxy any \name{Termux} program can use if it is told to.
+\end{result}
+
 \begin{thebibliography}{TLCL}
   \bibitem[TLCL]{shotts} William E. Shotts Jr., \textit{The Linux Command Line}, 2nd ed., No Starch Press, 2016, free at \url{https://linuxcommand.org/tlcl.php}. \textit{Tunneling with SSH}, p.~229.
+  \bibitem[Share]{tssharing} Tailscale, \textit{Sharing your nodes with other users}. \url{https://tailscale.com/kb/1084/sharing}
+  \bibitem[Apps]{navapps} Navidrome, \textit{Apps \& players}. \url{https://www.navidrome.org/apps/}
+  \bibitem[Funnel]{tsfunnel} Tailscale, \textit{Tailscale Funnel}. \url{https://tailscale.com/kb/1223/funnel}
+  \bibitem[HTTPS]{tshttps} Tailscale, \textit{Enabling HTTPS}. \url{https://tailscale.com/kb/1153/enabling-https}
+  \bibitem[slskd]{slskdconf} slskd, \textit{Configuration}. \url{https://github.com/slskd/slskd/blob/master/docs/config.md}
 \end{thebibliography}
 
 \revisiontable
