@@ -1,0 +1,337 @@
+% Lesson: self-hosting my music, from leaving Spotify to listening from my own server
+% Compile with:  latexmk  (settings in .latexmkrc)
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,calc,backgrounds}
+\usepackage{twemojis}
+\usepackage{alfdoc}
+\usepackage{enumitem}
+\newlist{compactitemize}{itemize}{1}
+\setlist[compactitemize,1]{label=\textbullet,leftmargin=1.2em,nosep,topsep=0.2em}
+\usepackage{booktabs}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+\setlength{\emergencystretch}{3em}
+
+\newtcolorbox{result}[1]{enhanced, breakable, colback=green!22, colframe=green!50!black,
+  colbacktitle=green!60, coltitle=black, title={\emo{check mark button}\ #1}, fonttitle=\bfseries, boxrule=1pt, arc=2pt}
+
+\tikzset{
+  box/.style={draw=#1!70!black, fill=#1!45, very thick, rounded corners=3pt,
+    minimum height=1.1cm, text width=2.3cm, align=center, font=\footnotesize},
+  flow/.style={->, black!60},
+  lbl/.style={font=\scriptsize, black!70, above, midway},
+  side/.style={font=\scriptsize, black!70, right, midway},
+}
+
+\title{\emo{musical note}\ Self-hosting\\[0.3em]
+  \large My music on my own server, after Spotify}
+\author{Lesson for Alf, written by Claude}
+\date{Mon 16 Nov 2026}
+
+\begin{document}
+\maketitle
+
+\section{The pipeline, from Spotify to my headphones}
+
+Leaving Spotify means doing its jobs myself. Spotify keeps my playlists, finds the songs, stores them, plays them on every device, and suggests new music. On my own server, each of these jobs is a separate program, and the programs hand their work to one another. The diagram shows the whole chain, and the sections below follow it in order.
+
+\begin{center}
+\begin{tikzpicture}
+  \node[box=green]  (spot) at (0,0)      {Spotify\\playlists};
+  \node[box=violet] (explo) at (4.3,0)   {\name{Explo}};
+  \node[box=orange] (lid) at (8.6,0)     {\name{Lidarr}\\wanted list};
+  \node[box=yellow] (soul) at (12.9,0)   {\name{Soularr}};
+  \node[box=blue]   (slskd) at (12.9,-2.4) {\name{slskd}\\Soulseek};
+  \node[box=grey]   (lib) at (8.6,-2.4)  {music folder};
+  \node[box=aqua]   (nav) at (4.3,-2.4)  {\name{Navidrome}};
+  \node[box=pink]   (app) at (0,-2.4)    {\name{Cassette}\\on the iPhone};
+  \node[box=lavender] (lb) at (0,-4.8)   {\name{ListenBrainz}};
+  \draw[flow] (spot) -- node[lbl]{1. playlists} (explo);
+  \draw[flow] (explo) -- node[lbl]{albums} (lid);
+  \draw[flow] (lid) -- node[lbl]{2. missing} (soul);
+  \draw[flow] (soul) -- node[side]{3. searches} (slskd);
+  \draw[flow] (slskd) -- node[lbl]{4. imported} (lib);
+  \draw[flow] (lib) -- node[lbl]{5. scanned} (nav);
+  \draw[flow] (nav) -- node[lbl]{6. streams} (app);
+  \draw[flow] (app) -- node[side]{7. listens} (lb);
+  \draw[flow] (lb.east) -| (2.15,-1.2) -| (explo.south);
+  \node[font=\scriptsize, black!70, anchor=west] at (2.25,-4.6) {8. recommendations};
+\end{tikzpicture}
+\end{center}
+
+The numbers on the arrows follow the order in which a song travels:
+
+\begin{compactitemize}
+  \item \name{Explo} reads my Spotify playlists and asks \name{Lidarr} for their albums, arrow 1.
+  \item \name{Lidarr} keeps the list of albums I want, and \name{Soularr} checks that list for the ones still missing, arrow 2.
+  \item \name{Soularr} asks \name{slskd}, a client for the Soulseek file-sharing network, to search for each missing album and download it, arrow 3.
+  \item \name{Lidarr} imports each finished download into the music folder, with its name and tags fixed, arrow 4.
+  \item \name{Navidrome}, the music server, scans that folder, arrow 5, and streams it to \name{Cassette}, the player on my iPhone, arrow 6.
+  \item \name{ListenBrainz} records what I play, arrow 7, and its suggestions go back to \name{Explo}, which fetches them, arrow 8.
+\end{compactitemize}
+
+\name{Lidarr} belongs to a family of programs whose names end in \emph{-arr}, and each member watches one kind of media. \name{Sonarr} does the same job for TV series, and \name{Radarr} for films, so for music the member is \name{Lidarr}.
+
+\section{Leaving Spotify: export the playlists first}
+
+Spotify holds the one thing I cannot get back from anywhere else: the playlists I built over the years. They should come out before the subscription ends, and soon, because Spotify keeps narrowing what other programs can read. Since 9 Mar 2026, a program that reads Spotify on my behalf sees only the playlists I own or collaborate on, and my playlist folders stay inside Spotify, because its interface has never returned them \cite{tuneferry}.
+
+Two exports cover everything:
+
+\begin{compactitemize}
+  \item \name{Exportify} writes one CSV file per playlist, with the title, artists, album, and the ISRC, a code that identifies one recording worldwide \cite{exportify}. A program that matches songs later uses the ISRC to find the exact recording. \name{Exportify} runs in the browser at \url{https://exportify.app} after a Spotify login, and Spotify can withdraw its access at any time.
+  \item Spotify's own ‘Download your data’, in the account's privacy settings, sends my playlists, my library, and my listening history as JSON files. The listening history is what a recommendation service needs to know my taste.
+\end{compactitemize}
+
+\name{Explo} reads a Spotify playlist directly too: its playlist import fetches the songs of a playlist from Spotify or Apple Music \cite{explo}. That import goes through the same Spotify interface, so the CSV files stay as the record that survives the account.
+
+\section{Music I already own}
+
+Some of my music I paid for already, and the lawful copies come first \cite{jeffquit}:
+
+\begin{compactitemize}
+  \item Amazon Music lists every song I ever bought at \url{https://music.amazon.com/recently/purchased}, and each one downloads as a file.
+  \item A CD becomes files through a USB CD drive.
+  \item \name{MusicBrainz Picard} fixes the names, tags, and cover art of files from any source. It matches each file against \name{MusicBrainz}, an open database of recordings.
+\end{compactitemize}
+
+\section{Finding the rest: Lidarr, Soularr, and slskd}
+
+\name{Lidarr} works from a list of artists I follow. For each artist it knows every album from \name{MusicBrainz}, marks the ones I lack as \textbf{wanted}, and imports a downloaded album into the music folder with its name and tags fixed. It runs as a web page on port \texttt{8686} \cite{lidarr}.
+
+\name{slskd} is a client for Soulseek, a network where people share their music folders with one another. It also runs as a web page, on port \texttt{5030}, and it talks to other Soulseek users on a separate port of its own \cite{slskdconf}.
+
+\name{Soularr} is a small \name{Python} script that connects the two. It reads the wanted albums from \name{Lidarr}, searches for each one through \name{slskd}, and once a download finishes it tells \name{Lidarr} to import the files \cite{soularr}. It runs every five minutes by default.
+
+\begin{insight}{Soulseek and my home address}
+Every Soulseek user sees the address of the people they exchange files with. The networking lesson's section 6 sends \name{slskd}'s traffic through Cloudflare WARP, so the other users see a Cloudflare address. The cost is that nobody can connect in to \name{slskd}, and some searches return less.
+\end{insight}
+
+\section{Listening: Navidrome and Cassette}
+
+\name{Navidrome} is the music server. It scans the music folder, serves it as a web page on port \texttt{4533}, and speaks the Subsonic protocol, an interface that many music apps understand \cite{navapps}. The apps, one per device:
+
+\begin{compactitemize}
+  \item \name{Cassette} on the iPhone and the Mac, an open-source Subsonic client with CarPlay support.
+  \item \name{Symfonium} on Android, the client Dammit Jeff recommends for Android \cite{jeffquit}.
+  \item \name{Navidrome}'s own web page in any browser.
+\end{compactitemize}
+
+The apps reach \name{Navidrome} over the tailnet, at \texttt{http://alfdroid:4533} from my own machines. A friend reaches it as a shared machine, as the networking lesson's section 4 explains.
+
+\section{New music: ListenBrainz and Explo}
+
+Spotify's best job is suggesting music I do not know yet. \name{ListenBrainz}, from the people behind \name{MusicBrainz}, records what I play and computes recommendations from it, as an open service. \name{Explo} takes those recommendations every week, fetches the songs through \name{slskd}, YouTube, or \name{Lidarr}, and builds playlists from them, such as Weekly Exploration and Daily Jams, on the music server \cite{explo}. Dammit Jeff wrote the playlist import for \name{Explo} \cite{jeffquit}.
+
+\section{What runs where on AlfDROID}
+
+\name{AlfDROID} runs Android, and its programs live at two levels. \name{Termux} runs programs built for Android directly. Debian in \name{proot} runs ordinary Linux programs, those built for the GNU C library, a little more slowly. The diagram shows each program at its level.
+
+\begin{center}
+\begin{tikzpicture}
+  \node[box=aqua] (nav) {\name{Navidrome}\\\texttt{:4533}};
+  \node[box=orange, right=0.5cm of nav] (wp) {\name{wireproxy}\\WARP};
+  \node[draw=black!40, rounded corners=4pt, inner sep=6pt,
+    label={[font=\scriptsize, black!70]below:\name{Termux}, Android programs}, fit=(nav)(wp)] (termux) {};
+  \node[box=blue, right=2.2cm of wp] (slskd) {\name{slskd}\\\texttt{:5030}};
+  \node[box=orange, right=0.5cm of slskd] (lid) {\name{Lidarr}\\\texttt{:8686}};
+  \node[box=violet, below=0.5cm of slskd] (explo) {\name{Explo}};
+  \node[box=yellow, below=0.5cm of lid] (soul) {\name{Soularr}};
+  \node[draw=black!40, rounded corners=4pt, inner sep=6pt,
+    label={[font=\scriptsize, black!70]below:Debian in \name{proot}, Linux programs}, fit=(lid)(slskd)(soul)(explo)] (debian) {};
+  \begin{scope}[on background layer]
+    \node[draw=black!40, fill=grey!25, rounded corners=6pt, inner sep=14pt,
+      label={[font=\scriptsize, black!70]above:\name{AlfDROID}, Android}, fit=(termux)(debian)] {};
+  \end{scope}
+  \draw[flow] (slskd) -- node[lbl]{SOCKS5} (wp);
+\end{tikzpicture}
+\end{center}
+
+I checked each program on \name{AlfDROID} itself:
+
+\renewcommand{\panetitle}{A shell on \name{AlfDROID}, in \name{Termux}}
+\begin{pane}
+$ pkg search navidrome    # the music server, packaged for Termux
+\end{pane}
+\begin{cmdout}
+|!navidrome/stable 0.64.2-3 aarch64!|
+  Modern Music Server and Streamer compatible with Subsonic/Airsonic
+\end{cmdout}
+
+\name{Navidrome} and \name{wireproxy} install from \name{Termux}'s own packages. \name{slskd} publishes builds for 64-bit ARM Linux, one for the GNU C library and one for musl \cite{slskdrel}, and \name{Lidarr} publishes one for the GNU C library \cite{lidarr}. Android has its own C library, Bionic, so these builds start only inside Debian. \name{Soularr} is \name{Python} and \name{Explo} is \name{Go}, so both run inside Debian as well, next to the programs they talk to.
+
+\begin{pane}
+$ df -h /data    # the space left for music
+\end{pane}
+\begin{cmdout}
+|~Filesystem                              Size  Used Avail Use% Mounted on~|
+|!/dev/block/bootdevice/by-name/userdata  108G   40G   67G  38% /data/user/0!|
+\end{cmdout}
+
+67\,GB are free. An album in FLAC, the lossless format, takes around 300\,MB, so \name{AlfDROID} holds a couple of hundred albums before it needs an SSD on its USB-C port.
+
+\subsection*{Measured on AlfDROID}
+
+Three measurements show where \name{AlfDROID}'s limits are. They ran in the shared pane, with \name{AlfDROID} at the office, on the same Wi-Fi as \name{AlfMAC4}.
+
+\renewcommand{\panetitle}{Shared pane 3.2, on \name{AlfDROID}, in \name{Termux}}
+\begin{pane}
+$ dd if=/dev/zero of=dd.test bs=1M count=1024 conv=fsync  # write 1 GB to internal storage, flushed
+\end{pane}
+\begin{cmdout}
+1024+0 records in
+1024+0 records out
+|!1073741824 bytes (1.1 GB, 1.0 GiB) copied, 8.61539 s, 125 MB/s!|
+\end{cmdout}
+
+\name{dd} copies zeros into a 1\,GB file, and \texttt{conv=fsync} makes it wait until the bytes are on the storage chip, so the speed is the chip's own: 125\,MB/s.
+
+\begin{pane}
+$ iperf3 -c alfmac4 -t 10  # AlfDROID to AlfMAC4 over Wi-Fi, 10 s
+\end{pane}
+\begin{cmdout}
+[ ID] Interval           Transfer     Bitrate         Retr
+[  4]   0.00-10.00  sec   159 MBytes   133 Mbits/sec  767            sender
+|![  4]   0.00-10.02  sec   156 MBytes   130 Mbits/sec                  receiver!|
+\end{cmdout}
+
+\name{iperf3} sends data as fast as it can to a copy of itself on \name{AlfMAC4}, here over the tailnet, and reports the speed: 130\,Mbit/s, about 16\,MB/s. A file reaches \name{AlfDROID} eight times more slowly than the storage can write it.
+
+\renewcommand{\panetitle}{Shared pane 3.2, on \name{AlfDROID}, in Debian under \name{proot}}
+\begin{pane}
+$ ./Lidarr/Lidarr -nobrowser -data=/root/.config/Lidarr  # start Lidarr in the foreground
+\end{pane}
+\begin{cmdout}
+2026-11-16 22:23:33.2|Info|Bootstrap|Starting Lidarr - /root/Lidarr/Lidarr - Version 3.1.6.5079
+|!2026-11-16 22:23:46.3|Info|Microsoft.Hosting.Lifetime|Application started. Press Ctrl+C to shut down.!|
+\end{cmdout}
+
+These two lines come from \name{Lidarr}'s log. The first start took 13 seconds, including creating its databases, and \name{Lidarr} then held about 195\,MB of memory. Its web page answered \name{AlfMAC4} over the tailnet in half a second.
+
+\begin{result}{The network is the limit}
+The storage writes at 125\,MB/s and the Wi-Fi carries 16\,MB/s, and both are far above the few MB/s that a Soulseek download reaches. \name{Lidarr} runs under \name{proot} with its standard build. For music, \name{AlfDROID} is fast enough, and its 67\,GB of free space is the limit to watch.
+\end{result}
+
+\begin{result}{The plan for AlfDROID}
+\name{Navidrome} and \name{wireproxy} run in \name{Termux}. \name{Lidarr}, \name{slskd}, \name{Soularr}, and \name{Explo} run in Debian under \name{proot}.
+\end{result}
+
+\section{Photos: automatic backup with Immich}
+
+My photos have no automatic backup today. iCloud's free 5\,GB hold far too little, and Google Photos backs up either photos and videos together or nothing, which leaves picking the photos by hand. \name{Immich} is an open-source photo and video server. Its iPhone app uploads the camera roll by itself, and it can leave the videos out, as the subsection on the iPhone shows. Its web page and apps show the library with faces, places, and a search that understands descriptions such as ‘dog on a beach’. It runs as four containers, which \name{Docker Compose} starts together from one file \cite{immichcompose}:
+
+\begin{compactitemize}
+  \item \texttt{immich-server}, the web page and the interface the apps talk to, on port \texttt{2283}.
+  \item \texttt{immich-machine-learning}, the worker that finds faces and computes the search index for every photo.
+  \item \texttt{redis}, a fast store for the queue of jobs, run as \name{Valkey}, a Redis-compatible program.
+  \item \texttt{database}, \name{Postgres} with extensions that search the index.
+\end{compactitemize}
+
+\begin{center}
+\begin{tikzpicture}[wbox/.style={box=#1, text width=2.9cm}]
+  \node[wbox=pink] (phone) {\name{Immich} app\\on the iPhone};
+  \node[wbox=aqua, right=2.4cm of phone] (server) {\texttt{immich-server}\\\texttt{:2283}};
+  \node[wbox=violet, right=0.6cm of server] (ml) {machine learning\\on the CPU};
+  \node[wbox=yellow, below=0.6cm of server] (redis) {\texttt{redis}\\\name{Valkey}};
+  \node[wbox=orange, below=0.6cm of ml] (db) {\texttt{database}\\\name{Postgres}};
+  \node[draw=black!40, rounded corners=4pt, inner sep=8pt , fit=(server)(ml)(redis)(db)] (docker) {};
+  \node[font=\scriptsize, black!70 , anchor=south] at (docker.north) {\name{Docker Compose}};
+  \node[wbox=grey, below=0.9cm of docker.south] (lib) {photo library\\on the NVMe disk};
+  \begin{scope}[on background layer]
+    \node[draw=black!40, fill=grey!25, rounded corners=6pt, inner sep=16pt , fit=(docker)(lib)] (spark) {};
+  \end{scope}
+  \node[font=\scriptsize, black!70 , anchor=south] at (spark.north) {\name{AlfSPARK}};
+  \node[wbox=green] (copy) at (phone |- lib) {second copy\\SSD or Backblaze};
+  \draw[flow] (phone) -- node[lbl, pos=0.3]{tailnet} (server);
+  \draw[flow] (docker.south) -- (lib);
+  \draw[flow, dashed] (lib) -- node[lbl]{backup} (copy);
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Why not AlfDROID}
+
+\name{Docker} builds each container from features of the Linux kernel: namespaces, which give a container its own view of processes and network, and control groups, which limit its memory and CPU. It needs root to set them up. \name{Termux} runs as an ordinary Android app, and \name{proot} only imitates a root filesystem inside that app, so neither can start a container. \name{AlfDROID}'s kernel is Linux \texttt{4.9.227}, and its configuration file is readable only as root, so whether a rooted \name{AlfDROID} has the features \name{Docker} needs is an open question. The size of the job settles it anyway. \name{Immich} asks for at least 6\,GB of memory and recommends 8\,GB and four cores \cite{immichreq}, and \name{AlfDROID} has 8\,GB in all, shared with Android and the music programs.
+
+\subsection*{Why AlfSPARK}
+
+\renewcommand{\panetitle}{A shell on \name{AlfSPARK}}
+\begin{pane}
+$ uname -m; docker --version; df -h / | tail -1    # architecture, Docker, free disk
+\end{pane}
+\begin{cmdout}
+|!aarch64!|
+|!Docker version 29.6.2, build dfc4efb!|
+/dev/nvme0n1p2  3.7T  348G  |!3.2T!|  10% /
+\end{cmdout}
+
+\name{AlfSPARK} is a 64-bit ARM machine, which \name{Immich} supports: ‘Immich runs on the \texttt{amd64} and \texttt{arm64} platforms’ \cite{immichreq}. It has \name{Docker} and 3.2\,TB free, enough for years of photos plus the 10--20\% that thumbnails and converted videos add.
+
+\begin{pane}
+$ free -g | head -2    # memory, with the local model loaded
+\end{pane}
+\begin{cmdout}
+               total        used        free      shared  buff/cache   available
+Mem:             121         102          16           0           4          |!19!|
+\end{cmdout}
+
+19\,GB stay available while \name{vLLM} holds the rest, so \name{Immich}'s 8\,GB fit beside the local model.
+
+\begin{insight}{The worker runs on the CPU}
+\name{Immich} can run its machine learning on an NVIDIA GPU through CUDA, for a GPU of compute capability 5.2 or newer with driver 545 or newer \cite{immichml}. \name{AlfSPARK}'s GB10 has compute capability 12.1 and driver 580, so the card qualifies. The CUDA build of the worker exists for \texttt{amd64} only, though, as the image's own list of platforms shows:
+
+\begin{pane}
+$ docker manifest inspect ghcr.io/immich-app/immich-machine-learning:release-cuda | grep '"architecture"'
+\end{pane}
+\begin{cmdout}
+|!            "architecture": "amd64",!|
+|~            "architecture": "unknown",~|
+\end{cmdout}
+
+The plain \texttt{release} image lists \texttt{arm64} as well, so on \name{AlfSPARK} the worker runs on the CPU. Indexing a whole library then takes longer the first time, and each new photo after that takes a moment.
+\end{insight}
+
+\subsection*{Backing up from the iPhone}
+
+The \name{Immich} app uploads new photos when it opens and, every so often, in the background. iOS decides when a background task runs, so the app needs Background App Refresh switched on, and it runs more often the more I open it. By default it uploads only over Wi-Fi \cite{immichmobile}.
+
+The app backs up the albums I select and skips the albums I exclude, which I mark with a double tap. iOS keeps every video in its own automatic album, Videos, so selecting all photos and excluding Videos backs up the photos alone, with no picking by hand. \name{Immich}'s documentation gives this case as its example \cite{immichmobile}. The app's server address is \texttt{http://alfspark:2283}, a name that exists only on the tailnet, so \name{Tailscale} on the iPhone carries the upload from anywhere, and the router opens no port.
+
+\begin{insight}{Keep a second copy}
+\name{AlfSPARK} then holds the only backup of my photos, and the iPhone the other copy. \name{Immich}'s documentation recommends the 3-2-1 rule: three copies, on two kinds of storage, one of them elsewhere \cite{immichbackup}. \name{Immich} dumps its database every day at 2:00 and keeps the last 14 dumps next to the photos. The dumps hold names, albums, and faces, and the photos stay in their own folders. Copying the photo folders and those dumps elsewhere is my job: to an external SSD on \name{AlfSPARK}, or to Backblaze B2, a cloud storage service that charges by the gigabyte.
+\end{insight}
+
+\begin{result}{Photos on AlfSPARK}
+\name{Immich} runs on \name{AlfSPARK} in four containers, with its machine learning on the CPU. The iPhone app uploads over the tailnet, and a copy of the library on an SSD or Backblaze B2 keeps a second home for it.
+\end{result}
+
+\begin{thebibliography}{Quit}
+  \bibitem[Quit]{jeffquit} Dammit Jeff, \textit{How to ACTUALLY Quit Spotify}, YouTube, 21 Apr 2026. \url{https://www.youtube.com/watch?v=3d2cATPt8Nk}
+  \bibitem[Tune]{tuneferry} TuneFerry, \textit{Export Spotify playlists to CSV: what still works in 2026}. \url{https://tuneferry.com/blog/export-spotify-playlists-every-method-2026}
+  \bibitem[Exp]{exportify} Exportify. \url{https://github.com/watsonbox/exportify}
+  \bibitem[Explo]{explo} Explo. \url{https://github.com/LumePart/Explo}
+  \bibitem[Lid]{lidarr} Servarr wiki, \textit{Lidarr: Linux installation}. \url{https://wiki.servarr.com/lidarr/installation/linux}
+  \bibitem[slskd]{slskdconf} slskd, \textit{Configuration}. \url{https://github.com/slskd/slskd/blob/master/docs/config.md}
+  \bibitem[Rel]{slskdrel} slskd, \textit{Release 0.26.2}. \url{https://github.com/slskd/slskd/releases/tag/0.26.2}
+  \bibitem[Soul]{soularr} Soularr. \url{https://github.com/mrusse/soularr}
+  \bibitem[ImC]{immichcompose} Immich, \textit{docker-compose.yml}, latest release. \url{https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml}
+  \bibitem[ImR]{immichreq} Immich, \textit{Requirements}. \url{https://docs.immich.app/install/requirements}
+  \bibitem[ImML]{immichml} Immich, \textit{Hardware-accelerated machine learning}. \url{https://docs.immich.app/features/ml-hardware-acceleration}
+  \bibitem[ImM]{immichmobile} Immich, \textit{Mobile backup}. \url{https://docs.immich.app/features/mobile-backup}
+  \bibitem[ImB]{immichbackup} Immich, \textit{Backup and restore}. \url{https://docs.immich.app/administration/backup-and-restore}
+  \bibitem[Apps]{navapps} Navidrome, \textit{Apps \& players}. \url{https://www.navidrome.org/apps/}
+\end{thebibliography}
+
+\revisiontable
+
+\end{document}
