@@ -181,9 +181,9 @@ $ df -h /data    # the space left for music
 
 67\,GB are free. An album in FLAC, the lossless format, takes around 300\,MB, so \name{AlfDROID} holds a couple of hundred albums before it needs an SSD on its USB-C port.
 
-\subsection*{Measured on AlfDROID}
+\subsection*{Measured on AlfDROID and AlfSPARK}
 
-Three measurements show where \name{AlfDROID}'s limits are. They ran in the shared pane, with \name{AlfDROID} at the office, on the same Wi-Fi as \name{AlfMAC4}.
+Three measurements show where \name{AlfDROID}'s limits are, and the same tests on \name{AlfSPARK} give the comparison. They ran in the shared pane, with \name{AlfDROID} at the office, on the same Wi-Fi as \name{AlfMAC4}.
 
 \renewcommand{\panetitle}{Shared pane 3.2, on \name{AlfDROID}, in \name{Termux}}
 \begin{pane}
@@ -219,8 +219,43 @@ $ ./Lidarr/Lidarr -nobrowser -data=/root/.config/Lidarr  # start Lidarr in the f
 
 These two lines come from \name{Lidarr}'s log. The first start took 13 seconds, including creating its databases, and \name{Lidarr} then held about 195\,MB of memory. Its web page answered \name{AlfMAC4} over the tailnet in half a second.
 
-\begin{result}{The network is the limit}
-The storage writes at 125\,MB/s and the Wi-Fi carries 16\,MB/s, and both are far above the few MB/s that a Soulseek download reaches. \name{Lidarr} runs under \name{proot} with its standard build. For music, \name{AlfDROID} is fast enough, and its 67\,GB of free space is the limit to watch.
+\here[AlfSPARK compared][AlfSPARK measured with the same disk and Lidarr tests, and a table comparing it with AlfDROID]The same disk test and the same \name{Lidarr} build, started with a fresh data folder, ran on \name{AlfSPARK}:
+
+\renewcommand{\panetitle}{Shared pane 3.2, on \name{AlfSPARK}}
+\begin{pane}
+$ dd if=/dev/zero of=dd.test bs=1M count=1024 conv=fsync  # write 1 GB to the NVMe disk, flushed
+\end{pane}
+\begin{cmdout}
+|!1073741824 bytes (1.1 GB, 1.0 GiB) copied, 0.243075 s, 4.4 GB/s!|
+\end{cmdout}
+
+\begin{pane}
+$ ./Lidarr/Lidarr -nobrowser -data=$HOME/lidarr-test/data  # start Lidarr in the foreground, fresh data
+\end{pane}
+\begin{cmdout}
+2026-11-16 22:30:24.4|Info|Bootstrap|Starting Lidarr - /home/(removed)/lidarr-te...
+|!2026-11-16 22:30:26.4|Info|Microsoft.Hosting.Lifetime|Application started. Press...!|
+\end{cmdout}
+
+\name{Lidarr} hides my user name in its log, hence \texttt{(removed)}. The table puts the two machines side by side:
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+  \toprule
+  & \name{AlfDROID} & \name{AlfSPARK} \\
+  \midrule
+  Disk write, 1\,GB flushed & 125\,MB/s & 4.4\,GB/s \\
+  \name{Lidarr}'s first start & 13\,s & 2\,s \\
+  \name{Lidarr}'s memory & 195\,MB & 181\,MB \\
+  Network & Wi-Fi, 16\,MB/s & Ethernet to the eero \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\name{AlfSPARK} writes 35 times faster and starts \name{Lidarr} six times faster, and \name{Lidarr} needs the same memory on both. \name{AlfSPARK} sits at home on Ethernet, so its network speed is measured once \name{AlfDROID} is home too, over the same Wi-Fi.
+
+\begin{result}{AlfDROID is enough for music}
+\name{AlfSPARK} wins every test, but no number in the table limits music. A Soulseek download runs at a few MB/s, well under either disk and \name{AlfDROID}'s Wi-Fi, and \name{Lidarr} starts once and then keeps running. \name{Lidarr} runs under \name{proot} with its standard build. \name{AlfDROID}'s 67\,GB of free space is the limit to watch.
 \end{result}
 
 \begin{result}{The plan for AlfDROID}
