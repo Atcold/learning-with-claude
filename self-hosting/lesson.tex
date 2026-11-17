@@ -134,6 +134,8 @@ The apps reach \name{Navidrome} over the tailnet, at \texttt{http://alfdroid:453
 
 Spotify's best job is suggesting music I do not know yet. \name{ListenBrainz}, from the people behind \name{MusicBrainz}, records what I play and computes recommendations from it, as an open service. \name{Explo} takes those recommendations every week, fetches the songs through \name{slskd}, YouTube, or \name{Lidarr}, and builds playlists from them, such as Weekly Exploration and Daily Jams, on the music server \cite{explo}. Dammit Jeff wrote the playlist import for \name{Explo} \cite{jeffquit}.
 
+The radio is a second source of new music. Every time I tap the heart on the radio page or press \texttt{l} in the terminal player, the droid writes the piece, with its station and the time, into \name{liked.json}. The list holds the pieces I heard by chance and wanted to keep. Its entries can be sent to \name{ListenBrainz} as listens or loves, so its recommendations learn from the radio too, or handed to \name{Lidarr} to fetch the pieces I do not own yet.
+
 \section{What runs where on AlfDROID}
 
 \name{AlfDROID} runs Android, and its programs live at two levels. \name{Termux} runs programs built for Android directly. Debian in \name{proot} runs ordinary Linux programs, those built for the GNU C library, a little more slowly. The diagram shows each program at its level.
