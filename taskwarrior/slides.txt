@@ -1,0 +1,82 @@
+# 1 · The config
+Taskwarrior reads `~/.config/task/taskrc` every time it starts, like an app reading its preferences file.
+`~/.config/task` is a link to `~/Dropbox/Apps/taskwarrior/config`, so AlfMAC4 and AlfMAC5 share it.
+`data.location` puts the tasks in Dropbox as well, so both Macs see one list.
+`uda.owner` adds a field of our own, a user-defined attribute: who does the task: `alf`, `bot` for any bot, or `claude` by name.
+`report.next` puts that owner in the default list, and `news.version` silences a release-notes reminder.
+$ bat --paging=never -l ini ~/.config/task/taskrc  # the shared config
+---
+# 2 · Add a task
+`task add` takes a description plus attributes written as name:value.
+`project:radio` files the task under the PARA project radio.
+`owner:claude` says that I am the one who does it.
+$ task add project:radio owner:claude 'Take in the Boox notes on the radio lesson'  # first task
+> Taskwarrior numbers it 1 and reports how far the project radio is: 0%, one task left.
+---
+# 3 · Your turn: Tab completion
+From here on you type the line yourself in the pane below; Return here moves to the next slide.
+Names shorten to two letters: `pro:` is `project:`, `ow:` is `owner:`.
+After `pro:`, Tab offers your projects and matches their keys too: `rd` finds radio.
+A lesson is filed under its project as `<project>.lesson`, so task 1 moves to `radio.lesson`.
+`task 1 modify` changes an attribute of task 1, here its project, from `radio` to `radio.lesson`.
+% task 1 modify pro:radio.lesson  # task 1 is radio's lesson
+---
+# 4 · Owner completion
+After `ow:`, Tab offers `alf`, `bot`, and `claude`, from the config.
+The self-hosting lesson has no project of its own, so it is `self-hosting.lesson`.
+% task add pro:self-hosting.lesson ow:claude 'Take in the Boox notes on the self-hosting lesson'  # task 2
+---
+# 5 · A new document for para
+The plan for para is finished. The next document is the design document, and I write it.
+`pa` is para's key.
+% task add pro:para ow:claude 'Write the design document'  # task 3
+---
+# 6 · A task that waits
+You review the design document on the Boox, but only after I have written it.
+`depends:3` makes this task wait for task 3. Taskwarrior calls it blocked until 3 is done.
+% task add pro:para ow:alf depends:3 'Review the design document on the Boox'  # task 4
+---
+# 7 · The list
+`task` on its own shows every pending task, the most urgent first.
+Deps shows what a task waits for. Owner shows who does it.
+Urg is an urgency score that Taskwarrior computes: a blocked task drops to the bottom.
+% task  # all pending tasks
+---
+# 8 · Only yours
+Words between `task` and the command are a filter, like a search field above a list.
+`ow:alf` keeps only the tasks you have to do.
+% task ow:alf  # what waits on you
+---
+# 9 · One project
+`pro:radio` matches radio and everything nested in it, so its lesson shows up too.
+% task pro:radio  # radio and its lesson
+---
+# 10 · Every lesson
+`pro.has:lesson` keeps the projects whose name contains lesson, across all projects.
+This is the other view of the same names: lessons first, then whose they are.
+% task pro.has:lesson  # all lessons
+---
+# 11 · Blocked
+`task blocked` lists the tasks that wait for another task.
+% task blocked  # waiting for someone else
+---
+# 12 · Ready
+`task ready` lists the tasks that can start now, whoever owns them.
+% task ready  # can start now
+---
+# 13 · Finishing a task
+To try done without faking real work, add a practice task in a sub-project `para.practice`.
+% task add pro:para.practice ow:alf 'Practise task done'  # task 5
+---
+# 14 · Done
+`task <id> done` marks a task finished. It leaves the list but stays in the history.
+% task 5 done  # finish the practice task
+---
+# 15 · How far each project is
+`task summary` shows each project with its remaining tasks and a percent-complete bar.
+The percentage is finished tasks divided by all tasks, so it only means something once the steps are written.
+% task summary  # progress per project
+---
+# 16 · End of the commands
+These are the everyday commands: `add`, `modify`, the list, filters, `blocked`, `ready`, `done`, and `summary`.
+Next we fit them to our work: how a round becomes tasks, the Boox check, and the hook that stops edits.

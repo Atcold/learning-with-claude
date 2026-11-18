@@ -16,6 +16,7 @@ Each folder is one lesson.
 - [AlfDROID](alfdroid/): a OnePlus 6 as an always-on server on the tailnet, Debian in Termux.
 - [Self-hosting](self-hosting/): my music after Spotify, from exporting the playlists through Lidarr, Soularr, and slskd to Navidrome and Cassette, and what runs where on AlfDROID.
 - [Radio](radio/): eight stations in the Mac's terminal and on the iPhone, three minutes behind live from AlfDROID's tapes over HLS.
+- [Taskwarrior](taskwarrior/): who waits on whom, with one task list for both Macs, an owner for each task, PARA projects with lessons as `<project>.lesson`, and Tab completion.
 
 ## Building
 
