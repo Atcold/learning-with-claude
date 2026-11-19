@@ -11,6 +11,7 @@
 \usepackage{twemojis}
 \usepackage{alfdoc}
 \usepackage{enumitem}
+\usepackage{needspace}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{xurl}
@@ -23,8 +24,8 @@
 \newcommand{\home}{\textasciitilde}  % the home folder, as the shell writes it
 
 % A short session, commands and their output together: \begin{session}{AlfMAC4} … \end{session}
-\newtcblisting{session}[1]{listing engine=listings, listing only, enhanced, breakable,
-  colback=white, colframe=blue!70!black, boxrule=0.5pt, arc=2pt, left=4pt, top=1pt, bottom=1pt,
+\newtcblisting{session}[1]{listing engine=listings, listing only, enhanced jigsaw, breakable,
+  opacityback=0, colframe=blue!70!black, boxrule=0.5pt, arc=2pt, left=4pt, top=1pt, bottom=1pt,
   colbacktitle=blue!40, coltitle=black, title={\emo{desktop computer}\ #1}, fonttitle=\scriptsize\bfseries,
   listing options={style=roles}}
 
@@ -49,8 +50,8 @@
   moredelim=[is][\color{black!30}\itshape]{|\#}{\#|}}
 
 % A config file: keys coloured, # comments grey
-\newtcblisting{config}[1]{listing engine=listings, listing only, enhanced, breakable,
-  colback=white, colframe=blue!70!black, boxrule=0.5pt, arc=2pt, left=4pt, top=1pt, bottom=1pt,
+\newtcblisting{config}[1]{listing engine=listings, listing only, enhanced jigsaw, breakable,
+  opacityback=0, colframe=blue!70!black, boxrule=0.5pt, arc=2pt, left=4pt, top=1pt, bottom=1pt,
   colbacktitle=blue!40, coltitle=black, title={\emo{page facing up}\ #1}, fonttitle=\scriptsize\bfseries,
   listing options={style=keys}}
 \lstdefinestyle{keys}{style=out, moredelim=[is][\color{attr}]{|@}{@|},
@@ -66,12 +67,17 @@
 
 \section*{What it is for}
 
-% Review: “Italic or bold” (on round), “dictate” (on write), “Or in Skim” (on Boox); “I either write them or dictate them.”
-A \emph{round} is one reading of a document: I write or dictate notes on it, on the Boox or in Skim, and then a bot takes the notes in and edits the document. Each step waits for the one before, and a session that edits a document while my notes on it are still waiting undoes that order, which is what a radio session nearly did. \name{Taskwarrior} (\url{https://taskwarrior.org}) is a command-line task list that keeps such steps: each step is a task, each task names who does it, and a task can wait for another. It is built for one person's list, so the field that names the person or the bot is one we add ourselves.
+\name{Taskwarrior} (\url{https://taskwarrior.org}) is a task list I use from the terminal. I use it to see what I can start, what a bot can pick up, and what has to wait. I add an owner field to say who does each task. I can also make one task depend on another. For the radio lesson, the edit had to wait until I finished my review and the bot had my notes. An editing session nearly started before the notes were available and could have overwritten my feedback.
 
+% Review: “if around is a reading of a document a session was what we didn't define it session”
+A \emph{session} moves a project forward and goes in the project log.
+
+% Review: “which gives me new revisions, no?”
+A \emph{round} is one reading of a document. I write or dictate notes on the Boox or in Skim, and a bot applies them to produce the next \emph{revision}. The document's revision table records each round.
 \section*{Install and config}
 
-\name{Homebrew} installs it as \name{task}, version 3.5.0. It keeps its settings in a plain text file, \name{taskrc}, and its tasks in a database file, \name{taskchampion.sqlite3}. Both live in \name{\home/Dropbox/Apps/taskwarrior/}, the settings in \name{config/} and the tasks in \name{data/}, so \name{AlfMAC4} and \name{AlfMAC5} share one list. I use one Mac at a time, so only one of them writes at any moment.
+% Review: “I thought this was share instead?”
+\name{Homebrew} installs it as \name{task}, version 3.5.0. It keeps its settings in a plain text file, \name{taskrc}, and its tasks in a database file, \name{taskchampion.sqlite3}. Both live in \name{\home/Dropbox/Apps/taskwarrior/}, the settings in \name{config/} and the tasks in \name{share/}, so \name{AlfMAC4} and \name{AlfMAC5} share one list. I use one Mac at a time, so only one of them writes at any moment.
 % Review: “taskrc doesn't have highlighting”, “It's unreadable without colours.”
 
 \begin{session}{\name{AlfMAC4}}
@@ -84,8 +90,8 @@ A \emph{round} is one reading of a document: I write or dictate notes on it, on 
 \name{task} looks for its settings in three places, in this order: the file named by the \texttt{TASKRC} variable, then \name{\home/.taskrc}, then \name{\$XDG\_CONFIG\_HOME/task/taskrc}. My shells leave \texttt{XDG\_CONFIG\_HOME} unset, and 3.5.0 then takes \name{\home/.config/task/taskrc}. The FILES section of \name{man task} describes only the case where the variable is set; the fallback comes from a test in an empty home folder. The link above puts the Dropbox folder at that path. \name{Mac/install.sh} in my settings repo runs both setup lines, so a new Mac gets them with the rest of its tools.
 
 \begin{config}{\home/.config/task/taskrc}
-# The task database lives next to this file, so both Macs see one list.
-|@data.location@|=~/Dropbox/Apps/taskwarrior/data
+# Both Macs use the same task database in Dropbox.
+|@data.location@|=~/Dropbox/Apps/taskwarrior/share
 
 # Colours in the terminal.
 |@color@|=on
@@ -120,10 +126,10 @@ A \emph{round} is one reading of a document: I write or dictate notes on it, on 
 |@dateformat.annotation@|=-
 |@indent.annotation@|=1
 
-# Taskwarrior's usual messages, minus the notice for each rc. override the task function passes.
+# Keep the usual task messages and suppress notices about command-line config overrides.
 |@verbose@|=affected,blank,context,edit,header,footnote,label,new-id,project,special,sync,recur
 
-# Headers without underline; the task function colours them and drops the dashes.
+# Use two spaces between columns and leave header styling to the shell function.
 |@fontunderline@|=no
 |@column.padding@|=2
 \end{config}
@@ -135,23 +141,28 @@ A \emph{round} is one reading of a document: I write or dictate notes on it, on 
   \item \texttt{report.card}: a report of my own, one row per task with its annotations under the description.
   \item \texttt{color.*}: the built-in theme draws a blocking task black on bright white, a blocked one grey on dark grey, and every other row on a grey stripe, all from the terminal's 16-colour palette. My terminal theme redefines those palette colours, and each pair came out nearly the same. These lines keep only foreground colours, and the progress bar of \name{task summary} takes my terminal's own green.
   \item \texttt{dateformat.annotation} and \texttt{indent.annotation}: an annotation shows with a dash and one space of indent, in place of its date.
-  \item \texttt{verbose}: Taskwarrior's usual messages without the notice it prints for each \texttt{rc.} setting given on the command line, since the \name{task} function below gives some.
-  \item \texttt{fontunderline} and \texttt{column.padding}: a header with a row of dashes in place of an underline, and two spaces between columns.
-\end{itemize}
+  % Review: “what is RC? without the notice it prints for each rc.”
+  \item \texttt{verbose} lists the messages Taskwarrior prints. \texttt{rc} stands for run commands, the name traditionally given to a program's settings. A command-line argument of the form \texttt{rc.name=value} overrides a setting for that invocation. The list leaves out \texttt{override}, which controls the notice that Taskwarrior prints about those overrides.   % Review: “where are these dashes I don't see them in the configuration file”
+  \item \texttt{fontunderline=no} makes Taskwarrior draw dashes under its headers in place of underlining the labels. Taskwarrior generates the dashes when it prints a report, and the shell function replaces them with a grey rule. \texttt{column.padding=2} leaves two spaces between columns. \end{itemize}
 
 \section*{Projects and their names}
 
-A task belongs to one project, and a dot nests one project inside another, as a folder sits inside a folder. Projects carry their PARA names, such as \texttt{radio} and \texttt{para}. A lesson is filed under the project it belongs to as \texttt{<project>.lesson}, so the radio lesson is \texttt{radio.lesson}. A lesson without a project of its own takes its folder name, as \texttt{self-hosting.lesson} does. One name then serves two lists: \texttt{pro:radio} finds radio with its lesson, and \texttt{pro.has:lesson} finds every lesson.
+% Review: “I think you want to use the symbol itself in text TT dot”
+% Review: “you are using undefined strings”
+% Review: “I believe this paragraph needs to be set before the previous one since you're introducing here p r o”
+Taskwarrior writes an attribute as \texttt{name:value}. An unambiguous beginning of at least two letters can stand for the full name. For example, \texttt{pro:} means \texttt{project:}, and \texttt{ow:} means \texttt{owner:}. A dot after the attribute name introduces a filter modifier. In \texttt{pro.has:lesson}, \texttt{has} asks for projects whose names contain \texttt{lesson}.
+
+A task belongs to one project, and a dot (\texttt{.}) nests one project inside another, as a folder sits inside a folder. Projects carry their PARA names, such as \texttt{radio} and \texttt{para}. A lesson is filed under the project it belongs to as \texttt{<project>.lesson}, so the radio lesson is \texttt{radio.lesson}. A lesson without a project of its own takes its folder name, as \texttt{self-hosting.lesson} does. One name then serves two lists: \texttt{pro:radio} finds radio with its lesson, and \texttt{pro.has:lesson} finds every lesson.
 
 \section*{Adding and changing tasks}
 
-\name{task add} takes a description and attributes written as \texttt{name:value}. An attribute's name shortens to any start of two letters or more that fits only that attribute, so \texttt{pro:} is \texttt{project:} and \texttt{ow:} is \texttt{owner:}. After each change, \name{task} reports how far the project is.
+\name{task add} takes a description and attributes written as \texttt{name:value}. After each change, \name{task} reports how far the project is.
 
-\begin{session}{\name{AlfMAC4}}
+\begin{session}{Taskwarrior 3.5.0}
 |>$ |^task^| |&add&| |@project:radio@| |@owner:claude@| |"'Take in the Boox notes on the radio lesson'"|  |## first task#|<|
-Created task |!1!|.
+Created task 1.
 The project 'radio' has changed.  Project 'radio' is 0% complete (1 task remaining).
-|>$ |^task^| 1 |&modify&| |@project:radio.lesson@|  |## move it to the radio lesson#|<|
+|>$ |^task^| |&modify&| 1 |@project:radio.lesson@|  |## move it to the radio lesson#|<|
 Modifying task 1 'Take in the Boox notes on the radio lesson'.
 Modified 1 task.
 The project 'radio' has changed.  Project 'radio' is 0% complete (0 of 0 tasks remaining).
@@ -165,72 +176,109 @@ The project 'para' has changed.  Project 'para' is 0% complete (1 task remaining
 |>$ |^task^| |&add&| |@pro:para@| |@ow:alf@| |@depends:3@| |"'Review the design doc on the Book'"|  |## waits for task 3#|<|
 Created task 4.
 The project 'para' has changed.  Project 'para' is 0% complete (2 of 2 tasks remaining).
-|>$ |^task^| rc.verbose=nothing 4 |&modify&| /Book/Boox/  |## fix a typo in the description#|<|
+|>$ |^task^| |&modify&| 4 /Book/Boox/  |## replace Book with Boox in the description#|<|
+Modifying task 4 'Review the design doc on the Boox'.
+Modified 1 task.
+Project 'para' is 0% complete (2 of 2 tasks remaining).
 \end{session}
 
-The number \name{task add} prints is the task's ID, the short handle the other commands take. IDs belong to pending tasks, and Taskwarrior renumbers them as tasks finish. \name{task 1 modify} changes the attributes it is given and keeps the rest, so task 1 keeps its description and owner. \texttt{depends:3} makes task 4 wait for task 3, because the design document has to exist before I review it. In the last line, \texttt{/old/new/} replaces text in the description, and \texttt{rc.verbose=nothing} sets a config value for this one command, here to print nothing.
+The number \name{task add} prints is the task's ID, the short handle the other commands take. IDs belong to pending tasks, and Taskwarrior renumbers them as tasks finish. \texttt{task modify 1} changes the attributes it is given and keeps the rest, so task 1 keeps its description and owner. \texttt{depends:3} makes task 4 wait for task 3, because the design document has to exist before I review it. \texttt{task modify 4 /Book/Boox/} replaces \texttt{Book} with \texttt{Boox} in task 4’s description.
+% Review: “if it's not necessary this goes it's extremely confusing to add things that are completely useless”
+% Review: “in fact I didn't even notice what was the syntax to replace anything for a specific class moreover I think modify should proceed at task number since she reads like task modify number task and then modification”
+% Review: “useless, remove!”
+% Review: “invert order”
 
+\Needspace{14\baselineskip}
 \section*{Looking at the list}
 
 \name{task} alone lists the pending tasks, the most urgent first. \emph{Urg} is an urgency score that Taskwarrior computes: task 3 rises because another task waits for it, and task 4 sinks because it waits.
 
-\begin{session}{\name{AlfMAC4}}
+\begin{session}{Taskwarrior 3.5.0}
 |>$ |^task^|  |## every pending task#|<|
-ID Age   Deps Owner  Project             Description                                       Urg
- 3  6min      claude para                Write the design document                            |!9!|
- 1 44min      claude radio.lesson        Take in the Boox notes on the radio lesson           1
- 2  9min      claude self-hosting.lesson Take in the Boox notes on the self-hosting lesson    1
- 4  2min |!3!|    alf    para                Review the design doc on the Boox                   |!-4!|
+ID  Age    Deps  Owner   Project              Description                                             Urg
+(*@\taskrule{105}@*)
+ 3   6min        claude  para                 Write the design document                                 9
+ 1  44min        claude  radio.lesson         Take in the Boox notes on the radio lesson                1
+ 2   9min        claude  self-hosting.lesson  Take in the Boox notes on the self-hosting lesson         1
+ 4   2min     3  alf     para                 Review the design doc on the Boox                        -4
+
 4 tasks
 \end{session}
 
-Words between \name{task} and its command are a filter, like a search field above a list. \texttt{ow:alf} keeps what waits on me, and \texttt{pro:radio} keeps radio and the projects nested in it. \texttt{pro.has:lesson} uses a \emph{modifier}, \texttt{.has}, and keeps every project whose name contains \texttt{lesson}. The other modifiers are \texttt{is}, \texttt{isnt}, \texttt{hasnt}, \texttt{startswith}, \texttt{endswith}, \texttt{not}, \texttt{none}, and \texttt{any}.
+Words such as \texttt{ow:alf} and \texttt{pro:radio} act as a filter, like a search field above a list. \texttt{ow:alf} keeps what waits on me, and \texttt{pro:radio} keeps radio and the projects nested in it. \texttt{pro.has:lesson} uses a \emph{modifier}, \texttt{.has}, and keeps every project whose name contains \texttt{lesson}. The other modifiers are \texttt{is}, \texttt{isnt}, \texttt{hasnt}, \texttt{startswith}, \texttt{endswith}, \texttt{not}, \texttt{none}, and \texttt{any}.
 
-\begin{session}{\name{AlfMAC4}}
+\begin{session}{Taskwarrior 3.5.0}
 |>$ |^task^| |@ow:alf@|  |## what waits on me#|<|
-ID Age  Deps Owner Project Description                       Urg
- 4 4min 3    alf   para    Review the design doc on the Boox   -4
+ID  Age   Deps  Owner  Project  Description                             Urg
+(*@\taskrule{75}@*)
+ 4  4min     3  alf    para     Review the design doc on the Boox        -4
+
 1 task
 |>$ |^task^| |@pro:radio@|  |## radio and its children#|<|
-ID Age   Owner  Project      Description                                Urg
- 1 47min claude radio.lesson Take in the Boox notes on the radio lesson    1
+ID  Age    Owner   Project       Description                                      Urg
+(*@\taskrule{85}@*)
+ 1  47min  claude  radio.lesson  Take in the Boox notes on the radio lesson         1
+
 1 task
 |>$ |^task^| |@project.has:lesson@|  |## every lesson#|<|
-ID Age   Owner  Project             Description                                       Urg
- 1 49min claude radio.lesson        Take in the Boox notes on the radio lesson           1
- 2 14min claude self-hosting.lesson Take in the Boox notes on the self-hosting lesson    1
+ID  Age    Owner   Project              Description                                             Urg
+(*@\taskrule{99}@*)
+ 1  49min  claude  radio.lesson         Take in the Boox notes on the radio lesson                1
+ 2  14min  claude  self-hosting.lesson  Take in the Boox notes on the self-hosting lesson         1
+
 2 tasks
 \end{session}
 
 Two more lists split the tasks by whether they can start. \name{task blocked} shows the tasks that wait for another task, and \name{task ready} shows the ones that can start now, whoever owns them.
 
-\begin{session}{\name{AlfMAC4}}
+\begin{session}{Taskwarrior 3.5.0}
 |>$ |^task^| |&blocked&|  |## waiting for another task#|<|
-ID Deps Proj Age  Description
- 4 3    para 7min Review the design doc on the Boox
+ID  Deps  Proj  Age   Description
+(*@\taskrule{33}@*)
+ 4     3  para  7min  Review the design doc on the Boox
+
 1 task
 |>$ |^task^| |&ready&|  |## free to start#|<|
-ID Age   Project             Description                                       Urg
- 3 11min para                Write the design document                            9
- 1 50min radio.lesson        Take in the Boox notes on the radio lesson           1
- 2 14min self-hosting.lesson Take in the Boox notes on the self-hosting lesson    1
+ID  Age    Project              Description                                         Urg
+(*@\taskrule{87}@*)
+ 3  11min  para                 Write the design document                             9
+ 1  50min  radio.lesson         Take in the Boox notes on the radio lesson            1
+ 2  14min  self-hosting.lesson  Take in the Boox notes on the self-hosting lesson     1
+
 3 tasks
 \end{session}
 
 \section*{Details on a task}
 
-A task has one line of text, its description, which serves as its title. Longer details go in \emph{annotations}, lines attached to a task that keep the time they were added. Task 6 got a short description and its two setup steps as annotations.
+A task has one line of text, its description, which serves as its title. Longer details go in \emph{annotations}, lines attached to a task that keep the time they were added. I add the lesson review as task 5 and the Taskwarrior setup as task 6. Then I shorten task 6’s description and put the two setup steps in annotations.
+% Review: “as I said before this is impossible for me to use rc.verbose=nothing”
+% Review: “order inverted”
 
-\begin{session}{\name{AlfMAC4}}
-|>$ |^task^| rc.verbose=nothing 6 |&modify&| |"'Set up Taskwarrior on AlfMAC5'"|  |## a short description#|<|
-|>$ |^task^| rc.verbose=nothing 6 |&annotate&| |"'brew install task'"|  |## the first step#|<|
-|>$ |^task^| rc.verbose=nothing 6 |&annotate&| |"'ln -s ~/Dropbox/Apps/taskwarrior/config ~/.config/task'"|  |## the second step#|<|
+\begin{session}{Taskwarrior 3.5.0}
+|>$ |^task^| |&add&| |@pro:taskwarrior.lesson@| |@ow:alf@| |"'Review Taskwarrior lesson on Boox'"|  |## the lesson review#|<|
+Created task 5.
+The project 'taskwarrior.lesson' has changed.  Project 'taskwarrior.lesson' is 0% complete (1 task remaining).
+|>$ |^task^| |&add&| |@pro:para@| |@ow:alf@| |"'Install and configure Taskwarrior on AlfMAC5'"|  |## create task 6#|<|
+Created task 6.
+The project 'para' has changed.  Project 'para' is 0% complete (3 of 3 tasks remaining).
+|>$ |^task^| |&modify&| 6 |"'Set up Taskwarrior on AlfMAC5'"|  |## a short description#|<|
+Modifying task 6 'Set up Taskwarrior on AlfMAC5'.
+Modified 1 task.
+Project 'para' is 0% complete (3 of 3 tasks remaining).
+|>$ |^task^| |&annotate&| 6 |"'brew install task'"|  |## the first step#|<|
+Annotating task 6 'Set up Taskwarrior on AlfMAC5'.
+Annotated 1 task.
+Project 'para' is 0% complete (3 of 3 tasks remaining).
+|>$ |^task^| |&annotate&| 6 |"'ln -s ~/Dropbox/Apps/taskwarrior/config ~/.config/task'"|  |## the second step#|<|
+Annotating task 6 'Set up Taskwarrior on AlfMAC5'.
+Annotated 1 task.
+Project 'para' is 0% complete (3 of 3 tasks remaining).
 |>$ |^task^| |@ow:alf@|  |## the list counts them#|<|
 ID  Age    Deps  Owner  Project             Description                             Urg
 (*@\taskrule{87}@*)
- 5   1h          alf    taskwarrior.lesson  Review Taskwarrior lesson on Boox         9
- 6  37min        alf    para                Set up Taskwarrior on AlfMAC5 |![2]!|       1.9
- 4   2h       3  alf    para                Review the design doc on the Boox        -4
+ 6  37min        alf    para                Set up Taskwarrior on AlfMAC5 (*@{\color{cyan}[2]}@*)       1.9
+ 5     1h        alf    taskwarrior.lesson  Review Taskwarrior lesson on Boox         1
+ 4     2h     3  alf    para                Review the design doc on the Boox        -4
 
 3 tasks
 |>$ |^task^| 6  |## one task#|<|
@@ -249,34 +297,38 @@ With an ID alone, \name{task} always runs its full \name{info} report, which als
 \begin{itemize}[nosep]
   \item \texttt{task 6} shows the project and the description with its annotations in bold blue labels, then status, urgency, owner, what the task waits for, and its age on one grey line.
   \item \texttt{task 5,6} shows the \texttt{card} report, one row per task with its annotations.
-  \item A list gets its header in bold blue over a grey rule, each annotation count in cyan, the IDs under Deps right-aligned, and the count of tasks in grey.
-  \item A command that changes tasks, such as \name{add}, \name{modify}, or \name{done}, goes to Taskwarrior untouched, so its questions and messages work as usual. \texttt{task 6 info} still gives the full report.
+  % Review: “irrelevant” (the list's colours and alignment)
+    \item A command that changes tasks, such as \name{add}, \name{modify}, or \name{done}, goes to Taskwarrior untouched, so its questions and messages work as usual. \texttt{task 6 info} still gives the full report.
 \end{itemize}
 
 \section*{Finishing a task}
 
 \name{task <id> done} marks a task finished: it leaves the lists and stays in the history. A practice task in \texttt{para.practice} gave it something to finish.
 
-\begin{session}{\name{AlfMAC4}}
+\begin{session}{Taskwarrior 3.5.0}
 |>$ |^task^| |&add&| |@pro:para.practice@| |@ow:alf@| Practise task done  |## something to finish#|<|
-Created task 5.
+Created task 7.
 The project 'para.practice' has changed.  Project 'para.practice' is 0% complete (1 task remaining).
-|>$ |^task^| 5 |&done&|  |## finish it#|<|
-Completed task 5 'Practise task done'.
+|>$ |^task^| 7 |&done&|  |## finish it#|<|
+Completed task 7 'Practise task done'.
 Completed 1 task.
 You have more urgent tasks.
-The project 'para.practice' has changed.  Project 'para.practice' is |!100%!| complete (0 of 1 tasks remaining).
+The project 'para.practice' has changed.  Project 'para.practice' is 100% complete (0 of 1 tasks remaining).
 |>$ |^task^| |&summary&|  |## each project's share done#|<|
 Project      Remaining Avg age Complete 0%                        100%
-para                 2   10min      |!33%!|  (*@\taskbar{10}@*)
+(*@\taskrule{70}@*)
+para                 3   10min      25%  (*@\taskbar{7}@*)
 radio                1   55min       0%
   lesson             1   55min       0%
 self-hosting         1   20min       0%
   lesson             1   20min       0%
-5 projects
+taskwarrior          1      1h       0%
+  lesson             1      1h       0%
+
+7 projects
 \end{session}
 
-\name{task summary} shows each project with its pending tasks, their average age, and a bar for the share that is done. A parent counts its children: para has three tasks, one of them done, so it is at 33\%. The share is done tasks over all tasks, so it means something once a project's steps are written in advance. A project that adds its next step as it goes sees its bar drop each time.
+\name{task summary} shows each project with its pending tasks, their average age, and a bar for the share that is done. A parent counts its children: para has four tasks, one of them done, so it is at 25\%. The share is done tasks over all tasks, so it means something once a project's steps are written in advance. A project that adds its next step as it goes sees its bar drop each time.
 
 \section*{Tab completion}
 
@@ -301,11 +353,15 @@ pro.has:learning-with-claude            pro.has:lesson      pro.has:letter-to-ma
 dep:1 : Take in the Boox notes on the radio lesson
 dep:2 : Take in the Boox notes on the self-hosting lesson
 dep:3 : Write the design document
+dep:4 : Review the design doc on the Boox
+dep:5 : Review Taskwarrior lesson on Boox
+dep:6 : Set up Taskwarrior on AlfMAC5
 \end{session}
 
 In the \name{ble.sh} menu, each further Tab moves to the next item, and Return puts the chosen one on the line without running it. When one name alone matches, as with \texttt{pro:self}, Tab fills it in at once.
 
 \section*{The commands}
+% Review: “order inverted”
 
 \begin{center}
 \small
@@ -314,19 +370,19 @@ In the \name{ble.sh} menu, each further Tab moves to the next item, and Return p
 \normalfont\textbf{Command} & \textbf{What it does} \\
 \midrule
 \textcolor{cmd}{task} \textcolor{sub}{add} \textcolor{attr}{pro:P} \textcolor{attr}{ow:O} \textcolor{desc}{'text'} & a new task in project P, done by O \\
-\textcolor{cmd}{task} 4 \textcolor{sub}{modify} \textcolor{attr}{pro:P} & change an attribute of task 4 \\
-\textcolor{cmd}{task} 4 \textcolor{sub}{modify} /old/new/ & replace text in its description \\
+\textcolor{cmd}{task} \textcolor{sub}{modify} 4 \textcolor{attr}{pro:P} & change an attribute of task 4 \\
+\textcolor{cmd}{task} \textcolor{sub}{modify} 4 /old/new/ & replace text in its description \\
 \textcolor{cmd}{task} \textcolor{sub}{add} … \textcolor{attr}{depends:3} & a task that waits for task 3 \\
 \textcolor{cmd}{task} & the pending tasks, most urgent first \\
 \textcolor{cmd}{task} \textcolor{attr}{ow:alf} & only mine \\
 \textcolor{cmd}{task} \textcolor{attr}{pro:radio} & a project and its children \\
 \textcolor{cmd}{task} \textcolor{attr}{pro.has:lesson} & every project whose name contains lesson \\
-\textcolor{cmd}{task} 6 \textcolor{sub}{annotate} \textcolor{desc}{'text'} & add a line of detail to task 6 \\
+\textcolor{cmd}{task} \textcolor{sub}{annotate} 6 \textcolor{desc}{'text'} & add a line of detail to task 6 \\
 \textcolor{cmd}{task} 6 & task 6 on its own, short \\
 \textcolor{cmd}{task} 6 \textcolor{sub}{info} & everything about task 6, with its history \\
 \textcolor{cmd}{task} \textcolor{sub}{blocked} & the tasks that wait for another \\
 \textcolor{cmd}{task} \textcolor{sub}{ready} & the tasks free to start \\
-\textcolor{cmd}{task} 5 \textcolor{sub}{done} & finish task 5 \\
+\textcolor{cmd}{task} 7 \textcolor{sub}{done} & finish task 7 \\
 \textcolor{cmd}{task} \textcolor{sub}{summary} & each project's share done \\
 \bottomrule
 \end{tabular}
