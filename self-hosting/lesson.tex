@@ -42,59 +42,62 @@
 \begin{document}
 \maketitle
 
-\section{The pipeline, from Spotify to my headphones}
+\section{From discovery to listening}
 
-Leaving Spotify means doing its jobs myself. Spotify keeps my playlists, finds the songs, stores them, plays them on every device, and suggests new music. On my own server, each of these jobs is a separate program, and the programs hand their work to one another. The diagram shows the whole chain, and the sections below follow it in order.
+I discover music on the radio and bring the pieces I want to keep into my own library. Once I start listening there, the plays can feed recommendations back into the library. My old Spotify playlists are one input to that cycle.
+
+% Review: “why not making this a cycle by leaving just Spotify as a outside note”
+\here[Music discovery cycle][The diagram shows Spotify as an input to the listening cycle.]The eight arrows follow a piece from a suggestion to a listen and back to a new suggestion.
 
 \begin{center}
 \begin{tikzpicture}
-  \node[box=green]  (spot) at (0,0)      {Spotify\\playlists};
-  \node[box=violet] (explo) at (4.3,0)   {\name{Explo}};
-  \node[box=orange] (lid) at (8.6,0)     {\name{Lidarr}\\wanted list};
-  \node[box=yellow] (soul) at (12.9,0)   {\name{Soularr}};
-  \node[box=blue]   (slskd) at (12.9,-2.4) {\name{slskd}\\Soulseek};
-  \node[box=grey]   (lib) at (8.6,-2.4)  {music folder};
-  \node[box=aqua]   (nav) at (4.3,-2.4)  {\name{Navidrome}};
-  \node[box=pink]   (app) at (0,-2.4)    {\name{Cassette}\\on the iPhone};
-  \node[box=lavender] (lb) at (0,-4.8)   {\name{ListenBrainz}};
-  \draw[flow] (spot) -- node[lbl]{1. playlists} (explo);
-  \draw[flow] (explo) -- node[lbl]{albums} (lid);
+  \node[box=green]    (spot)  at (0,1.7)     {Spotify\\playlists};
+  \node[box=violet]   (explo) at (0,0)       {\name{Explo}};
+  \node[box=orange]   (lid)   at (4.2,0)     {\name{Lidarr}\\wanted albums};
+  \node[box=yellow]   (soul)  at (8.4,0)     {\name{Soularr}};
+  \node[box=blue]     (slskd) at (12.6,0)    {\name{slskd}\\Soulseek};
+  \node[box=grey]     (lib)   at (12.6,-2.4) {music folder};
+  \node[box=aqua]     (nav)   at (8.4,-2.4)  {\name{Navidrome}};
+  \node[box=pink]     (app)   at (4.2,-2.4)  {\name{Cassette}};
+  \node[box=lavender] (lb)    at (0,-2.4)    {\name{ListenBrainz}};
+  \draw[flow] (spot) -- node[side]{one-time import} (explo);
+  \draw[flow] (explo) -- node[lbl]{1. albums} (lid);
   \draw[flow] (lid) -- node[lbl]{2. missing} (soul);
-  \draw[flow] (soul) -- node[side]{3. searches} (slskd);
-  \draw[flow] (slskd) -- node[lbl]{4. imported} (lib);
-  \draw[flow] (lib) -- node[lbl]{5. scanned} (nav);
-  \draw[flow] (nav) -- node[lbl]{6. streams} (app);
-  \draw[flow] (app) -- node[side]{7. listens} (lb);
-  \draw[flow] (lb.east) -| (2.15,-1.2) -| (explo.south);
-  \node[font=\scriptsize, black!70, anchor=west] at (2.25,-4.6) {8. recommendations};
+  \draw[flow] (soul) -- node[lbl]{3. searches} (slskd);
+  \draw[flow] (slskd) -- node[side]{4. import} (lib);
+  \draw[flow] (lib) -- node[lbl]{5. scan} (nav);
+  \draw[flow] (nav) -- node[lbl]{6. stream} (app);
+  \draw[flow] (app) -- node[lbl]{7. listens} (lb);
+  \draw[flow] (lb) -- node[side]{8. suggestions} (explo);
 \end{tikzpicture}
 \end{center}
 
-The numbers on the arrows follow the order in which a song travels:
+% Review: “I don't know the difference between those two”
+% Review: “I don't get why the following is not a list of numbers from one to eight”
+\here[Eight steps][The numbered list distinguishes the wanted list from the program that searches it.]Each step follows one arrow in the diagram.
 
-\begin{compactitemize}
-  \item \name{Explo} reads my Spotify playlists and asks \name{Lidarr} for their albums, arrow 1.
-  \item \name{Lidarr} keeps the list of albums I want, and \name{Soularr} checks that list for the ones still missing, arrow 2.
-  \item \name{Soularr} asks \name{slskd}, a client for the Soulseek file-sharing network, to search for each missing album and download it, arrow 3.
-  \item \name{Lidarr} imports each finished download into the music folder, with its name and tags fixed, arrow 4.
-  \item \name{Navidrome}, the music server, scans that folder, arrow 5, and streams it to \name{Cassette}, the player on my iPhone, arrow 6.
-  \item \name{ListenBrainz} records what I play, arrow 7, and its suggestions go back to \name{Explo}, which fetches them, arrow 8.
-\end{compactitemize}
+\begin{enumerate}[nosep]
+  \item \name{Explo} can ask \name{Lidarr} for albums from a playlist.
+  \item \name{Lidarr} keeps the wanted list. \name{Soularr} checks it for albums still missing.
+  \item \name{Soularr} asks \name{slskd} to search Soulseek and download a match.
+  \item \name{Lidarr} imports the finished download into the music folder and organises the files.
+  \item \name{Navidrome} scans the folder to update its catalogue.
+  \item \name{Navidrome} streams the recording to \name{Cassette}, the player on my iPhone.
+  \item Plays can be reported to \name{ListenBrainz} once reporting is configured.
+  \item \name{Explo} can use suggestions from \name{ListenBrainz} to build another playlist.
+\end{enumerate}
 
 \name{Lidarr} belongs to a family of programs whose names end in \emph{-arr}, and each member watches one kind of media. \name{Sonarr} does the same job for TV series, and \name{Radarr} for films, so for music the member is \name{Lidarr}.
 
+\Needspace{7\baselineskip}
 \section{Leaving Spotify: export the playlists first}
 
-Spotify holds the one thing I cannot get back from anywhere else: the playlists I built over the years. They should come out before the subscription ends, and soon, because Spotify keeps narrowing what other programs can read. Since 9 Mar 2026, a program that reads Spotify on my behalf sees only the playlists I own or collaborate on, and my playlist folders stay inside Spotify, because its interface has never returned them \cite{tuneferry}.
+% Review: “I don't see how this is relevant we could easily use the browser to extract this information”
+% Review: “I have absolutely no idea of what to listen and that's why the recommendation of Spotify is horrible and that's why I've been listening to the radio because I don't know what to listen so how can I search for things I don't know they even exist
+% on the other side I'm using Shazam during dancing class to figure out what the teachers are playing in class and I do have a imported version of that on Spotify I would like to use that for my own serving system now”
+\here[Export dance-class tracks][The playlist export includes the songs identified in dance class.]I want a copy of the playlists I built in Spotify, including \emph{My Shazam Tracks}, which holds recordings I identified during dance class \cite{shazam}. I can open and check those playlists in the browser. \name{Exportify} runs in the browser at \url{https://exportify.app} and saves one CSV file per playlist after I log in \cite{exportify}. Each row includes the title, artists, album, and, when available, the ISRC, a code for the exact recording. I can use those rows to match recordings in my library.
 
-Two exports cover everything:
-
-\begin{compactitemize}
-  \item \name{Exportify} writes one CSV file per playlist, with the title, artists, album, and the ISRC, a code that identifies one recording worldwide \cite{exportify}. A program that matches songs later uses the ISRC to find the exact recording. \name{Exportify} runs in the browser at \url{https://exportify.app} after a Spotify login, and Spotify can withdraw its access at any time.
-  \item Spotify's own ‘Download your data’, in the account's privacy settings, sends my playlists, my library, and my listening history as JSON files. The listening history is what a recommendation service needs to know my taste.
-\end{compactitemize}
-
-\name{Explo} reads a Spotify playlist directly too: its playlist import fetches the songs of a playlist from Spotify or Apple Music \cite{explo}. That import goes through the same Spotify interface, so the CSV files stay as the record that survives the account.
+Spotify's account privacy settings also offer a data download with playlists, library data, and listening history. \name{Explo} can import a Spotify playlist directly \cite{explo}. I can keep the CSV files and use them to sort the playlists by what I actually want to keep.
 
 \section{Music I already own}
 
@@ -102,7 +105,8 @@ Some of my music I paid for already, and the lawful copies come first \cite{jeff
 
 \begin{compactitemize}
   \item Amazon Music lists every song I ever bought at \url{https://music.amazon.com/recently/purchased}, and each one downloads as a file.
-  \item A CD becomes files through a USB CD drive.
+% Review: “well I didn't even think about that I have ripped many CD ROMs and they are stored here and there so we know can have a specific location for this kind of media”
+  \item \here[Store CD rips]I can gather my existing CD rips into the music folder. A USB CD drive lets me rip any discs whose files are missing.
   \item \name{MusicBrainz Picard} fixes the names, tags, and cover art of files from any source. It matches each file against \name{MusicBrainz}, an open database of recordings.
 \end{compactitemize}
 
@@ -110,12 +114,15 @@ Some of my music I paid for already, and the lawful copies come first \cite{jeff
 
 \name{Lidarr} works from a list of artists I follow. For each artist it knows every album from \name{MusicBrainz}, marks the ones I lack as \textbf{wanted}, and imports a downloaded album into the music folder with its name and tags fixed. It runs as a web page on port \texttt{8686} \cite{lidarr}.
 
-\name{slskd} is a client for Soulseek, a network where people share their music folders with one another. It also runs as a web page, on port \texttt{5030}, and it talks to other Soulseek users on a separate port of its own \cite{slskdconf}.
+% Review: “is this a torrent network?”
+\here[Soulseek peers]\name{slskd} is a client for Soulseek. I search for a recording and download it directly from a user who shares it. BitTorrent can assemble pieces of one file from several peers. It also runs as a web page, on port \texttt{5030}, and it talks to other Soulseek users on a separate port of its own \cite{slskdconf}.
 
 \name{Soularr} is a small \name{Python} script that connects the two. It reads the wanted albums from \name{Lidarr}, searches for each one through \name{slskd}, and once a download finishes it tells \name{Lidarr} to import the files \cite{soularr}. It runs every five minutes by default.
 
 \begin{insight}{Soulseek and my home address}
-Every Soulseek user sees the address of the people they exchange files with. The networking lesson's section 6 sends \name{slskd}'s traffic through Cloudflare WARP, so the other users see a Cloudflare address. The cost is that nobody can connect in to \name{slskd}, and some searches return less.
+Every Soulseek user sees the address of the people they exchange files with.
+% Review: “I thought this was going to be a reference no”
+\here[Network link]Section~6 of the \href{https://github.com/Atcold/learning-with-claude/tree/master/networking}{networking lesson} sends \name{slskd}'s traffic through Cloudflare WARP, so the other users see a Cloudflare address. With an outbound-only connection, transfers depend on whether the other peer can accept incoming connections.
 \end{insight}
 
 \section{Listening: Navidrome and Cassette}
@@ -132,9 +139,17 @@ The apps reach \name{Navidrome} over the tailnet, at \texttt{http://alfdroid:453
 
 \section{New music: ListenBrainz and Explo}
 
-Spotify's best job is suggesting music I do not know yet. \name{ListenBrainz}, from the people behind \name{MusicBrainz}, records what I play and computes recommendations from it, as an open service. \name{Explo} takes those recommendations every week, fetches the songs through \name{slskd}, YouTube, or \name{Lidarr}, and builds playlists from them, such as Weekly Exploration and Daily Jams, on the music server \cite{explo}. Dammit Jeff wrote the playlist import for \name{Explo} \cite{jeffquit}.
+% Review: “no I would say this is the worst job that Spotify has ever done it has never been able to propose anything that I actually like that's why I'm moving away because I am absolutely despising the service and I prefer 100 times better radio stations that I am just listening to people humans that are putting on playlists and discovering new music would be the actual goal of this I mean an additional goal because I don't know what I want to listen and Spotify doesn't know what to make me listen since he asks me to search for something that I don't know I want to search for and so that's pointless”
+% Review: “I would say this is my main source of music the other one again is going to be a few songs from dancing class where I use Shazam I don't know whether there is something else but again once we pull the my my playlist we can make some order I guess in my mess of listening a bit”
+\here[Radio comes first][Human-curated stations are the main source of new music.]I discover most new music by listening to radio stations programmed by people. I can start a station without knowing the name of a track or an artist. When I tap the heart on the radio page or press \texttt{l} in the terminal player, the droid writes the piece, station, and time into \name{liked.json}. Those entries give me a list of pieces to identify and add to my library. Dance-class tracks come in through the Shazam playlist.
 
-The radio is a second source of new music. Every time I tap the heart on the radio page or press \texttt{l} in the terminal player, the droid writes the piece, with its station and the time, into \name{liked.json}. The list holds the pieces I heard by chance and wanted to keep. Its entries can be sent to \name{ListenBrainz} as listens or loves, so its recommendations learn from the radio too, or handed to \name{Lidarr} to fetch the pieces I do not own yet.
+% Review: “that's the whole point I have no idea what to play that's why I actually one of my projects wanted to give me the opportunity to listen to different things and swipe left or right to indicate whether I like something but I going to believe this should also be a conditional on the specific mood or something like sometimes I moved off listening to classical music sometimes not and then if this is going to be just unconditional then it's going to be just coming in like a mess of different stations and the worst thing is going to be whenever a classical pieces are just reproduce out of order which is impossible to listen to”
+\here[Choose what fits now][Discovery can follow the mood, and classical movements stay in order.]I can choose a station for what I feel like hearing. For a classical work, I want to keep the recording together and play its movements in order. A listening tool could offer pieces from a chosen station or mood and let me mark which ones I want to hear again.
+
+% Review: “on the other side what I found actually interesting are the Instagram real where I actually listen to people singing or playing piano or something and they're actually I like something so those are the things I like but I never find those you know custom what's called like live or whatever type of music in in this Spotify or anything right like Instagram allows me to browse people the other one doesn't allow me to do anything possibly artists I don't know any artist”
+\here[Save live clips][Instagram clips can lead to a particular performer or live recording.]Instagram also lets me discover people singing or playing. When I like a clip, I can save its link and the performer's name. That keeps the particular performance easy to find, even when it has no matching recording in the library.
+
+If I want automatic suggestions later, \name{ListenBrainz} can use the plays I report, and \name{Explo} can turn its suggestions into playlists \cite{explo}. The pieces I save from radio can contribute when I can match them to recordings.
 
 \section{What runs where on AlfDROID}
 
@@ -171,7 +186,8 @@ $ pkg search navidrome    # the music server, packaged for Termux
   Modern Music Server and Streamer compatible with Subsonic/Airsonic
 \end{cmdout}
 
-\name{Navidrome} and \name{wireproxy} install from \name{Termux}'s own packages. \name{slskd} publishes builds for 64-bit ARM Linux, one for the GNU C library and one for musl \cite{slskdrel}, and \name{Lidarr} publishes one for the GNU C library \cite{lidarr}. Android has its own C library, Bionic, so these builds start only inside Debian. \name{Soularr} is \name{Python} and \name{Explo} is \name{Go}, so both run inside Debian as well, next to the programs they talk to.
+% Review: “I don't get this sentence”
+\here[Why Debian is needed]\name{Navidrome} and \name{wireproxy} install from \name{Termux}'s Android packages. Programs use a C library for basic operations such as opening files. Android provides one called Bionic. The Linux builds of \name{slskd} and \name{Lidarr} target other C libraries, and the Debian environment supplies the GNU C library they both support \cite{slskdrel,lidarr}. \name{Soularr} and \name{Explo} run alongside them there.
 
 \begin{pane}
 $ df -h /data    # the space left for music
@@ -221,7 +237,7 @@ $ ./Lidarr/Lidarr -nobrowser -data=/root/.config/Lidarr  # start Lidarr in the f
 
 These two lines come from \name{Lidarr}'s log. The first start took 13 seconds, including creating its databases, and \name{Lidarr} then held about 195\,MB of memory. Its web page answered \name{AlfMAC4} over the tailnet in half a second.
 
-\here[AlfSPARK compared][AlfSPARK measured with the same disk and Lidarr tests, and a table comparing it with AlfDROID]The same disk test and the same \name{Lidarr} build, started with a fresh data folder, ran on \name{AlfSPARK}:
+The same disk test and the same \name{Lidarr} build, started with a fresh data folder, ran on \name{AlfSPARK}:
 
 \renewcommand{\panetitle}{Shared pane 3.2, on \name{AlfSPARK}}
 \begin{pane}
@@ -266,7 +282,11 @@ $ ./Lidarr/Lidarr -nobrowser -data=$HOME/lidarr-test/data  # start Lidarr in the
 
 \section{Photos: automatic backup with Immich}
 
-My photos have no automatic backup today. iCloud's free 5\,GB hold far too little, and Google Photos backs up either photos and videos together or nothing, which leaves picking the photos by hand. \name{Immich} is an open-source photo and video server. Its iPhone app uploads the camera roll by itself, and it can leave the videos out, as the subsection on the iPhone shows. Its web page and apps show the library with faces, places, and a search that understands descriptions such as ‘dog on a beach’. It runs as four containers, which \name{Docker Compose} starts together from one file \cite{immichcompose}:
+My photos have no automatic backup today. iCloud's free 5\,GB hold far too little, and Google Photos backs up either photos and videos together or nothing, which leaves picking the photos by hand. \name{Immich} is an open-source photo and video server. Its iPhone app uploads the camera roll by itself, and it can leave the videos out, as the subsection on the iPhone shows. Its web page and apps show the library with faces, places, and a search that understands descriptions such as ‘dog on a beach’.
+
+% Review: “I have no idea what this containers are and why are necessary I know we are using a container on the spark for the serving the q1 model q1 no one when qwen so I don't know where we are going to add this information but I need something about docker because I have no idea why this is required needed or what it does right like I never use it before and I I mean I understand that I might want to use it eventually if I understand the need necessity but so far I never had this necessity and we already face this multiple UV version which maybe is connected but then maybe not I don't know”
+% Review: “seeing this is connected to the one before why do I need four container for one thing isn't this supposed to be one service why does it need for containers now”
+\here[Four parts][Docker packages each process separately and Compose starts the four parts of Immich together.]I use one \name{Immich} app. Behind it, four programs do different jobs. A container runs a program with its own files and libraries, so that the program can use the versions it needs on a shared host. \name{Docker} starts each container from an image, which is the package containing those files. The local \name{Qwen} server on \name{AlfSPARK} is another example of software run in a container. For \name{Immich}, \name{Docker Compose} reads one file and starts the four cooperating programs \cite{immichcompose}. Each can be restarted independently:
 
 \begin{compactitemize}
   \item \texttt{immich-server}, the web page and the interface the apps talk to, on port \texttt{2283}.
@@ -289,16 +309,20 @@ My photos have no automatic backup today. iCloud's free 5\,GB hold far too littl
     \node[draw=black!40, fill=grey!25, rounded corners=6pt, inner sep=16pt , fit=(docker)(lib)] (spark) {};
   \end{scope}
   \node[font=\scriptsize, black!70 , anchor=south] at (spark.north) {\name{AlfSPARK}};
-  \node[wbox=green] (copy) at (phone |- lib) {second copy\\SSD or Backblaze};
+  \node[wbox=green] (copy) at (phone |- lib) {backup copies\\local and off-site};
   \draw[flow] (phone) -- node[lbl, pos=0.3]{tailnet} (server);
   \draw[flow] (docker.south) -- (lib);
-  \draw[flow, dashed] (lib) -- node[lbl]{backup} (copy);
+  \draw[flow, opacity=.55] (lib) -- node[lbl]{backup} (copy);
 \end{tikzpicture}
 \end{center}
 
 \subsection*{Why not AlfDROID}
 
-\name{Docker} builds each container from features of the Linux kernel: namespaces, which give a container its own view of processes and network, and control groups, which limit its memory and CPU. It needs root to set them up. \name{Termux} runs as an ordinary Android app, and \name{proot} only imitates a root filesystem inside that app, so neither can start a container. \name{AlfDROID}'s kernel is Linux \texttt{4.9.227}, and its configuration file is readable only as root, so whether a rooted \name{AlfDROID} has the features \name{Docker} needs is an open question. The size of the job settles it anyway. \name{Immich} asks for at least 6\,GB of memory and recommends 8\,GB and four cores \cite{immichreq}, and \name{AlfDROID} has 8\,GB in all, shared with Android and the music programs.
+% Review: “what configuration file I have no absolute idea of what you're talking about here”
+% Review: “to do exactly what?”
+\here[Phone limits][The Android kernel and Immich resource requirements explain the choice of host.]\name{Docker} relies on the Linux kernel to isolate processes and manage their resources. The kernel's build configuration lists which of those features were enabled when it was compiled. Reading the running kernel's configuration on \name{AlfDROID} requires root access. \name{Termux} and Debian under \name{proot} run with the permissions of an ordinary Android app. That environment lacks the privileges to start the Docker setup used here.
+
+\name{Immich} needs memory and CPU cores to accept uploads, generate thumbnails, index faces, and process video while serving the library. Its minimum is 6\,GB of RAM and two CPU cores, and it recommends 8\,GB and four cores \cite{immichreq}. \name{AlfDROID} has 8\,GB total, shared with Android and the music programs.
 
 \subsection*{Why AlfSPARK}
 
@@ -312,7 +336,8 @@ $ uname -m; docker --version; df -h / | tail -1    # architecture, Docker, free 
 /dev/nvme0n1p2  3.7T  348G  |!3.2T!|  10% /
 \end{cmdout}
 
-\name{AlfSPARK} is a 64-bit ARM machine, which \name{Immich} supports: ‘Immich runs on the \texttt{amd64} and \texttt{arm64} platforms’ \cite{immichreq}. It has \name{Docker} and 3.2\,TB free, enough for years of photos plus the 10--20\% that thumbnails and converted videos add.
+% Review: “what's the difference?”
+\here[ARM and x86]\texttt{amd64} means 64-bit x86, the instruction set used by Intel and AMD PC processors. \texttt{arm64} means 64-bit ARM, the instruction set used by \name{AlfSPARK}. A program needs a build for the machine's instruction set. \name{Immich} supports both \cite{immichreq}. It has \name{Docker} and 3.2\,TB free, enough for years of photos plus the 10--20\% that thumbnails and converted videos add.
 
 \begin{pane}
 $ free -g | head -2    # memory, with the local model loaded
@@ -325,36 +350,37 @@ Mem:             121         102          16           0           4          |!
 19\,GB stay available while \name{vLLM} holds the rest, so \name{Immich}'s 8\,GB fit beside the local model.
 
 \begin{insight}{The worker runs on the CPU}
-\name{Immich} can run its machine learning on an NVIDIA GPU through CUDA, for a GPU of compute capability 5.2 or newer with driver 545 or newer \cite{immichml}. \name{AlfSPARK}'s GB10 has compute capability 12.1 and driver 580, so the card qualifies. The CUDA build of the worker exists for \texttt{amd64} only, though, as the image's own list of platforms shows:
-
-\begin{pane}
-$ docker manifest inspect ghcr.io/immich-app/immich-machine-learning:release-cuda | grep '"architecture"'
-\end{pane}
-\begin{cmdout}
-|!            "architecture": "amd64",!|
-|~            "architecture": "unknown",~|
-\end{cmdout}
-
-The plain \texttt{release} image lists \texttt{arm64} as well, so on \name{AlfSPARK} the worker runs on the CPU. Indexing a whole library then takes longer the first time, and each new photo after that takes a moment.
+% Review: “no idea what this is”
+% Review: “no meaning”
+% Review: “I don't know what you're trying to do here”
+\here[CPU indexing][The tested GPU package targets x86, so the ARM CPU can handle face recognition and search.]The machine-learning worker finds faces and makes photos searchable by description. A version built for \name{CUDA}, NVIDIA's GPU software, can use an NVIDIA GPU to speed up that work \cite{immichml}. NVIDIA's compute capability number describes the features of a GPU. The GB10 in \name{AlfSPARK} meets Immich's GPU hardware requirement, but the CUDA image tested here was built for 64-bit x86. The standard image had an ARM build, so it can do the same photo processing on \name{AlfSPARK}'s CPU. This matters most when I import the whole library and the worker has every photo to process.
 \end{insight}
 
 \subsection*{Backing up from the iPhone}
 
 The \name{Immich} app uploads new photos when it opens and, every so often, in the background. iOS decides when a background task runs, so the app needs Background App Refresh switched on, and it runs more often the more I open it. By default it uploads only over Wi-Fi \cite{immichmobile}.
 
-The app backs up the albums I select and skips the albums I exclude, which I mark with a double tap. iOS keeps every video in its own automatic album, Videos, so selecting all photos and excluding Videos backs up the photos alone, with no picking by hand. \name{Immich}'s documentation gives this case as its example \cite{immichmobile}. The app's server address is \texttt{http://alfspark:2283}, a name that exists only on the tailnet, so \name{Tailscale} on the iPhone carries the upload from anywhere, and the router opens no port.
+The app backs up the albums I select and skips the albums I exclude, which I mark with a double tap. iOS keeps every video in its own automatic album, Videos, so selecting all photos and excluding Videos backs up the photos alone, with no picking by hand. \name{Immich}'s documentation gives this case as its example \cite{immichmobile}.
 
-\begin{insight}{Keep a second copy}
-\name{AlfSPARK} then holds the only backup of my photos, and the iPhone the other copy. \name{Immich}'s documentation recommends the 3-2-1 rule: three copies, on two kinds of storage, one of them elsewhere \cite{immichbackup}. \name{Immich} dumps its database every day at 2:00 and keeps the last 14 dumps next to the photos. The dumps hold names, albums, and faces, and the photos stay in their own folders. Copying the photo folders and those dumps elsewhere is my job: to an external SSD on \name{AlfSPARK}, or to Backblaze B2, a cloud storage service that charges by the gigabyte.
+% Review: “my student told me that he's using services such that he can have the name of the service for example alpha spark instead of having alpha spark: and then a port number which I guess is going to be easier to remember like if you use the word  Alf spark. whatever”
+\here[Tailnet name]The direct tailnet address is \texttt{http://alfspark:2283}. A reverse proxy can accept an HTTPS request at its default port and pass it to \name{Immich} on port \texttt{2283}. \name{Tailscale Serve} can do this using \name{AlfSPARK}'s tailnet DNS name \cite{tailscaleserve}. The phone can then use the HTTPS address without typing a port.
+
+\begin{insight}{Keep an off-site copy}
+% Review: “do we still keep a Google storage whatever account that we have at the moment right now while I'm paying for that annually because otherwise I couldn't have uploaded photos they used to be free and then they stop the free and then you're stuck with them still I cannot decide not to upload all the videos because again I record I used to record videos every day on the dancing studio and I didn't want to use their cloud for my videos and so I stopped even the automatic backup”
+% Review: “I wonder whether it's safe to have this the orange just next to the same machine I don't know whatever happens to their house or what not then everything is gone right”
+\here[Off-site copy][Keep Google storage during the trial and protect the library against a loss at home.]An SSD next to \name{AlfSPARK} protects against a disk failure. A fire or theft can take both copies, so a third copy belongs somewhere else, following the 3-2-1 rule \cite{immichbackup}. It needs the original photo and video files and the database backup, which keeps albums and other library information. Backblaze B2 is one possible off-site destination.
+
+I can keep the current Google storage subscription while I try \name{Immich}. The test is to restore a sample from the off-site copy and check that every photo or video I want to move out of Google is accounted for. If I exclude Videos on the iPhone, the dance videos need their own backup before I rely on this setup.
 \end{insight}
 
 \begin{result}{Photos on AlfSPARK}
-\name{Immich} runs on \name{AlfSPARK} in four containers, with its machine learning on the CPU. The iPhone app uploads over the tailnet, and a copy of the library on an SSD or Backblaze B2 keeps a second home for it.
+The iPhone uploads photos to \name{Immich} over the tailnet. \name{AlfSPARK} indexes them on the CPU, and the off-site copy protects the library if the server and its nearby SSD are both lost.
 \end{result}
 
 \begin{thebibliography}{Quit}
+  \bibitem[Shaz]{shazam} Apple Support, \textit{Listen to your identified songs in Spotify}. \url{https://support.apple.com/guide/shazam/dev83428c925/web}
+  \bibitem[Serve]{tailscaleserve} Tailscale, \textit{Tailscale Serve}. \url{https://tailscale.com/docs/features/tailscale-serve}
   \bibitem[Quit]{jeffquit} Dammit Jeff, \textit{How to ACTUALLY Quit Spotify}, YouTube, 21 Apr 2026. \url{https://www.youtube.com/watch?v=3d2cATPt8Nk}
-  \bibitem[Tune]{tuneferry} TuneFerry, \textit{Export Spotify playlists to CSV: what still works in 2026}. \url{https://tuneferry.com/blog/export-spotify-playlists-every-method-2026}
   \bibitem[Exp]{exportify} Exportify. \url{https://github.com/watsonbox/exportify}
   \bibitem[Explo]{explo} Explo. \url{https://github.com/LumePart/Explo}
   \bibitem[Lid]{lidarr} Servarr wiki, \textit{Lidarr: Linux installation}. \url{https://wiki.servarr.com/lidarr/installation/linux}
