@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{twemojis}
+\usepackage{alfdoc}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\setlength{\emergencystretch}{3em}
+
+\definecolor{cmd}{HTML}{0FA3B1}   % the command cyan; ColorBrewer Dark2:
+\definecolor{sub}{HTML}{D95F02}   % a subcommand (add, modify, done) orange,
+\definecolor{attr}{HTML}{7570B3}  % a name:value attribute or a config key purple,
+\definecolor{desc}{HTML}{66A61E}  % a description green
+
+\title{Taskwarrior command reference}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+% Review: “italic”; “Italic, later, ‘report’ italic too”
+In \texttt{\textcolor{cmd}{task} \textcolor{sub}{info} 6}, \texttt{6} is the task's \emph{ID}, the number beside it in the list. In \texttt{\textcolor{cmd}{task} \textcolor{attr}{ow:bot} \textcolor{sub}{ready}}, \texttt{\textcolor{attr}{ow:bot}} is a \emph{filter} that selects tasks assigned to any bot, and \texttt{\textcolor{sub}{ready}} is a \emph{report} that shows which of those tasks can be started.
+
+\section*{Find and inspect tasks}
+
+\begin{flushleft}
+\texttt{\textcolor{cmd}{task}} or \texttt{\textcolor{cmd}{task} \textcolor{sub}{next}}\quad Lists the most urgent pending tasks. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{list}}\quad Shows the standard report for pending tasks. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{blocked}}\quad Shows tasks waiting on another task. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{ready}}\quad Shows ready tasks assigned to \texttt{alf} by default. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{summary}}\quad Shows pending counts and completion by project. \\
+\texttt{\textcolor{cmd}{task} 6}\quad Shows the shell's short view of task 6. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{info} 6}\quad Shows the full details and history of task 6. \\
+\end{flushleft}
+
+A filter by itself uses the default \texttt{\textcolor{sub}{next}} report. \texttt{\textcolor{attr}{ow:}} selects by owner and \texttt{\textcolor{attr}{pro:}} selects by project.
+
+\begin{flushleft}
+\texttt{\textcolor{cmd}{task} \textcolor{attr}{ow:alf}}\quad Selects tasks assigned to \texttt{alf}. \\
+\texttt{\textcolor{cmd}{task} \textcolor{attr}{pro:radio}}\quad Selects tasks in \texttt{radio} and its subprojects. \\
+\texttt{\textcolor{cmd}{task} \textcolor{attr}{pro.has:lesson}}\quad Selects tasks in projects with \texttt{lesson} in their names. \\
+\texttt{\textcolor{cmd}{task} \textcolor{attr}{ow:bot} \textcolor{sub}{ready}}\quad Shows ready tasks assigned to any bot. \\
+\texttt{\textcolor{cmd}{task} \textcolor{attr}{ow:claude} \textcolor{sub}{ready}}\quad Shows only Claude's ready tasks. \\
+\end{flushleft}
+
+\section*{Add and change tasks}
+
+\begin{flushleft}
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{add} \textcolor{attr}{pro:para} \textcolor{desc}{'Review the draft'}}\quad Adds a task owned by \texttt{alf} by default. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{add} \textcolor{attr}{ow:bot} \textcolor{attr}{depends:3} \textcolor{desc}{'Revise draft'}}\quad Adds a task that waits for task 3. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{modify} 6 \textcolor{attr}{pro:para} \textcolor{attr}{ow:claude}}\quad Changes the project and owner of task 6. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{modify} 6 /old/new/}\quad Replaces the first \texttt{old} with \texttt{new} in the description. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{annotate} 6 \textcolor{desc}{'Check the examples'}}\quad Adds a note to task 6. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{start} 6}\quad Marks task 6 active and records the start time. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{stop} 6}\quad Clears the start time. Task 6 stays pending. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{done} 6}\quad Marks task 6 complete. \\
+\texttt{\textcolor{cmd}{task} \textcolor{sub}{delete} 6}\quad Asks to confirm deletion of task 6. \\
+\end{flushleft}
+
+% Review: “This is cumbersome. Remove.”
+
+The \href{https://taskwarrior.org/docs/commands/}{Taskwarrior command documentation} describes the commands. The \href{https://github.com/Atcold/learning-with-claude/tree/61f884fe05f5710863ebbc6eb2675a5858324583/taskwarrior}{Taskwarrior lesson} explains the local project and owner settings.
+
+\revisiontable
+
+\end{document}
