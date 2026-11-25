@@ -17,6 +17,7 @@ Each folder is one lesson.
 - [Self-hosting](self-hosting/): my music after Spotify, from exporting the playlists through Lidarr, Soularr, and slskd to Navidrome and Cassette, and what runs where on AlfDROID.
 - [Radio](radio/): eight stations in the Mac's terminal and on the iPhone, three minutes behind live from AlfDROID's tapes over HLS.
 - [Taskwarrior](taskwarrior/): who waits on whom, with one task list for both Macs, an owner for each task, PARA projects with lessons as `<project>.lesson`, and Tab completion.
+- [Garden](garden/): stepping stones on gravel between three raised beds, the drip pipe, where the rain goes, and measuring the ground's height with two poles and a board.
 
 ## Building
 
