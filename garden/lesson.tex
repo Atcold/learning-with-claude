@@ -1,0 +1,318 @@
+% !TEX program = lualatex
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[italian]{babel}
+\usepackage{alfdoc}
+\usepackage[colorlinks]{hyperref}
+\usepackage[italian,capitalise]{cleveref}
+\usepackage{amssymb}
+\title{\emo{seedling}\ Camminamenti e irrigazione dell'orto\\[0.3em]\large Pietre quadrate su ghiaia decorativa}
+\author{Lezione per Alf, scritta da Codex}
+\date{Mer 25 nov 2026}
+\newcommand{\inch}{\,\mathrm{in}}
+\newcommand{\checkitem}{\item[$\square$]}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\begin{document}
+\maketitle
+\section*{Come procediamo}
+\begin{enumerate}
+\item Tracciamo con lo spago il lato lungo verso il prato e i quattro traversi. Disponiamo dieci piastrelle sul lato lungo e una al centro di ciascun traverso. Proviamo il passo anche sulla ghiaia tra le pietre.
+\item Misuriamo la quota del terreno rispetto allo spago. Scegliamo dove far defluire l'acqua e segniamo la profondità di scavo sotto ogni pietra.
+\item Togliamo le zolle e prepariamo le quattordici sedi. Conserviamo le rocce lungo la scarpata.
+\item Posiamo i tubi per irrigare le tre aiuole. Facciamo scorrere l'acqua e controlliamo i raccordi prima di richiudere gli attraversamenti.
+\item Compattiamo il terreno e stendiamo il geotessile. Il telo tiene separati la terra e il pietrisco.
+\item Compattiamo il pietrisco sotto due pietre di prova. Stendiamo la sabbia nelle sedi e regoliamo le pietre finché appoggiano bene anche agli angoli.
+\item Ripetiamo la posa sulle sedi restanti. Distribuiamo la ghiaia fino a lasciare appena visibili i bordi delle piastrelle.
+\item Dopo la prima pioggia controlliamo dove scorre l'acqua e se qualche piastrella si muove sotto il piede.
+\end{enumerate}
+
+
+\section{Il risultato}
+
+L'orto ha tre aiuole rialzate in legno, disposte in fila. La prima fase prevede il camminamento lungo il prato e quattro traversi, due tra le aiuole e due alle estremità. Il lato basso lungo la recinzione resta per una fase futura. Le piastrelle quadrate rimangono distanziate tra loro, con i bordi a vista appena sopra la ghiaia decorativa, come nei giardini giapponesi. Ogni piastrella poggia su una propria fondazione di pietrisco, cioè roccia frantumata e compattata, e sabbia di posa, che forma il letto uniforme su cui appoggia la pietra.
+
+Il lato verso il prato è relativamente regolare. Il lato verso la recinzione presenta rocce grandi e una scarpata. In questa fase il camminamento lato prato e i quattro traversi seguono la conformazione del terreno. Il futuro lato basso potrà avere una quota diversa. Questo riduce il volume di scavo e di riempimento e permette di conservare le rocce. Le quote possono coincidere se il rilievo dimostra che bastano piccoli aggiustamenti.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x=.59cm,y=.59cm,font=\small]
+\draw[green!65!black] (-1,-1) rectangle (25,10);
+\draw[orange!70!black] (0,0) rectangle (24,2);
+\foreach \x in {0,7,15,22} {\draw[orange!70!black] (\x,2) rectangle +(2,6);}
+\foreach \a/\b/\n in {2/7/1,9/15/2,17/22/3} {
+  \draw[green!60!black] (\a,2) rectangle (\b,8);
+  \node at ({(\a+\b)/2},5) {Aiuola \n};
+}
+\foreach \x in {1,3.4,5.8,8.2,10.6,13,15.4,17.8,20.2,22.6}
+  \draw[blue!70!black] (\x-.65,.35) rectangle +(1.3,1.3);
+\foreach \x in {1,8,16,23}
+  \draw[blue!70!black] (\x-.65,4.35) rectangle +(1.3,1.3);
+\draw[gray] (0,8.8)--(24,8.8) node[midway,above]{Recinzione e scarpata (fase futura)};
+\node[green!55!black,below] at (12,0) {Prato};
+\end{tikzpicture}
+\caption{Schema della prima fase: lato prato e quattro traversi, compresi entrambi i lati corti esterni. Le dieci piastrelle sul lato lungo e le quattro sui traversi sono quadrate. Lo schema è fuori scala in attesa delle misure delle aiuole.}
+\label{fig:plan}
+\end{figure}
+
+La planimetria in \Cref{fig:plan} deriva dalla descrizione e dalle osservazioni sulle cinque fotografie nella conversazione di progetto. Le fotografie mostrano le rocce lungo il bordo basso delle aiuole e la fascia più regolare adiacente al prato. Il rilievo sul posto deve quindi confermare la forma delle rocce, la pendenza, gli ingombri, e le quote. Le quantità iniziali si basano sulle ipotesi di 14 piastrelle da $16\times16$ in, 20 sacchi di pietrisco già acquistati, e un telo da $4\times100$ ft.
+
+\section{Rilevare il terreno}
+
+Servono un metro a nastro (\textit{tape measure}), circa 20--24 picchetti di legno (\textit{wooden stakes}), un martello, un rotolo di spago da muratore (\textit{mason line}) da 250 ft, una livella da spago (\textit{line level}), e, se disponibile, una livella laser. Prima di piantare picchetti o scavare, si individuano i sottoservizi, cioè le tubazioni e i cavi interrati pubblici e privati. Negli Stati Uniti si contatta il servizio 811 \cite{811}.
+
+\begin{enumerate}
+\item Piantare i picchetti agli angoli di ogni passaggio, lasciandoli fuori dalla zona di scavo. Aggiungere picchetti intermedi sui lati lunghi di 32 ft per ridurre la flessione dello spago.
+\item Tendere lo spago lungo i bordi. Misurare la larghezza in più punti e lasciare spazio per aprire eventuali porte, raggiungere le aiuole, e passare con gli attrezzi. Una larghezza di 30--36 in è un punto di partenza dove lo spazio lo consente.
+\item Scegliere un riferimento stabile, per esempio un picchetto vicino al prato. Usare la livella per trasferire la quota agli altri picchetti. Con una livella da spago tenere le tratte corte e lo spago teso.
+\item Misurare verticalmente la distanza tra il riferimento orizzontale e il terreno, su entrambi i bordi, ogni 4 ft e nei punti con rocce, cambi di pendenza, e attraversamenti. Registrare anche la quota dei passaggi corti.
+\item Stabilire le quote di progetto. Abbassare lo spago secondo la pendenza del camminamento e farlo coincidere con la superficie superiore delle piastrelle.
+\item Appoggiare provvisoriamente alcune piastrelle e provare il passo in entrambe le direzioni. Una distanza tra centri di 24 in lascia 8 in tra piastrelle da 16 in. Adattarla ai passi effettivi e alle svolte. Distribuire le dieci pietre sul lato lungo e una su ciascuno dei quattro traversi. La distanza effettiva dipende dalla lunghezza misurata e dallo spazio lasciato alle estremità.
+\end{enumerate}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x=.85cm,y=.8cm,font=\small]
+\draw (0,0) -- (1,.2) -- (2,.1) -- (3,.6) -- (4,.35) -- (5,.15) -- (6,.42) -- (7,-.2) -- (8,.1) -- (9,-.3) -- (10,-.1);
+\draw (0,-.65)--(0,2.1) (10,-.65)--(10,2.1);
+\draw[blue!70!black] (0,2.1)--(10,2.1) node[midway,above]{Riferimento orizzontale};
+\draw[orange!70!black] (0,1.3)--(10,1.05) node[midway,above,sloped]{Quota finita delle piastrelle};
+\draw[<->] (2,.1)--(2,2.1) node[midway,right] {$d_1$};
+\draw[<->] (8,.1)--(8,2.1) node[midway,right] {$d_2$};
+\node[below] at (5,-.35) {Terreno esistente};
+\end{tikzpicture}
+\caption{Lo spago orizzontale serve per il rilievo. Lo spago inclinato serve per la posa.}
+\end{figure}
+
+La superficie finita deve scaricare l'acqua verso una zona permeabile e stabile, lontano dal legno delle aiuole e dalla recinzione. Una pendenza trasversale dell'1--2\% equivale a 0,36--0,72 in su una larghezza di 36 in. Il rilievo determina anche la pendenza longitudinale e il punto in cui deve arrivare l'acqua. Osservare il terreno dopo la pioggia aiuta a riconoscere i ristagni.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}Xrrrr@{}}
+\toprule
+Tratto & Lunghezza & Larghezza & $d$ min. & $d$ max. \\
+\midrule
+Lato prato & 32 ft? & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt}\\
+Lato recinzione & 32 ft? & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt}\\
+Passaggio 1 & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt}\\
+Passaggio 2 & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt}\\
+Testate (se previste) & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt} & \rule{.55cm}{.3pt}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Sistemare il lato della recinzione}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x=.78cm,y=.85cm,font=\small]
+\draw (0,0) -- (1,.2)--(2,.45)--(3,.9)--(4,1.4)--(5,2)--(6,2.1)--(8,2.1)--(11,2);
+\draw (0,0)--(0,2.7);
+\node[above] at (0,2.7) {Recinzione};
+\draw (5,2) rectangle (8,3.4);
+\node at (6.5,2.7) {Aiuola};
+\draw[blue!70!black] (8.5,2.12) rectangle (10.5,2.31);
+\draw[blue!70!black] (1.25,.58) rectangle (3,.77);
+\draw (1.1,.55)--(3.2,.5);
+\draw[rounded corners=3pt] (3.1,.49)--(3.25,1.02)--(3.8,1.25)--(4.3,.85)--(4.1,.49)--cycle;
+\node[below,align=center] at (2,-.08) {Passaggio\\più basso};
+\node[above,align=center] at (9.5,3.15) {Passaggio\\prato};
+\draw[->] (4.75,.05) node[right]{Rocce esistenti} -- (3.84,.8);
+\draw[<->] (10.7,.77)--(10.7,2.31) node[midway,right] {$\Delta h$};
+\end{tikzpicture}
+\caption{Sezione di principio attraverso l'orto. Il dislivello reale e la posizione delle rocce vanno misurati.}
+\label{fig:slope}
+\end{figure}
+
+La soluzione di \Cref{fig:slope} conserva una fascia stabile di terreno accanto alle aiuole. Se la larghezza disponibile lo permette, il camminamento sul lato della recinzione si sviluppa su una quota inferiore, con una lieve pendenza di drenaggio. Nei cambi di quota i passaggi trasversali possono seguire una rampa moderata oppure includere gradini riconoscibili, con superfici d'appoggio stabili (pedate) e dislivelli verticali uniformi (alzate).
+
+Prima di spostare una roccia, capire se tiene fermo il terreno o sostiene l'aiuola. Conservare quelle che svolgono questa funzione. Le rocce libere e stabili possono diventare una bordura naturale che limita lo spostamento della ghiaia. Evitare di scavare ai piedi della scarpata, sotto i pali della recinzione, e in prossimità delle radici importanti. Un taglio può togliere sostegno a ciò che sta a monte. Le rocce pesanti richiedono mezzi adatti alla movimentazione.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Dislivello misurato & Soluzione da valutare \\
+\midrule
+1--3 in & Regolarizzazione locale del terreno.\\
+3--6 in & Piccoli riempimenti compattati, con bordo stabile.\\
+6--12 in & Due quote distinte e collegamento alle estremità.\\
+Oltre 12 in & Valutazione specifica del contenimento e del drenaggio.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Queste fasce sono indicative e servono a scegliere dove approfondire il rilievo. Anche un dislivello minore può richiedere un intervento progettato quando il terreno è instabile, le rocce sostengono le aiuole, oppure il riempimento grava sulla recinzione. In questi casi un professionista verifica la stabilità, il drenaggio, e l'eventuale muro prima di procedere. Livellare tutto alla quota del prato richiederebbe riempimento, compattazione a strati e, se necessario, un contenimento indipendente dalla recinzione.
+
+\section{Preparare il terreno e l'irrigazione}
+
+\subsection{Scavo e regolarizzazione}
+
+Togliere erba, radici superficiali non strutturali, foglie, e terra vegetale soffice con pala (\textit{shovel}), zappa, e rastrello (\textit{rake}). Conservare la terra buona per l'orto. Tracciare l'ingombro di ogni piastrella con un margine di appoggio attorno, per esempio 2 in per lato. La fondazione deve sostenere tutta la lastra, compresi gli spigoli.
+
+Determinare la profondità di ciascuna sede a partire dalla superficie tracciata con lo spago. Misurare lo spessore $t$ della piastrella, scegliere lo spessore della sabbia $s$ e quello del pietrisco compattato $b$. La profondità della sede sotto la quota finita è
+\begin{equation*}
+D=t+s+b. \tag*{[in]}
+\end{equation*}
+Con $t=1{,}5$, $s=0{,}75$, e $b=3$ in, la profondità sarà 5,25 in. La quota del terreno tra le sedi si trova sotto la superficie delle pietre di una distanza pari alla somma del rialzo della pietra, dello spessore del pietrisco superficiale, e dello spessore della ghiaia. Regolare questa profondità per mantenere i bordi delle pietre appena sopra la ghiaia. La terra scavata serve a correggere piccoli avvallamenti soltanto se è adatta alla compattazione. Il terreno vegetale ricco di sostanza organica tende ad assestarsi.
+
+\subsection{Irrigazione}
+
+L'irrigazione a goccia (\textit{drip irrigation}) si prepara adesso, mentre il terreno è accessibile. Se è presente un impianto, individuare tubazioni e irrigatori esistenti. Verificare quali zone irrigano il prato e quali servono le aiuole.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[font=\small,x=1cm,y=1cm]
+\draw (0,1.4) rectangle (2.2,2.1) node[midway]{Rubinetto};
+\draw[->] (2.2,1.75)--(2.65,1.75);
+\draw (2.65,1.3) rectangle (6.5,2.2);
+\node[align=center] at (4.575,1.75) {Antiriflusso, filtro,\\regolatore, timer};
+\draw[->] (6.5,1.75)--(7,1.75)--(7,.9)--(1.5,.9);
+\foreach \x in {1.5,4.25,7} {
+  \draw[->] (\x,.9)--(\x,.25);
+  \draw (\x-1,-.95) rectangle (\x+1,.25);
+  \node at (\x,-.35) {Aiuola};
+}
+\end{tikzpicture}
+\caption{Schema funzionale. L'ordine dei componenti e il tipo di raccordi seguono le istruzioni del sistema acquistato.}
+\end{figure}
+
+\begin{enumerate}
+\item Identificare il punto di alimentazione e misurare il percorso della tubazione principale fino alle tre aiuole. Prevedere una derivazione per ciascuna aiuola con valvola accessibile. La protezione antiriflusso impedisce all'acqua dell'impianto di tornare nella rete potabile. Il timer programma l'apertura dell'acqua. Il filtro trattiene le impurità e il regolatore riduce la pressione per proteggere i gocciolatori, che rilasciano l'acqua lentamente \cite{ua}.
+\item Misurare la portata (volume d'acqua erogato nell'unità di tempo) e la pressione dinamica (misurata mentre l'acqua scorre). Per la portata, riempire un secchio di volume noto e misurare il tempo. Confrontare la somma delle portate dei gocciolatori con quella disponibile alla pressione di esercizio. Dividere l'orto in zone se necessario.
+\item Far passare la linea principale preferibilmente lungo un bordo accessibile. Attraversare i camminamenti con un tubo di protezione (\textit{sleeve}) di diametro sufficiente per sostituire la linea. Posizionare il tubo sotto la fondazione o fuori dalle sedi, alla profondità prevista dal produttore, con le estremità accessibili. Annotare percorso, quote, e attraversamenti prima di coprirlo.
+\item Collegare le derivazioni e portarle sopra la terra delle aiuole. Lavare le linee aperte, installare i terminali, e provare l'impianto prima di richiudere gli scavi. Controllare raccordi, pressione, e distribuzione uniforme.
+\item Riempire e compattare gli scavi per gradi, senza schiacciare tubi e raccordi. Tenere liberi i punti di manutenzione e predisporre lo svuotamento dove si verificano gelate.
+\end{enumerate}
+
+\subsection{Compattazione}
+
+Il terreno di appoggio deve essere fermo, uniforme, e sufficientemente drenante. Usare un battitore manuale (\textit{hand tamper}) per le sedi piccole, oppure una piastra vibrante (\textit{plate compactor}) sui tratti ampi e lontani da tubi, rocce instabili, e legno. Compattare il terreno leggermente umido, evitando di lavorare quando è saturo. Aggiungere terra adatta in strati sottili e compattare ogni strato prima del successivo. Se il terreno continua a cedere o pompare acqua al passaggio del battitore, risolvere il drenaggio e la capacità del terreno di sostenere il carico (portanza) prima di ricoprirlo.
+
+\section{Costruire la fondazione e posare le pietre}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x=.85cm,y=1cm,font=\small]
+\draw (0,0)--(2,0)--(2,-.65)--(5.7,-.65)--(5.7,0)--(10,0);
+\draw[blue!70!black] (0,.03)--(2,.03)--(2,-.62)--(5.7,-.62)--(5.7,.03)--(10,.03);
+\draw (0,.36)--(2,.36)--(2,-.62) (5.7,-.62)--(5.7,.36)--(10,.36);
+\draw (2,.36)--(5.7,.36);
+\draw[orange!70!black] (2.35,.36) rectangle (5.35,.57);
+\draw (2.35,.57) rectangle (5.35,1.03);
+\draw[draw opacity=.55] (0,.57)--(2.35,.57) (5.35,.57)--(10,.57);
+\node[above] at (3.85,1.03) {Piastrella};
+\node[above] at (8.6,.57) {Ghiaia decorativa};
+\node[align=center] at (3.85,-.12) {Pietrisco\\compattato};
+\draw[->] (7.8,1.55) node[above]{Sabbia di posa} -- (5.15,.46);
+\draw[->] (8,-.65) node[right]{Geotessile} -- (6.9,.03);
+\node[below] at (3.85,-.77) {Terreno compattato};
+\end{tikzpicture}
+\caption{Sezione indicativa di una pietra. La sede più profonda contiene la fondazione locale. La ghiaia copre gli spazi intermedi. I bordi laterali della fondazione si raccordano al terreno stabile.}
+\label{fig:layers}
+\end{figure}
+
+\subsection{Telo geotessile}
+
+Il telo permeabile (\textit{landscape fabric} o \textit{geotextile}) separa il terreno dal pietrisco e limita la crescita delle infestanti. Scegliere un prodotto adatto sotto gli aggregati e alla posa su terreno. Il telo da $4\times100$ ft copre 400 ft² nominali. Stenderlo sul terreno già compattato e nelle sedi seguendo le loro forme senza lasciarlo sospeso sopra gli avvallamenti. Sovrapporre i lembi secondo le indicazioni del produttore (per esempio 6--12 in), tagliare attorno ai tubi, e fissare i bordi e le giunzioni con picchetti metallici a U (\textit{landscape staples}). Lasciare una copertura sufficiente a proteggerlo dalla luce e dal passaggio.
+
+\subsection{Pietrisco}
+
+Il pietrisco a granulometria mista (\textit{paver base}, \textit{crusher run}) forma uno strato stabile quando le particelle angolari di varie dimensioni si incastrano e vengono compattate. La ghiaia tonda decorativa svolge invece una funzione superficiale.
+
+La proposta iniziale per questo percorso pedonale prevede 1 in di pietrisco compattato negli spazi liberi e 2--3 in complessivi nelle sedi delle piastrelle su terreno stabile. Si tratta di una sezione di prova, distinta dalle fondazioni più spesse prescritte per pavimentazioni continue \cite{cmha}. Prima di adottarla verificare anche le indicazioni del produttore delle pietre, il drenaggio, la consistenza del terreno, e il rischio di gelo. Se il sottofondo è cedevole, aumentare la profondità e la larghezza della base, oppure riprogettare il sottofondo.
+
+Distribuire il materiale a strati uniformi, livellare con il rastrello, e compattare fino alla quota prevista. Iniziare con due o tre piastrelle sul lato verso il prato, usando i sacchi già comprati. Un tratto sul lato scosceso richiede una verifica separata dopo la sistemazione del terreno.
+
+\subsection{Sabbia e piastrelle}
+
+La sabbia di posa (\textit{bedding sand} o \textit{paver leveling sand}) riempie le piccole irregolarità del pietrisco e sostiene uniformemente la piastrella. Stendere uno spessore sottile e uniforme, indicativamente 0,5--1 in, solo sulle sedi. Correggere i dislivelli importanti nel pietrisco compattato. Usare sabbia adatta alla posa, evitando strati spessi di sabbia sciolta.
+
+Appoggiare la pietra sul letto di sabbia e regolare l'altezza con una livella e un martello di gomma (\textit{rubber mallet}). Controllare che la pietra appoggi su tutta la superficie. Se dondola premendo gli spigoli, sollevarla, correggere il letto, e riposizionarla. Verificare il passo, la pendenza di drenaggio, e la quota dello spago. Mantenere i bordi vicini alla quota della ghiaia. Gli spigoli restano appena visibili sopra la ghiaia. Un dislivello di circa 1/4 in è un obiettivo pratico dove possibile. Evitare un rialzo pronunciato, soprattutto nei punti di svolta e di accesso alle aiuole.
+
+\subsection{Ghiaia decorativa e finitura}
+
+Stendere ghiaia decorativa (\textit{decorative gravel}) negli spazi tra le piazzole, a partire da circa 1/2 in, regolando la quantità per coprire bene il telo e il pietrisco. La pezzatura scelta deve consentire una copertura continua allo spessore previsto. Per ghiaia più grande può occorrere uno strato più spesso. Mantenere la superficie appena sotto le pietre. Fissare le bordure dove la ghiaia potrebbe scivolare verso il prato o la scarpata. Rimuovere picchetti e spago. Provare il passaggio dopo la pioggia e alcuni cicli di irrigazione. Ripristinare eventuali sedi che cedono o pietre che si muovono.
+
+\section{Quantità di materiale}
+
+Prima del rilievo si può stimare l'ordine di grandezza dei materiali. I 22 sacchi da 0,5 ft³ ipotizzati nella conversazione per uno strato uniforme da 1 in corrispondono a 132 ft². Questa è un'area dedotta, da sostituire con la superficie misurata. La superficie totale $A$ è la somma delle aree dei passaggi, contando ogni intersezione una volta sola. Con 14 pietre da 16 in, l'area occupata è
+\begin{equation*}
+ A_p=14(16/12)^2=24{,}89. \tag*{[ft²]}
+\end{equation*}
+Con sedi da $20\times20$ in (2 in di margine per lato), l'area delle fondazioni è
+\begin{equation*}
+ A_f=14(20/12)^2=38{,}89. \tag*{[ft²]}
+\end{equation*}
+Il margine va adattato agli ingombri effettivi. Se le sedi si sovrappongono, contare l'area comune una sola volta. Il volume di materiale per uno spessore $h$ in pollici si ottiene moltiplicando la superficie in piedi quadrati per $h/12$. I volumi del pietrisco, della sabbia, e della ghiaia si calcolano rispettivamente con le tre formule seguenti. Il pietrisco aggiuntivo si calcola per la sola profondità eccedente il primo pollice.
+\begin{align*}
+ V_b &= A/12+A_f(b-1)/12, \tag*{[ft³]}\\
+ V_s &= A_p s/12, \tag*{[ft³]}\\
+ V_g &= (A-A_p)g/12. \tag*{[ft³]}
+\end{align*}
+Qui $b=2$--$3$ in è la base totale sotto le piastrelle, $s=0{,}5$--$1$ in lo spessore della sabbia, e $g=0{,}5$ in quello della ghiaia.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}Xrr@{}}
+\toprule
+Materiale & Volume (ft³) & Sacchi (0,5 ft³)\\
+\midrule
+Pietrisco, primo pollice & 11,00 & 22\\
+Pietrisco, aggiunta nelle sedi & 3,24--6,48 & 7--13\\
+Pietrisco, totale & 14,24--17,48 & 29--35\\
+Sabbia di posa & 1,04--2,07 & 3--5\\
+Ghiaia decorativa & 4,46 & 9\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Le quantità di sacchi sono arrotondate all'intero superiore e assumono che il volume nominale sia uguale al volume posato. Il pietrisco perde volume quando viene compattato. Con una resa di esempio dell'85\% e un margine per gli sfridi del 10\%, il totale del pietrisco diventerebbe circa 37--46 sacchi. Sottraendo i 20 sacchi già acquistati, rimarrebbero indicativamente 17--26 sacchi. Misurare la resa sul tratto di prova anziché acquistare subito questo quantitativo. La ghiaia e la sabbia richiedono anch'esse verifica della copertura reale e delle perdite.
+
+Per materiali sfusi, dividere i piedi cubi per 27 per ottenere le iarde cubiche (\textit{cubic yards}, yd³). Il volume del pietrisco prima del margine è circa 0,53--0,65 yd³. Il riempimento della scarpata, l'eventuale contenimento, e i gradini richiedono un calcolo a parte dopo il rilievo.
+
+\section{Attrezzi e acquisti}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Voce & Quantità o criterio\\
+\midrule
+Picchetti di legno & Servono 20--24 picchetti per perimetri e riferimenti intermedi.\\
+Spago e livella da spago & Servono un rotolo da 250 ft, una livella, e un metro da 25 ft o più.\\
+Pala, rastrello, e carriola & Serve un attrezzo per tipo. Servono anche guanti, occhiali, e calzature robuste.\\
+Battitore & Usare un battitore manuale o noleggiare una piastra vibrante, secondo terreno e spazio.\\
+Telo e picchetti a U & È previsto un rotolo da 4 x 100 ft. Contare bordi e giunzioni e usare il passo indicato dal produttore.\\
+Piastrelle, livella, e mazzuolo & Sono previste 14 pietre da 16 x 16 in, una livella, e un mazzuolo in gomma.\\
+Pietrisco, sabbia, e ghiaia & Calcolare le quantità dalla sezione precedente e dal tratto di prova.\\
+Bordure & Misurare i bordi da stabilizzare e riutilizzare le rocce libere.\\
+Irrigazione & Misurare la linea principale e le derivazioni. Contare raccordi, terminali, valvole, filtro, regolatore, antiriflusso, e timer compatibili.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Checklist operativa}
+
+\begin{itemize}
+\checkitem Rilevare sottoservizi, irrigazione esistente, larghezze, quote, e pendenze.
+\checkitem Delimitare i passaggi con i picchetti di legno e lo spago. Confermare il numero di piastrelle provando il passo.
+\checkitem Decidere le quote dei due lati e i collegamenti. Verificare le rocce e la stabilità della scarpata prima dello scavo.
+\checkitem Togliere erba e terra soffice. Regolarizzare i passaggi e scavare le sedi delle pietre.
+\checkitem Predisporre l'irrigazione, i manicotti di attraversamento, e i punti di manutenzione. Lavare e provare le linee, poi registrare il loro percorso.
+\checkitem Compattare i riporti e il terreno di appoggio, controllando quote e drenaggio.
+\checkitem Stendere il geotessile e fissarlo con i picchetti metallici a U.
+\checkitem Distribuire e compattare il pietrisco su un tratto di prova con due o tre pietre. Verificare il consumo reale dei sacchi.
+\checkitem Mettere la sabbia nelle sedi, posare le pietre, e controllarne appoggio, altezza, pendenza, e distanza.
+\checkitem Verificare il tratto di prova dopo l'acqua. Modificare la fondazione se necessario, quindi completare il resto.
+\checkitem Distribuire la ghiaia decorativa, sistemare le bordure, e togliere i riferimenti temporanei.
+\checkitem Provare i camminamenti, controllare l'irrigazione, e ricontrollare i cedimenti dopo la prima pioggia intensa.
+\end{itemize}
+
+\begin{thebibliography}{CMHA}
+\bibitem[811]{811} 811 Before You Dig, \textit{Before you dig}. \url{https://811beforeyoudig.com/before-you-dig/}.
+\bibitem[CMHA]{cmha} Concrete Masonry \& Hardscapes Association, \textit{Construction of interlocking concrete pavements}, PAV-TEC-002. \url{https://www.cmha.org/resource/pav-tec-002/}. Il documento descrive i principi di preparazione e compattazione per pavimentazioni continue. La fondazione localizzata di questo progetto è una proposta specifica per pietre distanziate.
+\bibitem[UA]{ua} University of Arizona Cooperative Extension, \textit{Drip irrigation tune-up}. \url{https://extension.arizona.edu/sites/default/files/2024-10/DripIrrigationTune-up_0.pdf}.
+\end{thebibliography}
+\revisiontable
+\end{document}
