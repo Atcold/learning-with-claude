@@ -102,15 +102,29 @@ Togliamo l'erba e la terra soffice rimaste. Nel senso della lunghezza seguiamo i
 \par\nopagebreak
 \begin{center}\begin{tikzpicture}[x=.2cm,y=.2cm]
 % across the path, in units of 2.5 cm; heights illustrative
-\fill[mSoil] (-12,10) to[out=-5,in=125] (0,0)--(24,-1.2)--(40,-2)--(40,-6)--(-12,-6)--cycle;
+\fill[mSoil] (-12,10) to[out=-5,in=125] (0,0)--(24,-.6)--(40,-.6)--(40,-6)--(-12,-6)--cycle;
 \draw[line width=2pt,mLawn] (-12,10) to[out=-5,in=125] (0,0);
-\draw[mat=mWood] (24,-2) rectangle (40,6.8);\fill[mBed] (25.5,-1.8) rectangle (40,5.8);
-\node[wlab] at (32.5,2) {Aiuola};
+\draw[mat=mWood] (24,-.6) rectangle (40,7.4);\fill[mBed] (25.5,-.5) rectangle (40,6.4);
+\draw[white,draw opacity=.4] (0,-.8)--(40,-.8);\node[wlab,below,font=\scriptsize,inner sep=2pt] at (32,-.8) {Orizzontale};
+\node[wlab] at (32.5,3) {Aiuola};
 \draw[mat=mTile] (7,6)--(11,6)--(10.4,2.5)--(7.6,2.5)--cycle;
 \node[lab,above] at (9,6) {Secchio d'acqua};
-\draw[mWater,line width=1.5pt,->] (2,.9)--(20,0);
+\draw[mWater,line width=1.5pt,->] (2,.9)--(20,.45);
 \node[lab,above] at (-9,10.5) {Prato};
 \draw[<->] (0,-3.2)--(24,-3.2) node[wlab,midway,below]{60 cm};
+\end{tikzpicture}\end{center}
+
+Al centro di ogni aiuola lasciamo il fondo più alto, di 2--4 cm davanti a quella grande e di 1--2 cm davanti alle due piccole. Da lì il vialetto scende verso i due traversi ai lati, che portano l'acqua alla scarpata.
+\par\nopagebreak
+\begin{center}\begin{tikzpicture}[plan,x=.5cm,y=.4cm]
+% from above, lawn at the bottom
+\paths{mGravel!60}\beds
+\foreach \m/\l/\r in {\mA/\cA/\cB,\mB/\cB/\cC,\mC/\cC/\cD}{
+  \draw[mWater,line width=1.5pt,->] (\m,\Pw/2)--(\l+.15,\Pw/2);\draw[mWater,line width=1.5pt,->] (\m,\Pw/2)--(\r-.15,\Pw/2);
+  \fill[white,draw=mWater] (\m,\Pw/2) circle [radius=.1cm];}
+\foreach \c in {\cA,\cB,\cC,\cD}{\draw[mWater,line width=1.5pt,->] (\c,\Pw/2+.3)--(\c,\yT+.9);}
+\node[lab,below] at (\mB,-.1) {I cerchi sono i punti più alti};
+\node[lab,above] at (\mB,\yT+.2) {Verso la scarpata};
 \end{tikzpicture}\end{center}
 
 \section{Compattare e stendere il telo}
@@ -190,29 +204,53 @@ Sotto ogni piastrella stendiamo 1 cm di sabbia (\textit{paver sand}), che la sos
 \end{tikzpicture}\end{center}
 
 \section{Controllare dopo la pioggia}
-Il prato è molto più in alto dell'orto e scende con una pendenza di 45° o più, mentre la scarpata è più in basso. L'acqua scende dal prato, attraversa il camminamento, e prosegue nei traversi verso la scarpata. Controlliamo che il legno delle aiuole non fermi l'acqua, che la ghiaia resti pulita dalla terra del prato, e che la sabbia rimanga sotto le piastrelle. Poi premiamo gli angoli di ogni pietra. Dove una pietra si muove, la solleviamo, correggiamo la sabbia, e la rimettiamo.
+Il prato è molto più in alto dell'orto e scende con una pendenza di 45° o più, mentre la scarpata è più in basso. Di traverso il camminamento scende dell'1--2\% verso la scarpata, una pendenza che il disegno accentua per mostrarla rispetto alla linea orizzontale. L'acqua scende dal prato, attraversa il camminamento, e prosegue nei traversi verso la scarpata. Controlliamo che il legno delle aiuole non fermi l'acqua, che la ghiaia resti pulita dalla terra del prato, e che la sabbia rimanga sotto le piastrelle. Poi premiamo gli angoli di ogni pietra. Dove una pietra si muove, la solleviamo, correggiamo la sabbia, e la rimettiamo.
+
+Ecco un traverso visto di lato, dove l'acqua esce verso la scarpata.
 \par\nopagebreak
 \begin{center}\begin{tikzpicture}[x=.125cm,y=.125cm]
-% across the garden, in units of 2.5 cm, lawn on the left; widths of path and bed to scale, heights illustrative
-\fill[mSoil] (0,17)..controls (11,15.5) and (17,9)..(24,0)--(24,-3)--(48,-3)--(48,-1)--(97,-2)--(108,-16)--(120,-16)--(120,-22)--(0,-22)--cycle;
+% along a cross path, in units of 2.5 cm, lawn on the left; lengths to scale, heights illustrative, the slope exaggerated
+\fill[mWood,fill opacity=.35] (48,-3.5) rectangle (96,4.5);\fill[mBed,fill opacity=.35] (50,-3.5) rectangle (94,3.5);
+\fill[mSoil] (0,17)..controls (11,15.5) and (17,9)..(24,0)--(24,-3)--(96,-4.8)--(108,-16)--(120,-16)--(120,-20)--(0,-20)--cycle;
 \fill[mLawn] (0,17)..controls (11,15.5) and (17,9)..(24,0)--(24,1.3)..controls (17.8,10.2) and (11.5,16.9)..(0,18.3)--cycle;
-\begin{scope}[shift={(24,0)},yslant=-.02,shift={(-24,0)}]
-\fill[mBase] (24,-3) rectangle (48,-2);\fill[mSand] (28,-2) rectangle (44,-1.6);
-\draw[mCloth,line width=1.5pt] (24,-3)--(48,-3);
-\draw[mat=mTile,rounded corners=.5pt] (28,-1.6) rectangle (44,0);
-\draw[mat=mWood] (48,-2) rectangle (96,7);\fill[mBed] (50,-2) rectangle (94,6);
-\node[wlab] at (72,2) {Aiuola};
+\begin{scope}[shift={(24,0)},yslant=-.025,shift={(-24,0)}]
+\fill[mBase] (24,-3) rectangle (96,-2);
+\draw[mCloth,line width=1.5pt] (24,-3)--(96,-3);
+\foreach \x in {28,64}{\fill[mSand] (\x,-2) rectangle +(16,.4);\draw[mat=mTile,rounded corners=.5pt] (\x,-1.6) rectangle +(16,1.6);}
+\draw[mWater,line width=1.2pt,->] (30,1.4)--(92,1.4);
 \end{scope}
-\foreach \x/\y/\a in {98/-2/0,101.5/-6/60,105/-10.5/20,108/-14.5/90}{\pic[rotate=\a] at (\x,\y) {rock};}
-\draw[mat=mWood] (116,-20) rectangle (118,10);\node[lab,above] at (116,10) {Recinzione};
-\node[lab,above] at (7,17.6) {Prato};\node[lab,above] at (36,1) {Camminamento};
-\node[lab,right] at (101,-1) {Rocce};
-\node[wlab] at (60,-14) {Terra compattata};\node[wlab,left] at (104,-19) {Scarpata};
+\draw[white,draw opacity=.4] (24,-5)--(96,-5);
+\node[wlab,below,font=\scriptsize,inner sep=2pt] at (84,-5) {Orizzontale};
+\node[wlab] at (36,-8) {Vialetto};\node[wlab] at (64,-8) {Traverso};
+\foreach \x/\y/\a in {98.5/-5/0,101.5/-8.6/60,105/-11.8/20,108/-14.8/90}{\pic[rotate=\a] at (\x,\y) {rock};}
+\draw[mWater,line width=1.2pt,->] (103.5,-5)--(110.5,-12.5);
+\draw[mat=mWood] (116,-18) rectangle (118,9);\node[lab,above] at (116,9) {Recinzione};
+\node[lab,above] at (7,17.6) {Prato};\node[lab,above] at (72,5) {Aiuola, dietro};\node[lab,right] at (101,-2.5) {Rocce};
+\node[wlab,left] at (106,-18) {Scarpata};
 \draw[mWater,line width=1.2pt,->] (17,13)--(25,2.7);
-\draw[mWater,line width=1.2pt,->] (103,-2.8)--(110.5,-12.5);
-\node[lab,right] at (21,10) {Deflusso};
 \foreach \x in {21,30,...,111}{\draw[mWater,line width=1pt] (\x,20)--+(-1,-2.4) (\x+4.5,17.5)--+(-1,-2.4);}
 \end{tikzpicture}\end{center}
+
+Ora giriamo la vista di 90°, e guardiamo il vialetto per il lungo, con il prato alle spalle. Il fondo è più alto al centro di ogni aiuola e scende verso i due traversi ai suoi lati.
+\par\nopagebreak
+\begin{center}\begin{tikzpicture}[plan,x=.5cm,y=.65cm]
+% along the path, seen from the lawn: lengths to scale, heights and slopes exaggerated
+\newcommand{\hB}{.5}\newcommand{\hS}{.2}
+\foreach \a/\b/\n in {\xA/\xB/1,\xC/\xD/2,\xE/\xF/3}{\fill[mWood,fill opacity=.35] (\a,-.1) rectangle (\b,1.5);\fill[mBed,fill opacity=.35] (\a+.25,-.1) rectangle (\b-.25,1.3);
+  \node[lab,above] at ({(\a+\b)/2},1.5) {Aiuola \n};}
+\fill[mBase] (0,.2)--(\cA,.2)--(\mA,\hS+.2)--(\cB,.2)--(\mB,\hB+.2)--(\cC,.2)--(\mC,\hS+.2)--(\cD,.2)--(\xG,.2)--(\xG,-.2)--(0,-.2)--cycle;
+\fill[mSoil] (0,0)--(\cA,0)--(\mA,\hS)--(\cB,0)--(\mB,\hB)--(\cC,0)--(\mC,\hS)--(\cD,0)--(\xG,0)--(\xG+1,0)--(\xG+1,-1.5)--(-1,-1.5)--(-1,0)--cycle;
+\draw[mCloth,line width=1.2pt] (0,0)--(\cA,0)--(\mA,\hS)--(\cB,0)--(\mB,\hB)--(\cC,0)--(\mC,\hS)--(\cD,0)--(\xG,0);
+\foreach \t/\h/\r in {\cA/0/0,\mA/\hS/0,\cB/0/0,{\cB+(\cC-\cB)/4}/.25/4,\mB/\hB/0,{\cB+3*(\cC-\cB)/4}/.25/-4,\cC/0/0,\mC/\hS/0,\cD/0/0}{
+  \draw[mat=mTile,rounded corners=.5pt,shift={({\t},\h+.2)},rotate=\r] (-.66,.04) rectangle (.66,.3);}
+\foreach \a/\h/\c in {\mA/\hS/\cA,\mA/\hS/\cB,\mB/\hB/\cB,\mB/\hB/\cC,\mC/\hS/\cC,\mC/\hS/\cD}{
+  \draw[mWater,line width=1.2pt,->] ({\a+.1*(\c-\a)},{\h*.9+.75})--({\a+.85*(\c-\a)},{\h*.15+.75});}
+\draw[white,draw opacity=.4] (0,-.08)--(\xG,-.08);
+\node[wlab,below,font=\scriptsize,inner sep=2pt] at (\mB,-.08) {Orizzontale};
+\foreach \c in {\cA,\cB,\cC,\cD}{\draw[white,->] (\c,-.85)--(\c,-.2);\node[wlab,below,font=\footnotesize,inner sep=1pt] at (\c,-.85) {Traverso};}
+\foreach \x in {1,3.5,...,28}{\draw[mWater,line width=1pt] (\x,4)--+(-.25,-.6) (\x+1.25,3.4)--+(-.25,-.6);}
+\end{tikzpicture}\end{center}
+
 \section*{Quanto materiale serve}
 Il camminamento copre 8,6 m². I sacchi sono da 14 L (0,5 ft³), arrotondati per eccesso. Per la ghiaia contiamo una resa dell'85\% dopo la compattazione, che è un'ipotesi. La ghiaia che abbiamo basta appena. Della sabbia teniamo 3 sacchi e ne cambiamo 5.
 \begin{center}\small
@@ -222,6 +260,56 @@ Ghiaia, 2,5 cm su tutto il camminamento & 210 & 18 & 18\\
 Sabbia, 1 cm sotto le piastrelle & 21 & 2 & 8\\
 \bottomrule
 \end{tabularx}\end{center}
+\appendix
+\section{Misurare l'altezza del terreno}
+Uno spago tirato tra due punti può pendere, e a occhio non si vede. Per renderlo orizzontale ci vuole una livella con i gancetti (\textit{line level}), che si appende allo spago. Con una livella normale usiamo invece due paletti e un'asse dritta.
+
+Un \emph{paletto} è un pezzo di legno spesso 3--4 cm e lungo 60 cm, con la punta da una parte. Entra 20 cm nella terra e sporge 40 cm. Un'\emph{asse} è un listello di legno lungo, dritto, e stretto, un po' più lungo della distanza tra i paletti.
+
+Serve essere in due. Uno tiene l'asse contro il fianco dei paletti e l'altro guarda la bolla e fa i segni. Chi è da solo stringe l'asse ai paletti con due morsetti, cioè due pinze a vite. Il primo morsetto resta stretto, e il secondo resta lento finché la bolla non sta al centro.
+\par\nopagebreak
+\newcommand{\apterra}{\fill[mSoil] (-1,-1.1)--(-1,.05) to[out=5,in=175] (3.5,-.35) to[out=-5,in=185] (8,-.05)--(8,-1.1)--cycle;
+  \foreach \x in {0,7}{\draw[mat=mWood] (\x-.13,-.8) rectangle (\x+.13,2);}}
+\newcommand{\apasse}[2]{\begin{scope}[shift={(0,1.2)},rotate=#1]
+  \draw[fill=mWood!50,draw=mWood!70!black] (-.5,-.18) rectangle (7.5,.18);
+  \draw[mat=mLevel,rounded corners=1pt] (2.7,.18) rectangle (4.3,.62);
+  \draw[fill=mLawn!50,draw=mLevel!60!black,rounded corners=1pt] (3,.28) rectangle (4,.52);
+  \draw (3.37,.28)--(3.37,.52) (3.63,.28)--(3.63,.52);
+  \draw[fill=white] (3.5+#2,.4) ellipse [x radius=.11,y radius=.08];\end{scope}}
+\newcommand{\apsegni}{\foreach \x in {0,7}{\draw[mString,line width=1.5pt] (\x-.35,1.38)--(\x+.35,1.38);}}
+\newcommand{\appasso}[2]{\node[anchor=south west,text width=7cm,font=\small,inner sep=0pt] at (-1,2.75) {\textbf{#1}\quad #2};}
+\begin{center}\begin{tikzpicture}[x=.8cm,y=.8cm]
+\begin{scope}
+\appasso{1}{Piantiamo due paletti a 2 m di distanza.}\apterra
+\draw[<->] (0,2.3)--(7,2.3) node[lab,midway,above,inner sep=1pt]{2 m};
+\draw[<->] (7.6,-.05)--(7.6,2) node[lab,midway,right]{40 cm};
+\draw[<->] (8.15,-.8)--(8.15,-.05) node[lab,midway,right,font=\footnotesize,inner sep=2pt]{20 cm};
+\end{scope}
+\begin{scope}[xshift=8.4cm]
+\appasso{2}{Teniamo l'asse contro i paletti, con la livella sopra. La bolla va verso il lato più alto.}\apterra\apasse{-5}{-.3}
+\end{scope}
+\begin{scope}[yshift=-4.9cm]
+\appasso{3}{Alziamo il lato più basso finché la bolla sta al centro.}\apterra\apasse{0}{0}
+\draw[->,line width=1.2pt] (7.8,.6)--(7.8,1.5);
+\end{scope}
+\begin{scope}[xshift=8.4cm,yshift=-4.9cm]
+\appasso{4}{Segniamo il bordo di sopra dell'asse su tutti e due i paletti.}\apterra\apasse{0}{0}\apsegni
+\end{scope}
+\begin{scope}[yshift=-9.8cm]
+\appasso{5}{Togliamo l'asse e leghiamo lo spago ai due segni, ben tirato.}\apterra
+\draw[mString,line width=1.2pt] (0,1.38)--(7,1.38);\apsegni
+\end{scope}
+\begin{scope}[xshift=8.4cm,yshift=-9.8cm]
+\appasso{6}{Misuriamo con il metro la distanza dallo spago al terreno.}\apterra
+\draw[mString,line width=1.2pt] (0,1.38)--(7,1.38);\apsegni
+\draw[<->] (1,.03)--(1,1.38) node[lab,midway,right]{$d_1$};
+\draw[<->] (3.5,-.35)--(3.5,1.38) node[lab,midway,right]{$d_2$};
+\end{scope}
+\end{tikzpicture}\end{center}
+Dove la distanza $d$ è più grande il terreno è più basso. La differenza $d_2-d_1$ dice di quanto, in centimetri.
+
+Per misurare tutta la fila, lunga 8,8 m, usiamo sei paletti a circa 1,8 m l'uno dall'altro. Livelliamo l'asse tra il primo e il secondo, poi la spostiamo tra il secondo e il terzo, partendo dal segno già fatto sul secondo, e così via. I paletti restano piantati e si sposta solo l'asse.
+
 \begin{thebibliography}{CMHA}
 \bibitem[CMHA]{cmha} Concrete Masonry \& Hardscapes Association, \textit{Construction of interlocking concrete pavements}, PAV-TEC-002. \url{https://www.cmha.org/resource/pav-tec-002/}.
 \bibitem[UA]{ua} University of Arizona Cooperative Extension, \textit{Drip irrigation tune-up}. \url{https://extension.arizona.edu/sites/default/files/2024-10/DripIrrigationTune-up_0.pdf}.
